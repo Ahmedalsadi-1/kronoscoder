@@ -1,24 +1,21 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Vite build output
+dist/
 
-node_modules
-dist
-dist-ssr
-*.local
+# Tauri build artifacts
+src-tauri/target/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Tauri generated code
+src-tauri/gen/
+
+# Desktop sidecar + bundled web assets (generated)
+src-tauri/resources/web-dist/
+src-tauri/sidecars/openchamber-server-*
+src-tauri/sidecars/*.exe
+!src-tauri/resources/.gitkeep
+!src-tauri/sidecars/.gitkeep
+
+# OpenCode CLI state tracking
+.opencode-cli-state.json
+
+# OS-specific
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?

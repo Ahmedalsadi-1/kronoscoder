@@ -7,7 +7,9 @@ import type {
   AppAgentsResponses,
   AppLogErrors,
   AppLogResponses,
+  AppProxyFetchResponses,
   AppSkillsResponses,
+  AppSkillsSuggestResponses,
   Auth as Auth3,
   AuthRemoveErrors,
   AuthRemoveResponses,
@@ -24,6 +26,14 @@ import type {
   EventTuiPromptAppend,
   EventTuiSessionSelect,
   EventTuiToastShow,
+  ExperimentalBrowserActionErrors,
+  ExperimentalBrowserActionResponses,
+  ExperimentalBrowserEventsErrors,
+  ExperimentalBrowserEventsResponses,
+  ExperimentalBrowserFrameErrors,
+  ExperimentalBrowserFrameResponses,
+  ExperimentalBrowserStateErrors,
+  ExperimentalBrowserStateResponses,
   ExperimentalResourceListResponses,
   ExperimentalSessionListResponses,
   FileListResponses,
@@ -41,6 +51,7 @@ import type {
   GlobalDisposeResponses,
   GlobalEventResponses,
   GlobalHealthResponses,
+  GlobalPeersResponses,
   InstanceDisposeResponses,
   LspStatusResponses,
   McpAddErrors,
@@ -119,6 +130,7 @@ import type {
   SessionMessageResponses,
   SessionMessagesErrors,
   SessionMessagesResponses,
+  SessionPlanContentResponses,
   SessionPromptAsyncErrors,
   SessionPromptAsyncResponses,
   SessionPromptErrors,
@@ -224,7 +236,7 @@ export class Config extends HeyApiClient {
   /**
    * Get global configuration
    *
-   * Retrieve the current global OpenCode configuration settings and preferences.
+   * Retrieve the current global KronosCode configuration settings and preferences.
    */
   public get<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
     return (options?.client ?? this.client).get<GlobalConfigGetResponses, unknown, ThrowOnError>({
@@ -236,7 +248,7 @@ export class Config extends HeyApiClient {
   /**
    * Update global configuration
    *
-   * Update global OpenCode configuration settings and preferences.
+   * Update global KronosCode configuration settings and preferences.
    */
   public update<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -262,7 +274,7 @@ export class Global extends HeyApiClient {
   /**
    * Get health
    *
-   * Get health information about the OpenCode server.
+   * Get health information about the KronosCode server.
    */
   public health<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
     return (options?.client ?? this.client).get<GlobalHealthResponses, unknown, ThrowOnError>({
@@ -274,7 +286,7 @@ export class Global extends HeyApiClient {
   /**
    * Get global events
    *
-   * Subscribe to global events from the OpenCode system using server-sent events.
+   * Subscribe to global events from the KronosCode system using server-sent events.
    */
   public event<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
     return (options?.client ?? this.client).sse.get<GlobalEventResponses, unknown, ThrowOnError>({
@@ -286,12 +298,31 @@ export class Global extends HeyApiClient {
   /**
    * Dispose instance
    *
-   * Clean up and dispose all OpenCode instances, releasing all resources.
+   * Clean up and dispose all KronosCode instances, releasing all resources.
    */
   public dispose<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
     return (options?.client ?? this.client).post<GlobalDisposeResponses, unknown, ThrowOnError>({
       url: "/global/dispose",
       ...options,
+    })
+  }
+
+  /**
+   * List peers
+   *
+   * Get a list of discovered KronosCode peers on the local network.
+   */
+  public peers<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "query", key: "directory" }] }])
+    return (options?.client ?? this.client).get<GlobalPeersResponses, unknown, ThrowOnError>({
+      url: "/global/peers",
+      ...options,
+      ...params,
     })
   }
 
@@ -361,7 +392,7 @@ export class Project extends HeyApiClient {
   /**
    * List all projects
    *
-   * Get a list of projects that have been opened with OpenCode.
+   * Get a list of projects that have been opened with KronosCode.
    */
   public list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -380,7 +411,7 @@ export class Project extends HeyApiClient {
   /**
    * Get current project
    *
-   * Retrieve the currently active project that OpenCode is working with.
+   * Retrieve the currently active project that KronosCode is working with.
    */
   public current<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -451,7 +482,7 @@ export class Pty extends HeyApiClient {
   /**
    * List PTY sessions
    *
-   * Get a list of all active pseudo-terminal (PTY) sessions managed by OpenCode.
+   * Get a list of all active pseudo-terminal (PTY) sessions managed by KronosCode.
    */
   public list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -649,7 +680,7 @@ export class Config2 extends HeyApiClient {
   /**
    * Get configuration
    *
-   * Retrieve the current OpenCode configuration settings and preferences.
+   * Retrieve the current KronosCode configuration settings and preferences.
    */
   public get<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -668,7 +699,7 @@ export class Config2 extends HeyApiClient {
   /**
    * Update configuration
    *
-   * Update OpenCode configuration settings and preferences.
+   * Update KronosCode configuration settings and preferences.
    */
   public update<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -903,7 +934,7 @@ export class Session extends HeyApiClient {
   /**
    * List sessions
    *
-   * Get a list of all OpenCode sessions across projects, sorted by most recently updated. Archived sessions are excluded by default.
+   * Get a list of all KronosCode sessions across projects, sorted by most recently updated. Archived sessions are excluded by default.
    */
   public list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -941,6 +972,703 @@ export class Session extends HeyApiClient {
   }
 }
 
+export class Browser extends HeyApiClient {
+  /**
+   * Get browser runtime state
+   *
+   * Get current AI Browser pages and active page for a session.
+   */
+  public state<ThrowOnError extends boolean = false>(
+    parameters: {
+      directory?: string
+      sessionID: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "sessionID" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<
+      ExperimentalBrowserStateResponses,
+      ExperimentalBrowserStateErrors,
+      ThrowOnError
+    >({
+      url: "/experimental/browser/state",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Subscribe to browser runtime events
+   *
+   * Stream AI Browser state events for a session using server-sent events.
+   */
+  public events<ThrowOnError extends boolean = false>(
+    parameters: {
+      directory?: string
+      sessionID: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "sessionID" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).sse.get<
+      ExperimentalBrowserEventsResponses,
+      ExperimentalBrowserEventsErrors,
+      ThrowOnError
+    >({
+      url: "/experimental/browser/events",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Get browser frame screenshot
+   *
+   * Capture the latest frame for the active page as base64 PNG.
+   */
+  public frame<ThrowOnError extends boolean = false>(
+    parameters: {
+      directory?: string
+      sessionID: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "sessionID" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<
+      ExperimentalBrowserFrameResponses,
+      ExperimentalBrowserFrameErrors,
+      ThrowOnError
+    >({
+      url: "/experimental/browser/frame",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Execute browser action
+   *
+   * Run a browser runtime action for a session.
+   */
+  public action<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      body?:
+        | {
+            sessionID: string
+            action: "newPage"
+            payload?: {
+              url?: string
+              timeout?: number
+              [key: string]: unknown | string | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "navigate"
+            payload?: {
+              type?: "url" | "back" | "forward" | "reload"
+              url?: string
+              timeout?: number
+              [key: string]: unknown | "url" | "back" | "forward" | "reload" | string | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "selectPage"
+            payload?: {
+              pageIdx?: number
+              [key: string]: unknown | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "closePage"
+            payload?: {
+              pageIdx?: number
+              [key: string]: unknown | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "back"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "forward"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "reload"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "stop"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "waitFor"
+            payload?: {
+              text: string
+              timeout?: number
+              [key: string]: unknown | string | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "resize"
+            payload?: {
+              width?: number
+              height?: number
+              [key: string]: unknown | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "handleDialog"
+            payload?: {
+              action?: "accept" | "dismiss"
+              promptText?: string
+              [key: string]: unknown | "accept" | "dismiss" | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "click"
+            payload?: {
+              uid?: string
+              selector?: string
+              button?: "left" | "right" | "middle"
+              doubleClick?: boolean
+              [key: string]: unknown | string | "left" | "right" | "middle" | boolean | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "hover"
+            payload?: {
+              uid?: string
+              selector?: string
+              [key: string]: unknown | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "fill"
+            payload?: {
+              uid?: string
+              selector?: string
+              value?: string
+              [key: string]: unknown | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "fillForm"
+            payload?: {
+              fields?: Array<{
+                uid?: string
+                selector?: string
+                value: string
+                [key: string]: unknown | string | undefined
+              }>
+              [key: string]:
+                | unknown
+                | Array<{
+                    uid?: string
+                    selector?: string
+                    value: string
+                    [key: string]: unknown | string | undefined
+                  }>
+                | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "drag"
+            payload?: {
+              sourceUid?: string
+              sourceSelector?: string
+              targetUid?: string
+              targetSelector?: string
+              [key: string]: unknown | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "pressKey"
+            payload?: {
+              key?: string
+              [key: string]: unknown | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "uploadFile"
+            payload?: {
+              uid?: string
+              selector?: string
+              files?: Array<string>
+              [key: string]: unknown | string | Array<string> | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "snapshot"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "screenshot"
+            payload?: {
+              fullPage?: boolean
+              [key: string]: unknown | boolean | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "evaluate"
+            payload?: {
+              script?: string
+              [key: string]: unknown | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "networkRequests"
+            payload?: {
+              limit?: number
+              [key: string]: unknown | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "networkRequest"
+            payload?: {
+              index?: number
+              urlContains?: string
+              [key: string]: unknown | number | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "console"
+            payload?: {
+              limit?: number
+              [key: string]: unknown | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "consoleMessage"
+            payload?: {
+              index?: number
+              [key: string]: unknown | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "emulate"
+            payload?: {
+              width?: number
+              height?: number
+              colorScheme?: "light" | "dark" | "no-preference"
+              reducedMotion?: "reduce" | "no-preference"
+              locale?: string
+              timezoneId?: string
+              geolocation?: {
+                latitude: number
+                longitude: number
+              }
+              [key: string]:
+                | unknown
+                | number
+                | "light"
+                | "dark"
+                | "no-preference"
+                | "reduce"
+                | "no-preference"
+                | string
+                | {
+                    latitude: number
+                    longitude: number
+                  }
+                | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "perfStart"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "perfStop"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "perfInsight"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_new_page"
+            payload?: {
+              url?: string
+              timeout?: number
+              [key: string]: unknown | string | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_navigate"
+            payload?: {
+              type?: "url" | "back" | "forward" | "reload"
+              url?: string
+              timeout?: number
+              [key: string]: unknown | "url" | "back" | "forward" | "reload" | string | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_select_page"
+            payload?: {
+              pageIdx?: number
+              [key: string]: unknown | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_close_page"
+            payload?: {
+              pageIdx?: number
+              [key: string]: unknown | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_back"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_forward"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_reload"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_stop"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_wait_for"
+            payload?: {
+              text: string
+              timeout?: number
+              [key: string]: unknown | string | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_resize"
+            payload?: {
+              width?: number
+              height?: number
+              [key: string]: unknown | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_handle_dialog"
+            payload?: {
+              action?: "accept" | "dismiss"
+              promptText?: string
+              [key: string]: unknown | "accept" | "dismiss" | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_click"
+            payload?: {
+              uid?: string
+              selector?: string
+              button?: "left" | "right" | "middle"
+              doubleClick?: boolean
+              [key: string]: unknown | string | "left" | "right" | "middle" | boolean | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_hover"
+            payload?: {
+              uid?: string
+              selector?: string
+              [key: string]: unknown | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_fill"
+            payload?: {
+              uid?: string
+              selector?: string
+              value?: string
+              [key: string]: unknown | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_fill_form"
+            payload?: {
+              fields?: Array<{
+                uid?: string
+                selector?: string
+                value: string
+                [key: string]: unknown | string | undefined
+              }>
+              [key: string]:
+                | unknown
+                | Array<{
+                    uid?: string
+                    selector?: string
+                    value: string
+                    [key: string]: unknown | string | undefined
+                  }>
+                | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_drag"
+            payload?: {
+              sourceUid?: string
+              sourceSelector?: string
+              targetUid?: string
+              targetSelector?: string
+              [key: string]: unknown | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_press_key"
+            payload?: {
+              key?: string
+              [key: string]: unknown | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_upload_file"
+            payload?: {
+              uid?: string
+              selector?: string
+              files?: Array<string>
+              [key: string]: unknown | string | Array<string> | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_snapshot"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_screenshot"
+            payload?: {
+              fullPage?: boolean
+              [key: string]: unknown | boolean | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_evaluate"
+            payload?: {
+              script?: string
+              [key: string]: unknown | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_network_requests"
+            payload?: {
+              limit?: number
+              [key: string]: unknown | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_network_request"
+            payload?: {
+              index?: number
+              urlContains?: string
+              [key: string]: unknown | number | string | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_console"
+            payload?: {
+              limit?: number
+              [key: string]: unknown | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_console_message"
+            payload?: {
+              index?: number
+              [key: string]: unknown | number | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_emulate"
+            payload?: {
+              width?: number
+              height?: number
+              colorScheme?: "light" | "dark" | "no-preference"
+              reducedMotion?: "reduce" | "no-preference"
+              locale?: string
+              timezoneId?: string
+              geolocation?: {
+                latitude: number
+                longitude: number
+              }
+              [key: string]:
+                | unknown
+                | number
+                | "light"
+                | "dark"
+                | "no-preference"
+                | "reduce"
+                | "no-preference"
+                | string
+                | {
+                    latitude: number
+                    longitude: number
+                  }
+                | undefined
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_perf_start"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_perf_stop"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+        | {
+            sessionID: string
+            action: "browser_perf_insight"
+            payload?: {
+              [key: string]: unknown
+            }
+          }
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { key: "body", map: "body" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<
+      ExperimentalBrowserActionResponses,
+      ExperimentalBrowserActionErrors,
+      ThrowOnError
+    >({
+      url: "/experimental/browser/action",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+}
+
 export class Resource extends HeyApiClient {
   /**
    * Get MCP resources
@@ -968,6 +1696,11 @@ export class Experimental extends HeyApiClient {
     return (this._session ??= new Session({ client: this.client }))
   }
 
+  private _browser?: Browser
+  get browser(): Browser {
+    return (this._browser ??= new Browser({ client: this.client }))
+  }
+
   private _resource?: Resource
   get resource(): Resource {
     return (this._resource ??= new Resource({ client: this.client }))
@@ -978,7 +1711,7 @@ export class Session2 extends HeyApiClient {
   /**
    * List sessions
    *
-   * Get a list of all OpenCode sessions, sorted by most recently updated.
+   * Get a list of all KronosCode sessions, sorted by most recently updated.
    */
   public list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -1014,7 +1747,7 @@ export class Session2 extends HeyApiClient {
   /**
    * Create session
    *
-   * Create a new OpenCode session for interacting with AI assistants and managing conversations.
+   * Create a new KronosCode session for interacting with AI assistants and managing conversations.
    */
   public create<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -1102,7 +1835,7 @@ export class Session2 extends HeyApiClient {
   /**
    * Get session
    *
-   * Retrieve detailed information about a specific OpenCode session.
+   * Retrieve detailed information about a specific KronosCode session.
    */
   public get<ThrowOnError extends boolean = false>(
     parameters: {
@@ -1815,6 +2548,36 @@ export class Session2 extends HeyApiClient {
     )
     return (options?.client ?? this.client).post<SessionUnrevertResponses, SessionUnrevertErrors, ThrowOnError>({
       url: "/session/{sessionID}/unrevert",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Get session plan
+   *
+   * Get the markdown plan content for a session.
+   */
+  public planContent<ThrowOnError extends boolean = false>(
+    parameters: {
+      sessionID: string
+      directory?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "sessionID" },
+            { in: "query", key: "directory" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<SessionPlanContentResponses, unknown, ThrowOnError>({
+      url: "/session/{sessionID}/plan",
       ...options,
       ...params,
     })
@@ -3005,7 +3768,7 @@ export class Instance extends HeyApiClient {
   /**
    * Dispose instance
    *
-   * Clean up and dispose the current OpenCode instance, releasing all resources.
+   * Clean up and dispose the current KronosCode instance, releasing all resources.
    */
   public dispose<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -3026,7 +3789,7 @@ export class Path extends HeyApiClient {
   /**
    * Get paths
    *
-   * Retrieve the current working directory and related path information for the OpenCode instance.
+   * Retrieve the current working directory and related path information for the KronosCode instance.
    */
   public get<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -3068,7 +3831,7 @@ export class Command extends HeyApiClient {
   /**
    * List commands
    *
-   * Get a list of all available commands in the OpenCode system.
+   * Get a list of all available commands in the KronosCode system.
    */
   public list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -3132,7 +3895,7 @@ export class App extends HeyApiClient {
   /**
    * List agents
    *
-   * Get a list of all available AI agents in the OpenCode system.
+   * Get a list of all available AI agents in the KronosCode system.
    */
   public agents<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -3151,7 +3914,7 @@ export class App extends HeyApiClient {
   /**
    * List skills
    *
-   * Get a list of all available skills in the OpenCode system.
+   * Get a list of all available skills in the KronosCode system.
    */
   public skills<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -3162,6 +3925,44 @@ export class App extends HeyApiClient {
     const params = buildClientParams([parameters], [{ args: [{ in: "query", key: "directory" }] }])
     return (options?.client ?? this.client).get<AppSkillsResponses, unknown, ThrowOnError>({
       url: "/skill",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Suggest skills
+   *
+   * Get a list of suggested skills based on the project context.
+   */
+  public skillsSuggest<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "query", key: "directory" }] }])
+    return (options?.client ?? this.client).get<AppSkillsSuggestResponses, unknown, ThrowOnError>({
+      url: "/skill/suggest",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Proxy fetch
+   *
+   * Fetch a URL from the server side to bypass CORS.
+   */
+  public proxyFetch<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "query", key: "directory" }] }])
+    return (options?.client ?? this.client).get<AppProxyFetchResponses, unknown, ThrowOnError>({
+      url: "/proxy/fetch",
       ...options,
       ...params,
     })

@@ -1,17 +1,17 @@
 <p align="center">
-  <a href="https://opencode.ai">
+  <a href="https://kronoscode.ai">
     <picture>
       <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
       <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo">
+      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="KronosCode logo">
     </picture>
   </a>
 </p>
-<p align="center">OpenCode je open source AI agent za programiranje.</p>
+<p align="center">KronosCode je open source AI agent za programiranje.</p>
 <p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/opencode-ai"><img alt="npm" src="https://img.shields.io/npm/v/opencode-ai?style=flat-square" /></a>
-  <a href="https://github.com/anomalyco/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/opencode/publish.yml?style=flat-square&branch=dev" /></a>
+  <a href="https://kronoscode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
+  <a href="https://www.npmjs.com/package/kronoscode-ai"><img alt="npm" src="https://img.shields.io/npm/v/kronoscode-ai?style=flat-square" /></a>
+  <a href="https://github.com/anomalyco/kronoscode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/kronoscode/publish.yml?style=flat-square&branch=dev" /></a>
 </p>
 
 <p align="center">
@@ -37,7 +37,7 @@
   <a href="README.bn.md">বাংলা</a>
 </p>
 
-[![OpenCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
+[![KronosCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://kronoscode.ai)
 
 ---
 
@@ -45,18 +45,18 @@
 
 ```bash
 # YOLO
-curl -fsSL https://opencode.ai/install | bash
+curl -fsSL https://kronoscode.ai/install | bash
 
 # Package manageri
-npm i -g opencode-ai@latest        # ili bun/pnpm/yarn
-scoop install opencode             # Windows
-choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS i Linux (preporučeno, uvijek ažurno)
-brew install opencode              # macOS i Linux (zvanična brew formula, rjeđe se ažurira)
-sudo pacman -S opencode            # Arch Linux (Stable)
-paru -S opencode-bin               # Arch Linux (Latest from AUR)
-mise use -g opencode               # Bilo koji OS
-nix run nixpkgs#opencode           # ili github:anomalyco/opencode za najnoviji dev branch
+npm i -g kronoscode-ai@latest        # ili bun/pnpm/yarn
+scoop install kronoscode             # Windows
+choco install kronoscode             # Windows
+brew install anomalyco/tap/kronoscode # macOS i Linux (preporučeno, uvijek ažurno)
+brew install kronoscode              # macOS i Linux (zvanična brew formula, rjeđe se ažurira)
+sudo pacman -S kronoscode            # Arch Linux (Stable)
+paru -S kronoscode-bin               # Arch Linux (Latest from AUR)
+mise use -g kronoscode               # Bilo koji OS
+nix run nixpkgs#kronoscode           # ili github:anomalyco/kronoscode za najnoviji dev branch
 ```
 
 > [!TIP]
@@ -64,40 +64,40 @@ nix run nixpkgs#opencode           # ili github:anomalyco/opencode za najnoviji 
 
 ### Desktop aplikacija (BETA)
 
-OpenCode je dostupan i kao desktop aplikacija. Preuzmi je direktno sa [stranice izdanja](https://github.com/anomalyco/opencode/releases) ili sa [opencode.ai/download](https://opencode.ai/download).
+KronosCode je dostupan i kao desktop aplikacija. Preuzmi je direktno sa [stranice izdanja](https://github.com/anomalyco/kronoscode/releases) ili sa [kronoscode.ai/download](https://kronoscode.ai/download).
 
 | Platforma             | Preuzimanje                           |
 | --------------------- | ------------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-darwin-aarch64.dmg` |
-| macOS (Intel)         | `opencode-desktop-darwin-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe`    |
+| macOS (Apple Silicon) | `kronoscode-desktop-darwin-aarch64.dmg` |
+| macOS (Intel)         | `kronoscode-desktop-darwin-x64.dmg`     |
+| Windows               | `kronoscode-desktop-windows-x64.exe`    |
 | Linux                 | `.deb`, `.rpm`, ili AppImage          |
 
 ```bash
 # macOS (Homebrew)
-brew install --cask opencode-desktop
+brew install --cask kronoscode-desktop
 # Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
+scoop bucket add extras; scoop install extras/kronoscode-desktop
 ```
 
 #### Instalacijski direktorij
 
 Instalacijska skripta koristi sljedeći redoslijed prioriteta za putanju instalacije:
 
-1. `$OPENCODE_INSTALL_DIR` - Prilagođeni instalacijski direktorij
+1. `$KRONOSCODE_INSTALL_DIR` - Prilagođeni instalacijski direktorij
 2. `$XDG_BIN_DIR` - Putanja usklađena sa XDG Base Directory specifikacijom
 3. `$HOME/bin` - Standardni korisnički bin direktorij (ako postoji ili se može kreirati)
-4. `$HOME/.opencode/bin` - Podrazumijevana rezervna lokacija
+4. `$HOME/.kronoscode/bin` - Podrazumijevana rezervna lokacija
 
 ```bash
 # Primjeri
-OPENCODE_INSTALL_DIR=/usr/local/bin curl -fsSL https://opencode.ai/install | bash
-XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
+KRONOSCODE_INSTALL_DIR=/usr/local/bin curl -fsSL https://kronoscode.ai/install | bash
+XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://kronoscode.ai/install | bash
 ```
 
 ### Agenti
 
-OpenCode uključuje dva ugrađena agenta između kojih možeš prebacivati tasterom `Tab`.
+KronosCode uključuje dva ugrađena agenta između kojih možeš prebacivati tasterom `Tab`.
 
 - **build** - Podrazumijevani agent sa punim pristupom za razvoj
 - **plan** - Agent samo za čitanje za analizu i istraživanje koda
@@ -108,19 +108,19 @@ OpenCode uključuje dva ugrađena agenta između kojih možeš prebacivati taste
 Uključen je i **general** pod-agent za složene pretrage i višekoračne zadatke.
 Koristi se interno i može se pozvati pomoću `@general` u porukama.
 
-Saznaj više o [agentima](https://opencode.ai/docs/agents).
+Saznaj više o [agentima](https://kronoscode.ai/docs/agents).
 
 ### Dokumentacija
 
-Za više informacija o konfiguraciji OpenCode-a, [**pogledaj dokumentaciju**](https://opencode.ai/docs).
+Za više informacija o konfiguraciji KronosCode-a, [**pogledaj dokumentaciju**](https://kronoscode.ai/docs).
 
 ### Doprinosi
 
-Ako želiš doprinositi OpenCode-u, pročitaj [upute za doprinošenje](./CONTRIBUTING.md) prije slanja pull requesta.
+Ako želiš doprinositi KronosCode-u, pročitaj [upute za doprinošenje](./CONTRIBUTING.md) prije slanja pull requesta.
 
-### Gradnja na OpenCode-u
+### Gradnja na KronosCode-u
 
-Ako radiš na projektu koji je povezan s OpenCode-om i koristi "opencode" kao dio naziva, npr. "opencode-dashboard" ili "opencode-mobile", dodaj napomenu u svoj README da projekat nije napravio OpenCode tim i da nije povezan s nama.
+Ako radiš na projektu koji je povezan s KronosCode-om i koristi "kronoscode" kao dio naziva, npr. "kronoscode-dashboard" ili "kronoscode-mobile", dodaj napomenu u svoj README da projekat nije napravio KronosCode tim i da nije povezan s nama.
 
 ### FAQ
 
@@ -129,11 +129,11 @@ Ako radiš na projektu koji je povezan s OpenCode-om i koristi "opencode" kao di
 Po mogućnostima je vrlo sličan Claude Code-u. Ključne razlike su:
 
 - 100% open source
-- Nije vezan za jednog provajdera. Iako preporučujemo modele koje nudimo kroz [OpenCode Zen](https://opencode.ai/zen), OpenCode možeš koristiti s Claude, OpenAI, Google ili čak lokalnim modelima. Kako modeli napreduju, razlike među njima će se smanjivati, a cijene padati, zato je nezavisnost od provajdera važna.
+- Nije vezan za jednog provajdera. Iako preporučujemo modele koje nudimo kroz [KronosCode Zen](https://opencode.ai/zen), KronosCode možeš koristiti s Claude, OpenAI, Google ili čak lokalnim modelima. Kako modeli napreduju, razlike među njima će se smanjivati, a cijene padati, zato je nezavisnost od provajdera važna.
 - LSP podrška odmah po instalaciji
-- Fokus na TUI. OpenCode grade neovim korisnici i kreatori [terminal.shop](https://terminal.shop); pomjeraćemo granice onoga što je moguće u terminalu.
-- Klijent/server arhitektura. To, recimo, omogućava da OpenCode radi na tvom računaru dok ga daljinski koristiš iz mobilne aplikacije, što znači da je TUI frontend samo jedan od mogućih klijenata.
+- Fokus na TUI. KronosCode grade neovim korisnici i kreatori [terminal.shop](https://terminal.shop); pomjeraćemo granice onoga što je moguće u terminalu.
+- Klijent/server arhitektura. To, recimo, omogućava da KronosCode radi na tvom računaru dok ga daljinski koristiš iz mobilne aplikacije, što znači da je TUI frontend samo jedan od mogućih klijenata.
 
 ---
 
-**Pridruži se našoj zajednici** [Discord](https://discord.gg/opencode) | [X.com](https://x.com/opencode)
+**Pridruži se našoj zajednici** [Discord](https://discord.gg/kronoscode) | [X.com](https://x.com/kronoscode)

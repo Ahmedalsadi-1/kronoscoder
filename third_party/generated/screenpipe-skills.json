@@ -1,0 +1,22 @@
+[
+  {
+    "id": "screenpipe-search",
+    "source": "screenpipe:packages/skills/skills/search.md",
+    "output": "skills/screenpipe-search/SKILL.md"
+  },
+  {
+    "id": "screenpipe-context",
+    "source": "screenpipe:packages/skills/skills/context.md",
+    "output": "skills/screenpipe-context/SKILL.md"
+  },
+  {
+    "id": "screenpipe-recall",
+    "source": "screenpipe:packages/skills/skills/recall.md",
+    "output": "skills/screenpipe-recall/SKILL.md"
+  },
+  {
+    "id": "screenpipe-digest",
+    "source": "screenpipe:packages/skills/skills/digest.md",
+    "output": "skills/screenpipe-digest/SKILL.md"
+  }
+]

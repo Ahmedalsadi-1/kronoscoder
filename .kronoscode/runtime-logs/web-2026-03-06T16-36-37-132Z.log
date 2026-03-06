@@ -1,0 +1,1623 @@
+$ bun server/index.js --port ${KRONOSCHAMBER_PORT:-3001}
+Starting KronosChamber on port 3001
+macOS Say TTS available with 188 voices
+[zen] Startup model validation failed (non-blocking): Unable to connect. Is the computer able to access the url?
+KRONOSCODE_EXTERNAL_ONLY is enabled; attaching to external KronosCode on port 4096
+Detected KronosCode port: 4096
+Setting up proxy to KronosCode on port 4096
+Serving static files from /Users/albsheralsadi/kronosfinal/kronoscoder/packages/web/dist
+KronosChamber server running on port 3001
+Health check: http://localhost:3001/health
+Web interface: http://localhost:3001
+[PushWatcher] connected
+2026-03-06T16:36:43.159Z - GET /api/runtime/status
+2026-03-06T16:36:46.165Z - GET /api/runtime/status
+2026-03-06T16:36:50.316Z - GET /api/runtime/status
+2026-03-06T16:36:55.460Z - GET /api/runtime/status
+2026-03-06T16:36:55.702Z - GET /api/runtime/status
+2026-03-06T16:37:04.598Z - GET /api/runtime/status
+2026-03-06T16:37:04.608Z - GET /api/runtime/status
+2026-03-06T16:37:04.682Z - GET /api/runtime/status
+2026-03-06T16:37:09.283Z - GET /api/runtime/status
+2026-03-06T16:37:21.165Z - GET /api/runtime/status
+2026-03-06T16:37:21.166Z - GET /api/runtime/status
+2026-03-06T16:37:21.231Z - GET /api/runtime/status
+2026-03-06T16:37:21.245Z - GET /api/runtime/status
+2026-03-06T16:37:22.838Z - GET /api/runtime/status
+2026-03-06T16:37:25.838Z - GET /api/runtime/status
+2026-03-06T16:37:36.789Z - GET /api/runtime/status
+2026-03-06T16:37:36.794Z - GET /api/runtime/status
+2026-03-06T16:37:36.794Z - GET /api/runtime/status
+2026-03-06T16:37:42.999Z - GET /api/runtime/status
+2026-03-06T16:37:43.019Z - GET /api/runtime/status
+2026-03-06T16:37:47.275Z - GET /api/runtime/status
+2026-03-06T16:37:47.279Z - GET /api/runtime/status
+2026-03-06T16:37:50.503Z - GET /api/runtime/status
+2026-03-06T16:37:52.168Z - GET /api/runtime/status
+2026-03-06T16:38:15.464Z - GET /
+2026-03-06T16:38:15.485Z - GET /assets/index-CKjpUF5n.js
+2026-03-06T16:38:15.487Z - GET /assets/vendor-shiki-BPTbv4OJ.js
+2026-03-06T16:38:15.489Z - GET /assets/index-D_kQ3h5B.css
+2026-03-06T16:38:15.553Z - GET /branding/source/gemini-default.png
+2026-03-06T16:38:15.728Z - GET /assets/mermaid-3ZIDBTTL-BvWIagYv.js
+2026-03-06T16:38:15.729Z - GET /assets/vendor-radix-DFw4qKnl.js
+2026-03-06T16:38:15.729Z - GET /assets/vendor-zustand-uGY5oT4T.js
+2026-03-06T16:38:15.729Z - GET /assets/vendor-mermaid-Dhbz-51U.js
+2026-03-06T16:38:15.730Z - GET /assets/vendor-react-CUos4OCh.js
+2026-03-06T16:38:15.730Z - GET /assets/vendor-cytoscape-BMdPkac-.js
+2026-03-06T16:38:15.740Z - GET /assets/mermaid-3ZIDBTTL-BwOxjOQd.css
+2026-03-06T16:38:15.742Z - GET /assets/vendor-syntax-BRLQZ6Rm.js
+2026-03-06T16:38:15.743Z - GET /assets/vendor-codemirror-CI_g4nTg.js
+2026-03-06T16:38:15.747Z - GET /assets/vendor-ghostty-web-M-rMj1tG.js
+2026-03-06T16:38:15.757Z - GET /assets/vendor-markdown-C1vIFQ7e.js
+2026-03-06T16:38:15.790Z - GET /assets/workbox-window.prod.es5-BIl4cyR9.js
+2026-03-06T16:38:15.794Z - GET /apple-touch-icon-152x152.png
+2026-03-06T16:38:16.223Z - GET /api/fs/home
+2026-03-06T16:38:16.227Z - GET /api/config/settings
+2026-03-06T16:38:16.257Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "homeDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "homeDirectory": "/Users/albsheralsadi"
+}
+2026-03-06T16:38:16.261Z - GET /auth/session
+2026-03-06T16:38:16.262Z - GET /api/config/themes
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T16:38:16.278Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T16:38:16.281Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "themeId": "flexoki-light",
+  "themeVariant": "light",
+  "useSystemTheme": true,
+  "lightThemeId": "flexoki-light",
+  "darkThemeId": "flexoki-dark"
+}
+[persistSettings] Called with changes: {
+  "themeId": "flexoki-light",
+  "themeVariant": "light",
+  "useSystemTheme": true,
+  "lightThemeId": "flexoki-light",
+  "darkThemeId": "flexoki-dark"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T16:38:16.314Z - GET /assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2
+2026-03-06T16:38:16.338Z - GET /api/git/check
+2026-03-06T16:38:16.346Z - GET /api/config/settings
+2026-03-06T16:38:16.348Z - POST /api/fs/exec
+2026-03-06T16:38:16.353Z - GET /api/fs/list
+2026-03-06T16:38:16.385Z - GET /api/runtime/status
+2026-03-06T16:38:16.386Z - GET /api/git/check
+2026-03-06T16:38:16.387Z - GET /api/tts/status
+2026-03-06T16:38:16.554Z - GET /api/tts/say/status
+2026-03-06T16:38:16.563Z - POST /api/terminal/create
+2026-03-06T16:38:16.564Z - GET /api/config/settings
+2026-03-06T16:38:16.565Z - GET /api/github/auth/status
+2026-03-06T16:38:16.620Z - GET /assets/ibm-plex-sans-latin-400-normal-CDDApCn2.woff2
+Using bun-pty for terminal sessions
+Created terminal session: 01d6dramc97bo6ukzax9a0h in /Users/albsheralsadi
+2026-03-06T16:38:18.327Z - GET /api/git/check
+2026-03-06T16:38:18.330Z - POST /api/terminal/create
+2026-03-06T16:38:18.330Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:38:18.340Z - GET /api/sessions/snapshot
+Created terminal session: lf0xtfic2sljs8vfm8ni8 in /Users/albsheralsadi
+2026-03-06T16:38:18.403Z - GET /assets/pierre-dark-BXuwtOqb.js
+2026-03-06T16:38:18.404Z - GET /assets/pierre-light-dckrK0oj.js
+2026-03-06T16:38:18.404Z - GET /api/permission
+API → KronosCode: GET /permission
+2026-03-06T16:38:18.405Z - GET /api/question
+API → KronosCode: GET /question
+2026-03-06T16:38:18.490Z - GET /api/question
+API → KronosCode: GET /question
+2026-03-06T16:38:18.493Z - GET /branding/source/gemini-default.png
+2026-03-06T16:38:18.495Z - POST /api/push/visibility
+2026-03-06T16:38:18.506Z - GET /api/config/settings
+2026-03-06T16:38:18.510Z - GET /api/path
+API → KronosCode: GET /path
+2026-03-06T16:38:18.513Z - GET /api/global/event
+[sse] connect scope=global reason=new-stream path=/global/event
+2026-03-06T16:38:18.519Z - GET /api/git/status
+2026-03-06T16:38:18.522Z - DELETE /api/terminal/01d6dramc97bo6ukzax9a0h
+Terminal session 01d6dramc97bo6ukzax9a0h exited with code 0, signal SIGTERM
+Closed terminal session: 01d6dramc97bo6ukzax9a0h
+2026-03-06T16:38:18.528Z - POST /api/terminal/lf0xtfic2sljs8vfm8ni8/resize
+2026-03-06T16:38:18.530Z - GET /api/git/check
+2026-03-06T16:38:18.531Z - PUT /api/agent-mode
+[persistSettings] Called with changes: {
+  "agentMode": "browseros"
+}
+2026-03-06T16:38:18.547Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:38:18.548Z - GET /api/git/check
+2026-03-06T16:38:18.549Z - POST /api/terminal/lf0xtfic2sljs8vfm8ni8/resize
+2026-03-06T16:38:18.553Z - GET /api/terminal/lf0xtfic2sljs8vfm8ni8/stream
+Terminal connected: session=lf0xtfic2sljs8vfm8ni8 client=cvre0m runtime=bun pty=bun-pty
+2026-03-06T16:38:18.554Z - GET /api/git/check
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[sse] lifecycle action=connect reason=new-stream scope=global
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+2026-03-06T16:38:18.562Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+2026-03-06T16:38:18.562Z - GET /assets/worker-suRQxAtO.js
+[persistSettings] Successfully saved 1 projects to disk
+[persistSettings] Called with changes: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+2026-03-06T16:38:18.592Z - GET /api/session
+API → KronosCode: GET /session
+2026-03-06T16:38:18.594Z - GET /api/kronoschamber/models-metadata
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T16:38:18.613Z - GET /api/config/providers
+API → KronosCode: GET /config/providers
+2026-03-06T16:38:18.619Z - GET /api/runtime/tasks
+2026-03-06T16:38:18.622Z - GET /api/path
+API → KronosCode: GET /path
+2026-03-06T16:38:18.631Z - GET /assets/worker-suRQxAtO.js
+2026-03-06T16:38:18.637Z - GET /assets/worker-suRQxAtO.js
+2026-03-06T16:38:18.669Z - GET /api/git/worktrees
+2026-03-06T16:38:18.698Z - GET /api/session
+API → KronosCode: GET /session
+2026-03-06T16:38:18.709Z - GET /assets/wasm-CG6Dc4jp.js
+2026-03-06T16:38:18.719Z - GET /assets/wasm-CG6Dc4jp.js
+2026-03-06T16:38:18.731Z - GET /api/git/worktrees
+2026-03-06T16:38:18.765Z - GET /api/config/settings
+2026-03-06T16:38:18.765Z - GET /api/agent
+API → KronosCode: GET /agent
+2026-03-06T16:38:18.790Z - GET /api/sessions/snapshot
+2026-03-06T16:38:18.795Z - GET /assets/wasm-CG6Dc4jp.js
+2026-03-06T16:38:18.796Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:38:19.364Z - GET /api/kronoschamber/update-check
+Failed to fetch latest version from npm: Registry responded with 404
+2026-03-06T16:38:19.675Z - GET /api/sessions/snapshot
+2026-03-06T16:38:19.676Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:38:21.233Z - GET /sw.js
+2026-03-06T16:38:21.367Z - GET /api/git/check
+2026-03-06T16:38:22.856Z - GET /assets/ibm-plex-mono-latin-600-normal-BgSNZQsw.woff2
+2026-03-06T16:38:26.370Z - POST /api/push/visibility
+2026-03-06T16:38:31.391Z - GET /api/git/check
+2026-03-06T16:38:36.371Z - POST /api/push/visibility
+2026-03-06T16:38:41.407Z - GET /api/git/check
+2026-03-06T16:38:43.989Z - GET /api/agent
+API → KronosCode: GET /agent
+2026-03-06T16:38:44.006Z - GET /api/experimental/tool/ids
+API → KronosCode: GET /experimental/tool/ids
+2026-03-06T16:38:44.095Z - GET /api/config/agents/build
+2026-03-06T16:38:44.098Z - GET /api/config/agents/explore
+2026-03-06T16:38:44.120Z - GET /api/config/agents/compaction
+2026-03-06T16:38:44.121Z - GET /api/config/agents/plan
+2026-03-06T16:38:44.121Z - GET /api/config/agents/general
+2026-03-06T16:38:44.129Z - GET /api/config/agents/summary
+2026-03-06T16:38:44.130Z - GET /api/config/agents/kronos-orchestrator
+2026-03-06T16:38:44.130Z - GET /api/config/agents/title
+2026-03-06T16:38:44.131Z - GET /api/config/agents/kronos-desktop-agent
+2026-03-06T16:38:44.132Z - GET /api/config/agents/ui-automation-agent
+2026-03-06T16:38:44.132Z - GET /api/config/agents/kronos-browser-agent
+2026-03-06T16:38:44.135Z - GET /api/config/agents/data-architect
+2026-03-06T16:38:44.136Z - GET /api/config/agents/automation-designer
+2026-03-06T16:38:44.136Z - GET /api/config/agents/security-agent
+2026-03-06T16:38:44.139Z - GET /api/config/agents/devops-agent
+2026-03-06T16:38:44.139Z - GET /api/config/agents/mobile-development-agent
+2026-03-06T16:38:44.139Z - GET /api/config/agents/terminal-coding-partner
+2026-03-06T16:38:44.147Z - GET /api/config/agents/database-analyst
+2026-03-06T16:38:44.147Z - GET /api/config/agents/ai-ml-engineering-agent
+2026-03-06T16:38:44.147Z - GET /api/config/agents/system-admin
+2026-03-06T16:38:44.152Z - GET /api/config/agents/security-expert
+2026-03-06T16:38:44.152Z - GET /api/config/agents/data-science-agent
+2026-03-06T16:38:44.152Z - GET /api/config/agents/security-auditor
+2026-03-06T16:38:44.155Z - GET /api/config/agents/communication-hub
+2026-03-06T16:38:44.156Z - GET /api/config/agents/creative-developer
+2026-03-06T16:38:44.156Z - GET /api/config/agents/github-manager
+2026-03-06T16:38:44.161Z - GET /api/config/agents/kali-desktop
+2026-03-06T16:38:44.161Z - GET /api/config/agents/database-agent
+2026-03-06T16:38:44.162Z - GET /api/config/agents/code-architect
+2026-03-06T16:38:44.165Z - GET /api/config/agents/game-development-agent
+2026-03-06T16:38:44.166Z - GET /api/config/agents/automation-specialist
+2026-03-06T16:38:44.166Z - GET /api/config/agents/database-pro
+2026-03-06T16:38:44.171Z - GET /api/config/agents/external-services
+2026-03-06T16:38:44.171Z - GET /api/config/agents/ai-browser-agent
+2026-03-06T16:38:44.171Z - GET /api/config/agents/ai-engineer
+2026-03-06T16:38:44.178Z - GET /api/config/agents/research-analyst
+2026-03-06T16:38:44.179Z - GET /api/config/agents/cua-workflow-controller
+2026-03-06T16:38:44.179Z - GET /api/config/agents/github-devops
+2026-03-06T16:38:44.184Z - GET /api/config/agents/Sisyphus
+2026-03-06T16:38:44.185Z - GET /api/config/agents/core-capabilities-analyzer
+2026-03-06T16:38:44.185Z - GET /api/config/agents/api-development-agent
+2026-03-06T16:38:44.195Z - GET /api/config/agents/web-developer
+2026-03-06T16:38:44.195Z - GET /api/config/agents/web-development-agent
+2026-03-06T16:38:44.195Z - GET /api/config/agents/development-workflow-agent
+2026-03-06T16:38:44.204Z - GET /api/config/agents/unified-platform-agent
+2026-03-06T16:38:44.204Z - GET /api/config/agents/security-infrastructure-agent
+2026-03-06T16:38:44.204Z - GET /api/config/agents/ai-integration
+2026-03-06T16:38:44.211Z - GET /api/agent
+API → KronosCode: GET /agent
+2026-03-06T16:38:44.271Z - GET /api/config/agents/build
+2026-03-06T16:38:44.272Z - GET /api/config/agents/plan
+2026-03-06T16:38:44.276Z - GET /api/config/agents/general
+2026-03-06T16:38:44.276Z - GET /api/config/agents/explore
+2026-03-06T16:38:44.289Z - GET /api/config/agents/compaction
+2026-03-06T16:38:44.289Z - GET /api/config/agents/title
+2026-03-06T16:38:44.289Z - GET /api/config/agents/summary
+2026-03-06T16:38:44.296Z - GET /api/config/agents/kronos-browser-agent
+2026-03-06T16:38:44.296Z - GET /api/config/agents/kronos-desktop-agent
+2026-03-06T16:38:44.296Z - GET /api/config/agents/kronos-orchestrator
+2026-03-06T16:38:44.298Z - GET /api/config/agents/ui-automation-agent
+2026-03-06T16:38:44.298Z - GET /api/config/agents/terminal-coding-partner
+2026-03-06T16:38:44.298Z - GET /api/config/agents/security-agent
+2026-03-06T16:38:44.305Z - GET /api/config/agents/devops-agent
+2026-03-06T16:38:44.305Z - GET /api/config/agents/system-admin
+2026-03-06T16:38:44.305Z - GET /api/config/agents/data-architect
+2026-03-06T16:38:44.312Z - GET /api/config/agents/automation-designer
+2026-03-06T16:38:44.312Z - GET /api/config/agents/mobile-development-agent
+2026-03-06T16:38:44.312Z - GET /api/config/agents/database-analyst
+2026-03-06T16:38:44.320Z - GET /api/config/agents/security-auditor
+2026-03-06T16:38:44.321Z - GET /api/config/agents/security-expert
+2026-03-06T16:38:44.321Z - GET /api/config/agents/ai-ml-engineering-agent
+2026-03-06T16:38:44.327Z - GET /api/config/agents/github-manager
+2026-03-06T16:38:44.328Z - GET /api/config/agents/communication-hub
+2026-03-06T16:38:44.328Z - GET /api/config/agents/data-science-agent
+2026-03-06T16:38:44.331Z - GET /api/config/agents/database-pro
+2026-03-06T16:38:44.332Z - GET /api/config/agents/code-architect
+2026-03-06T16:38:44.332Z - GET /api/config/agents/creative-developer
+2026-03-06T16:38:44.337Z - GET /api/config/agents/database-agent
+2026-03-06T16:38:44.337Z - GET /api/config/agents/game-development-agent
+2026-03-06T16:38:44.337Z - GET /api/config/agents/kali-desktop
+2026-03-06T16:38:44.346Z - GET /api/config/agents/external-services
+2026-03-06T16:38:44.347Z - GET /api/config/agents/ai-engineer
+2026-03-06T16:38:44.347Z - GET /api/config/agents/automation-specialist
+2026-03-06T16:38:44.355Z - GET /api/config/agents/github-devops
+2026-03-06T16:38:44.355Z - GET /api/config/agents/research-analyst
+2026-03-06T16:38:44.355Z - GET /api/config/agents/ai-browser-agent
+2026-03-06T16:38:44.363Z - GET /api/config/agents/api-development-agent
+2026-03-06T16:38:44.364Z - GET /api/config/agents/Sisyphus
+2026-03-06T16:38:44.364Z - GET /api/config/agents/cua-workflow-controller
+2026-03-06T16:38:44.366Z - GET /api/config/agents/development-workflow-agent
+2026-03-06T16:38:44.368Z - GET /api/config/agents/web-developer
+2026-03-06T16:38:44.369Z - GET /api/config/agents/core-capabilities-analyzer
+2026-03-06T16:38:44.372Z - GET /api/config/agents/ai-integration
+2026-03-06T16:38:44.373Z - GET /api/config/agents/unified-platform-agent
+2026-03-06T16:38:44.373Z - GET /api/config/agents/web-development-agent
+2026-03-06T16:38:44.379Z - GET /api/config/agents/security-infrastructure-agent
+2026-03-06T16:38:46.372Z - POST /api/push/visibility
+2026-03-06T16:38:51.421Z - GET /api/git/check
+2026-03-06T16:38:56.371Z - POST /api/push/visibility
+2026-03-06T16:39:01.429Z - GET /api/git/check
+2026-03-06T16:39:06.370Z - POST /api/push/visibility
+2026-03-06T16:39:11.438Z - GET /api/git/check
+2026-03-06T16:39:16.370Z - POST /api/push/visibility
+2026-03-06T16:39:21.445Z - GET /api/git/check
+2026-03-06T16:39:26.370Z - POST /api/push/visibility
+2026-03-06T16:39:31.453Z - GET /api/git/check
+2026-03-06T16:39:36.370Z - POST /api/push/visibility
+2026-03-06T16:39:41.463Z - GET /api/git/check
+2026-03-06T16:39:46.371Z - POST /api/push/visibility
+2026-03-06T16:39:51.470Z - GET /api/git/check
+2026-03-06T16:39:56.371Z - POST /api/push/visibility
+2026-03-06T16:40:01.478Z - GET /api/git/check
+2026-03-06T16:40:06.372Z - POST /api/push/visibility
+2026-03-06T16:40:11.486Z - GET /api/git/check
+2026-03-06T16:40:13.670Z - GET /api/runtime/status
+2026-03-06T16:40:16.372Z - POST /api/push/visibility
+2026-03-06T16:40:21.492Z - GET /api/git/check
+2026-03-06T16:40:24.288Z - GET /api/global/event
+[sse] connect scope=global reason=new-stream path=/global/event
+[sse] lifecycle action=connect reason=new-stream scope=global
+2026-03-06T16:40:25.208Z - GET /
+2026-03-06T16:40:25.280Z - GET /assets/index-CKjpUF5n.js
+2026-03-06T16:40:25.281Z - GET /assets/index-D_kQ3h5B.css
+2026-03-06T16:40:25.282Z - GET /assets/vendor-shiki-BPTbv4OJ.js
+2026-03-06T16:40:25.539Z - GET /assets/vendor-react-CUos4OCh.js
+2026-03-06T16:40:25.540Z - GET /assets/vendor-radix-DFw4qKnl.js
+2026-03-06T16:40:25.540Z - GET /assets/mermaid-3ZIDBTTL-BvWIagYv.js
+2026-03-06T16:40:25.540Z - GET /assets/vendor-zustand-uGY5oT4T.js
+2026-03-06T16:40:25.540Z - GET /assets/vendor-mermaid-Dhbz-51U.js
+2026-03-06T16:40:25.541Z - GET /assets/vendor-cytoscape-BMdPkac-.js
+2026-03-06T16:40:25.544Z - GET /assets/vendor-syntax-BRLQZ6Rm.js
+2026-03-06T16:40:25.545Z - GET /assets/vendor-codemirror-CI_g4nTg.js
+2026-03-06T16:40:25.545Z - GET /assets/vendor-ghostty-web-M-rMj1tG.js
+2026-03-06T16:40:25.547Z - GET /assets/vendor-markdown-C1vIFQ7e.js
+2026-03-06T16:40:25.549Z - GET /assets/mermaid-3ZIDBTTL-BwOxjOQd.css
+2026-03-06T16:40:25.550Z - GET /assets/workbox-window.prod.es5-BIl4cyR9.js
+2026-03-06T16:40:25.565Z - GET /branding/source/gemini-default.png
+2026-03-06T16:40:25.620Z - GET /sw.js
+2026-03-06T16:40:26.153Z - GET /api/config/settings
+2026-03-06T16:40:26.154Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "homeDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "homeDirectory": "/Users/albsheralsadi"
+}
+2026-03-06T16:40:26.154Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+2026-03-06T16:40:26.155Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "homeDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[persistSettings] Called with changes: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[API:PUT /api/config/settings] Success, returning 1 projects
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[persistSettings] Called with changes: {
+  "homeDirectory": "/Users/albsheralsadi"
+}
+[API:PUT /api/config/settings] Success, returning 1 projects
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T16:40:26.173Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+2026-03-06T16:40:26.174Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[persistSettings] Called with changes: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[API:PUT /api/config/settings] Success, returning 1 projects
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T16:40:26.190Z - GET /assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2
+2026-03-06T16:40:26.196Z - GET /auth/session
+2026-03-06T16:40:26.196Z - GET /api/config/themes
+2026-03-06T16:40:26.197Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "themeId": "flexoki-dark",
+  "themeVariant": "dark",
+  "useSystemTheme": true,
+  "lightThemeId": "flexoki-light",
+  "darkThemeId": "flexoki-dark"
+}
+[persistSettings] Called with changes: {
+  "themeId": "flexoki-dark",
+  "themeVariant": "dark",
+  "useSystemTheme": true,
+  "lightThemeId": "flexoki-light",
+  "darkThemeId": "flexoki-dark"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T16:40:26.229Z - GET /branding/source/gemini-default.png
+2026-03-06T16:40:26.253Z - GET /api/git/check
+2026-03-06T16:40:26.255Z - GET /api/git/check
+2026-03-06T16:40:26.256Z - GET /api/config/settings
+2026-03-06T16:40:26.260Z - GET /api/git/check
+2026-03-06T16:40:26.262Z - GET /api/fs/list
+2026-03-06T16:40:26.263Z - POST /api/fs/exec
+2026-03-06T16:40:26.266Z - GET /api/git/check
+2026-03-06T16:40:26.267Z - GET /api/tts/status
+2026-03-06T16:40:26.269Z - GET /api/tts/say/status
+2026-03-06T16:40:26.270Z - GET /api/runtime/status
+2026-03-06T16:40:26.271Z - GET /assets/window-wR7PPk8S.js
+2026-03-06T16:40:26.271Z - GET /assets/core-DhEqZVGG.js
+2026-03-06T16:40:26.271Z - GET /assets/image-DNK7xb7J.js
+2026-03-06T16:40:26.271Z - GET /assets/webviewWindow-DiC2lM8R.js
+2026-03-06T16:40:27.914Z - GET /api/config/settings
+2026-03-06T16:40:27.914Z - GET /api/config/settings
+2026-03-06T16:40:27.914Z - GET /api/git/check
+2026-03-06T16:40:27.914Z - GET /api/github/auth/status
+2026-03-06T16:40:27.916Z - POST /api/push/visibility
+2026-03-06T16:40:27.920Z - GET /assets/pierre-dark-BXuwtOqb.js
+2026-03-06T16:40:27.920Z - GET /assets/pierre-light-dckrK0oj.js
+2026-03-06T16:40:27.921Z - GET /api/sessions/snapshot
+2026-03-06T16:40:27.921Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:40:27.921Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:40:27.922Z - GET /api/config/settings
+2026-03-06T16:40:27.922Z - GET /assets/ibm-plex-sans-latin-400-normal-CDDApCn2.woff2
+2026-03-06T16:40:27.923Z - GET /api/permission
+API → KronosCode: GET /permission
+2026-03-06T16:40:27.923Z - GET /api/question
+API → KronosCode: GET /question
+2026-03-06T16:40:27.924Z - GET /api/question
+API → KronosCode: GET /question
+2026-03-06T16:40:27.957Z - GET /api/path
+API → KronosCode: GET /path
+2026-03-06T16:40:27.959Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "notificationTemplates": {
+    "completion": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    },
+    "error": {
+      "message": "{last_message}",
+      "title": "Tool error"
+    },
+    "question": {
+      "message": "{last_message}",
+      "title": "Input needed"
+    },
+    "subtask": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    }
+  }
+}
+[persistSettings] Called with changes: {
+  "notificationTemplates": {
+    "completion": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    },
+    "error": {
+      "message": "{last_message}",
+      "title": "Tool error"
+    },
+    "question": {
+      "message": "{last_message}",
+      "title": "Input needed"
+    },
+    "subtask": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    }
+  }
+}
+2026-03-06T16:40:27.964Z - GET /api/runtime/tasks
+2026-03-06T16:40:27.964Z - GET /api/git/status
+2026-03-06T16:40:27.965Z - PUT /api/agent-mode
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+2026-03-06T16:40:27.966Z - GET /api/git/check
+2026-03-06T16:40:27.966Z - GET /assets/worker-suRQxAtO.js
+[persistSettings] Successfully saved 1 projects to disk
+[persistSettings] Called with changes: {
+  "agentMode": "browseros"
+}
+[API:PUT /api/config/settings] Success, returning 1 projects
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+2026-03-06T16:40:27.997Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+2026-03-06T16:40:28.000Z - GET /api/session
+API → KronosCode: GET /session
+2026-03-06T16:40:28.000Z - GET /api/kronoschamber/models-metadata
+2026-03-06T16:40:28.012Z - GET /api/path
+API → KronosCode: GET /path
+2026-03-06T16:40:28.013Z - GET /api/config/providers
+API → KronosCode: GET /config/providers
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T16:40:28.030Z - GET /api/git/worktrees
+2026-03-06T16:40:28.040Z - GET /api/session
+API → KronosCode: GET /session
+2026-03-06T16:40:28.049Z - GET /api/config/settings
+2026-03-06T16:40:28.049Z - GET /api/agent
+API → KronosCode: GET /agent
+2026-03-06T16:40:28.058Z - GET /api/git/worktrees
+2026-03-06T16:40:28.075Z - GET /assets/wasm-CG6Dc4jp.js
+2026-03-06T16:40:28.079Z - GET /assets/wasm-CG6Dc4jp.js
+Client cvre0m disconnected from terminal session lf0xtfic2sljs8vfm8ni8
+Client cvre0m disconnected from terminal session lf0xtfic2sljs8vfm8ni8
+[sse] close scope=global reason=client-disconnect durationMs=129572
+2026-03-06T16:40:28.165Z - GET /api/sessions/snapshot
+2026-03-06T16:40:28.166Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:40:28.167Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "notificationTemplates": {
+    "completion": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    },
+    "error": {
+      "message": "{last_message}",
+      "title": "Tool error"
+    },
+    "question": {
+      "message": "{last_message}",
+      "title": "Input needed"
+    },
+    "subtask": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    }
+  }
+}
+[persistSettings] Called with changes: {
+  "notificationTemplates": {
+    "completion": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    },
+    "error": {
+      "message": "{last_message}",
+      "title": "Tool error"
+    },
+    "question": {
+      "message": "{last_message}",
+      "title": "Input needed"
+    },
+    "subtask": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    }
+  }
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T16:40:31.271Z - GET /api/git/check
+2026-03-06T16:40:41.286Z - GET /api/git/check
+2026-03-06T16:40:51.298Z - GET /api/git/check
+2026-03-06T16:41:01.315Z - GET /api/git/check
+2026-03-06T16:41:11.329Z - GET /api/git/check
+2026-03-06T16:41:21.344Z - GET /api/git/check
+2026-03-06T16:41:31.358Z - GET /api/git/check
+2026-03-06T16:41:41.372Z - GET /api/git/check
+2026-03-06T16:41:51.389Z - GET /api/git/check
+2026-03-06T16:41:55.705Z - GET /api/sessions/snapshot
+2026-03-06T16:41:55.713Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:41:56.643Z - GET /api/sessions/snapshot
+2026-03-06T16:41:56.646Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:41:57.046Z - GET /api/sessions/snapshot
+2026-03-06T16:41:57.049Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:41:57.995Z - GET /api/sessions/snapshot
+2026-03-06T16:41:57.996Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:42:01.403Z - GET /api/git/check
+2026-03-06T16:42:11.428Z - GET /api/git/check
+2026-03-06T16:42:21.456Z - GET /api/git/check
+2026-03-06T16:42:31.477Z - GET /api/git/check
+2026-03-06T16:42:41.502Z - GET /api/git/check
+2026-03-06T16:42:51.526Z - GET /api/git/check
+2026-03-06T16:43:01.552Z - GET /api/git/check
+2026-03-06T16:43:11.573Z - GET /api/git/check
+2026-03-06T16:43:21.593Z - GET /api/git/check
+2026-03-06T16:43:31.614Z - GET /api/git/check
+2026-03-06T16:43:41.629Z - GET /api/git/check
+2026-03-06T16:43:51.649Z - GET /api/git/check
+2026-03-06T16:44:01.670Z - GET /api/git/check
+2026-03-06T16:44:11.694Z - GET /api/git/check
+2026-03-06T16:44:21.719Z - GET /api/git/check
+2026-03-06T16:44:31.740Z - GET /api/git/check
+2026-03-06T16:44:41.763Z - GET /api/git/check
+2026-03-06T16:44:51.787Z - GET /api/git/check
+2026-03-06T16:45:01.812Z - GET /api/git/check
+2026-03-06T16:45:11.835Z - GET /api/git/check
+2026-03-06T16:45:21.853Z - GET /api/git/check
+2026-03-06T16:45:30.523Z - GET /api/sessions/snapshot
+2026-03-06T16:45:30.525Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:45:31.472Z - GET /api/sessions/snapshot
+2026-03-06T16:45:31.473Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T16:45:31.869Z - GET /api/git/check
+2026-03-06T16:45:41.893Z - GET /api/git/check
+2026-03-06T16:45:51.933Z - GET /api/git/check
+2026-03-06T16:46:02.120Z - GET /api/git/check
+2026-03-06T16:46:12.183Z - GET /api/git/check
+2026-03-06T16:46:22.235Z - GET /api/git/check
+2026-03-06T16:46:32.265Z - GET /api/git/check
+2026-03-06T16:46:42.292Z - GET /api/git/check
+2026-03-06T16:46:52.313Z - GET /api/git/check
+2026-03-06T16:47:02.337Z - GET /api/git/check
+2026-03-06T16:47:12.361Z - GET /api/git/check
+2026-03-06T16:47:22.382Z - GET /api/git/check
+2026-03-06T16:47:32.408Z - GET /api/git/check
+2026-03-06T16:47:42.431Z - GET /api/git/check
+2026-03-06T16:47:52.459Z - GET /api/git/check
+2026-03-06T16:48:02.482Z - GET /api/git/check
+2026-03-06T16:48:12.503Z - GET /api/git/check
+2026-03-06T16:48:22.515Z - GET /api/git/check
+2026-03-06T16:48:32.537Z - GET /api/git/check
+2026-03-06T16:48:42.553Z - GET /api/git/check
+2026-03-06T16:48:52.571Z - GET /api/git/check
+2026-03-06T16:49:02.594Z - GET /api/git/check
+2026-03-06T16:49:12.619Z - GET /api/git/check
+2026-03-06T16:49:22.643Z - GET /api/git/check
+2026-03-06T16:49:32.665Z - GET /api/git/check
+2026-03-06T16:49:42.685Z - GET /api/git/check
+2026-03-06T16:49:52.704Z - GET /api/git/check
+2026-03-06T16:50:02.724Z - GET /api/git/check
+2026-03-06T16:50:12.745Z - GET /api/git/check
+2026-03-06T16:50:22.763Z - GET /api/git/check
+2026-03-06T16:50:32.783Z - GET /api/git/check
+2026-03-06T16:50:42.804Z - GET /api/git/check
+2026-03-06T16:50:52.826Z - GET /api/git/check
+2026-03-06T16:51:02.853Z - GET /api/git/check
+2026-03-06T16:51:12.874Z - GET /api/git/check
+2026-03-06T16:51:22.899Z - GET /api/git/check
+2026-03-06T16:51:32.921Z - GET /api/git/check
+2026-03-06T16:51:42.945Z - GET /api/git/check
+2026-03-06T16:51:52.967Z - GET /api/git/check
+2026-03-06T16:52:02.988Z - GET /api/git/check
+2026-03-06T16:52:13.011Z - GET /api/git/check
+2026-03-06T16:52:23.028Z - GET /api/git/check
+2026-03-06T16:52:33.046Z - GET /api/git/check
+2026-03-06T16:52:43.070Z - GET /api/git/check
+2026-03-06T16:52:53.092Z - GET /api/git/check
+2026-03-06T16:53:03.113Z - GET /api/git/check
+2026-03-06T16:53:13.135Z - GET /api/git/check
+2026-03-06T16:53:23.157Z - GET /api/git/check
+2026-03-06T16:53:33.181Z - GET /api/git/check
+2026-03-06T16:53:43.201Z - GET /api/git/check
+2026-03-06T16:53:53.225Z - GET /api/git/check
+2026-03-06T16:54:03.245Z - GET /api/git/check
+2026-03-06T16:54:13.265Z - GET /api/git/check
+2026-03-06T16:54:23.286Z - GET /api/git/check
+2026-03-06T16:54:33.309Z - GET /api/git/check
+2026-03-06T16:54:43.331Z - GET /api/git/check
+2026-03-06T16:54:53.349Z - GET /api/git/check
+2026-03-06T16:55:03.372Z - GET /api/git/check
+2026-03-06T16:55:13.395Z - GET /api/git/check
+2026-03-06T16:55:23.416Z - GET /api/git/check
+2026-03-06T16:55:33.438Z - GET /api/git/check
+2026-03-06T16:55:43.458Z - GET /api/git/check
+2026-03-06T16:55:53.479Z - GET /api/git/check
+2026-03-06T16:56:03.500Z - GET /api/git/check
+2026-03-06T16:56:13.518Z - GET /api/git/check
+2026-03-06T16:56:23.538Z - GET /api/git/check
+2026-03-06T16:56:33.554Z - GET /api/git/check
+2026-03-06T16:56:43.575Z - GET /api/git/check
+2026-03-06T16:56:50.093Z - GET /sw.js
+2026-03-06T16:56:53.590Z - GET /api/git/check
+2026-03-06T16:57:03.612Z - GET /api/git/check
+2026-03-06T16:57:13.634Z - GET /api/git/check
+2026-03-06T16:57:23.655Z - GET /api/git/check
+2026-03-06T16:57:33.676Z - GET /api/git/check
+2026-03-06T16:57:43.694Z - GET /api/git/check
+2026-03-06T16:57:53.713Z - GET /api/git/check
+2026-03-06T16:58:03.732Z - GET /api/git/check
+2026-03-06T16:58:13.752Z - GET /api/git/check
+2026-03-06T16:58:23.769Z - GET /api/git/check
+2026-03-06T16:58:33.792Z - GET /api/git/check
+2026-03-06T16:58:43.815Z - GET /api/git/check
+2026-03-06T16:58:53.839Z - GET /api/git/check
+2026-03-06T16:59:03.862Z - GET /api/git/check
+2026-03-06T16:59:13.880Z - GET /api/git/check
+2026-03-06T16:59:23.897Z - GET /api/git/check
+2026-03-06T16:59:33.918Z - GET /api/git/check
+2026-03-06T16:59:43.943Z - GET /api/git/check
+2026-03-06T16:59:53.959Z - GET /api/git/check
+2026-03-06T17:00:03.980Z - GET /api/git/check
+2026-03-06T17:00:14.003Z - GET /api/git/check
+2026-03-06T17:00:24.022Z - GET /api/git/check
+2026-03-06T17:00:34.041Z - GET /api/git/check
+2026-03-06T17:00:44.062Z - GET /api/git/check
+2026-03-06T17:00:54.085Z - GET /api/git/check
+2026-03-06T17:01:04.113Z - GET /api/git/check
+2026-03-06T17:01:14.143Z - GET /api/git/check
+2026-03-06T17:01:24.164Z - GET /api/git/check
+2026-03-06T17:01:34.185Z - GET /api/git/check
+2026-03-06T17:01:44.207Z - GET /api/git/check
+2026-03-06T17:01:54.236Z - GET /api/git/check
+2026-03-06T17:02:04.263Z - GET /api/git/check
+2026-03-06T17:02:14.281Z - GET /api/git/check
+2026-03-06T17:02:24.300Z - GET /api/git/check
+2026-03-06T17:02:34.321Z - GET /api/git/check
+2026-03-06T17:02:44.340Z - GET /api/git/check
+2026-03-06T17:02:54.359Z - GET /api/git/check
+2026-03-06T17:03:04.381Z - GET /api/git/check
+2026-03-06T17:03:14.406Z - GET /api/git/check
+2026-03-06T17:03:24.432Z - GET /api/git/check
+2026-03-06T17:03:34.454Z - GET /api/git/check
+2026-03-06T17:03:44.477Z - GET /api/git/check
+2026-03-06T17:03:54.501Z - GET /api/git/check
+2026-03-06T17:04:04.533Z - GET /api/git/check
+2026-03-06T17:04:14.558Z - GET /api/git/check
+2026-03-06T17:04:24.577Z - GET /api/git/check
+2026-03-06T17:04:34.599Z - GET /api/git/check
+2026-03-06T17:04:44.620Z - GET /api/git/check
+2026-03-06T17:04:54.643Z - GET /api/git/check
+2026-03-06T17:05:04.665Z - GET /api/git/check
+2026-03-06T17:05:14.690Z - GET /api/git/check
+2026-03-06T17:05:24.708Z - GET /api/git/check
+2026-03-06T17:05:34.726Z - GET /api/git/check
+2026-03-06T17:05:44.745Z - GET /api/git/check
+2026-03-06T17:05:54.764Z - GET /api/git/check
+2026-03-06T17:06:04.785Z - GET /api/git/check
+2026-03-06T17:06:14.808Z - GET /api/git/check
+2026-03-06T17:06:24.828Z - GET /api/git/check
+2026-03-06T17:06:34.847Z - GET /api/git/check
+2026-03-06T17:06:44.871Z - GET /api/git/check
+2026-03-06T17:06:54.894Z - GET /api/git/check
+2026-03-06T17:07:04.913Z - GET /api/git/check
+2026-03-06T17:07:14.934Z - GET /api/git/check
+2026-03-06T17:07:24.962Z - GET /api/git/check
+2026-03-06T17:07:34.990Z - GET /api/git/check
+2026-03-06T17:07:45.011Z - GET /api/git/check
+2026-03-06T17:07:55.034Z - GET /api/git/check
+2026-03-06T17:08:05.057Z - GET /api/git/check
+2026-03-06T17:08:15.079Z - GET /api/git/check
+2026-03-06T17:08:25.094Z - GET /api/git/check
+2026-03-06T17:08:35.114Z - GET /api/git/check
+2026-03-06T17:08:45.136Z - GET /api/git/check
+2026-03-06T17:08:55.157Z - GET /api/git/check
+2026-03-06T17:09:05.177Z - GET /api/git/check
+2026-03-06T17:09:15.198Z - GET /api/git/check
+2026-03-06T17:09:25.215Z - GET /api/git/check
+2026-03-06T17:09:35.238Z - GET /api/git/check
+2026-03-06T17:09:45.256Z - GET /api/git/check
+2026-03-06T17:09:55.280Z - GET /api/git/check
+2026-03-06T17:10:05.315Z - GET /api/git/check
+2026-03-06T17:10:15.336Z - GET /api/git/check
+2026-03-06T17:10:25.374Z - GET /api/git/check
+2026-03-06T17:10:35.409Z - GET /api/git/check
+2026-03-06T17:10:45.436Z - GET /api/git/check
+2026-03-06T17:10:55.462Z - GET /api/git/check
+2026-03-06T17:11:05.485Z - GET /api/git/check
+2026-03-06T17:11:15.508Z - GET /api/git/check
+2026-03-06T17:11:25.528Z - GET /api/git/check
+2026-03-06T17:11:35.549Z - GET /api/git/check
+Cleaning up idle terminal session: lf0xtfic2sljs8vfm8ni8
+Terminal session lf0xtfic2sljs8vfm8ni8 exited with code 0, signal SIGTERM
+2026-03-06T17:11:45.566Z - GET /api/git/check
+2026-03-06T17:11:55.590Z - GET /api/git/check
+2026-03-06T17:12:05.611Z - GET /api/git/check
+2026-03-06T17:12:15.635Z - GET /api/git/check
+2026-03-06T17:12:25.657Z - GET /api/git/check
+2026-03-06T17:12:35.681Z - GET /api/git/check
+2026-03-06T17:12:45.702Z - GET /api/git/check
+2026-03-06T17:12:55.725Z - GET /api/git/check
+2026-03-06T17:13:05.747Z - GET /api/git/check
+2026-03-06T17:13:15.771Z - GET /api/git/check
+2026-03-06T17:13:25.793Z - GET /api/git/check
+2026-03-06T17:13:35.815Z - GET /api/git/check
+2026-03-06T17:13:45.838Z - GET /api/git/check
+2026-03-06T17:13:55.862Z - GET /api/git/check
+2026-03-06T17:14:05.885Z - GET /api/git/check
+2026-03-06T17:14:15.909Z - GET /api/git/check
+2026-03-06T17:14:25.931Z - GET /api/git/check
+2026-03-06T17:14:35.955Z - GET /api/git/check
+2026-03-06T17:14:45.977Z - GET /api/git/check
+2026-03-06T17:14:55.999Z - GET /api/git/check
+2026-03-06T17:15:06.027Z - GET /api/git/check
+2026-03-06T17:15:16.048Z - GET /api/git/check
+2026-03-06T17:15:26.074Z - GET /api/git/check
+2026-03-06T17:15:36.097Z - GET /api/git/check
+2026-03-06T17:15:46.121Z - GET /api/git/check
+2026-03-06T17:15:56.144Z - GET /api/git/check
+2026-03-06T17:16:06.166Z - GET /api/git/check
+2026-03-06T17:16:16.191Z - GET /api/git/check
+2026-03-06T17:16:26.215Z - GET /api/git/check
+2026-03-06T17:16:36.239Z - GET /api/git/check
+2026-03-06T17:16:46.266Z - GET /api/git/check
+2026-03-06T17:16:56.290Z - GET /api/git/check
+2026-03-06T17:17:06.314Z - GET /api/git/check
+2026-03-06T17:17:16.337Z - GET /api/git/check
+2026-03-06T17:17:26.357Z - GET /api/git/check
+2026-03-06T17:17:36.375Z - GET /api/git/check
+2026-03-06T17:17:46.399Z - GET /api/git/check
+2026-03-06T17:17:56.422Z - GET /api/git/check
+2026-03-06T17:18:06.444Z - GET /api/git/check
+2026-03-06T17:18:16.462Z - GET /api/git/check
+2026-03-06T17:18:26.482Z - GET /api/git/check
+2026-03-06T17:18:36.503Z - GET /api/git/check
+2026-03-06T17:18:46.523Z - GET /api/git/check
+2026-03-06T17:18:56.546Z - GET /api/git/check
+2026-03-06T17:19:06.569Z - GET /api/git/check
+2026-03-06T17:19:16.593Z - GET /api/git/check
+2026-03-06T17:19:26.616Z - GET /api/git/check
+2026-03-06T17:19:36.637Z - GET /api/git/check
+2026-03-06T17:19:46.659Z - GET /api/git/check
+2026-03-06T17:19:56.681Z - GET /api/git/check
+2026-03-06T17:20:06.705Z - GET /api/git/check
+2026-03-06T17:20:16.719Z - GET /api/git/check
+2026-03-06T17:20:26.737Z - GET /api/git/check
+2026-03-06T17:20:36.763Z - GET /api/git/check
+2026-03-06T17:20:46.784Z - GET /api/git/check
+2026-03-06T17:20:56.808Z - GET /api/git/check
+2026-03-06T17:21:06.827Z - GET /api/git/check
+2026-03-06T17:21:16.847Z - GET /api/git/check
+2026-03-06T17:21:26.870Z - GET /api/git/check
+2026-03-06T17:21:36.890Z - GET /api/git/check
+2026-03-06T17:21:46.913Z - GET /api/git/check
+2026-03-06T17:21:56.938Z - GET /api/git/check
+2026-03-06T17:22:06.964Z - GET /api/git/check
+2026-03-06T17:22:16.987Z - GET /api/git/check
+2026-03-06T17:22:27.008Z - GET /api/git/check
+2026-03-06T17:22:37.026Z - GET /api/git/check
+2026-03-06T17:22:47.044Z - GET /api/git/check
+2026-03-06T17:22:57.064Z - GET /api/git/check
+2026-03-06T17:23:07.087Z - GET /api/git/check
+2026-03-06T17:23:17.109Z - GET /api/git/check
+2026-03-06T17:23:27.135Z - GET /api/git/check
+2026-03-06T17:23:37.160Z - GET /api/git/check
+2026-03-06T17:23:47.177Z - GET /api/git/check
+2026-03-06T17:23:57.199Z - GET /api/git/check
+2026-03-06T17:24:07.226Z - GET /api/git/check
+2026-03-06T17:24:17.247Z - GET /api/git/check
+2026-03-06T17:24:27.269Z - GET /api/git/check
+2026-03-06T17:24:37.297Z - GET /api/git/check
+2026-03-06T17:24:47.312Z - GET /api/git/check
+2026-03-06T17:24:57.335Z - GET /api/git/check
+2026-03-06T17:25:07.362Z - GET /api/git/check
+2026-03-06T17:25:17.382Z - GET /api/git/check
+2026-03-06T17:25:27.402Z - GET /api/git/check
+2026-03-06T17:25:37.426Z - GET /api/git/check
+2026-03-06T17:25:47.447Z - GET /api/git/check
+2026-03-06T17:25:57.469Z - GET /api/git/check
+2026-03-06T17:26:07.491Z - GET /api/git/check
+2026-03-06T17:26:17.512Z - GET /api/git/check
+2026-03-06T17:26:27.535Z - GET /api/git/check
+2026-03-06T17:26:37.555Z - GET /api/git/check
+2026-03-06T17:26:47.576Z - GET /api/git/check
+2026-03-06T17:26:57.595Z - GET /api/git/check
+2026-03-06T17:27:07.635Z - GET /api/git/check
+2026-03-06T17:27:17.695Z - GET /api/git/check
+2026-03-06T17:27:27.739Z - GET /api/git/check
+2026-03-06T17:27:37.761Z - GET /api/git/check
+2026-03-06T17:27:47.781Z - GET /api/git/check
+2026-03-06T17:27:57.806Z - GET /api/git/check
+2026-03-06T17:28:07.827Z - GET /api/git/check
+2026-03-06T17:28:17.846Z - GET /api/git/check
+2026-03-06T17:28:27.865Z - GET /api/git/check
+2026-03-06T17:28:37.884Z - GET /api/git/check
+2026-03-06T17:28:47.906Z - GET /api/git/check
+2026-03-06T17:28:57.929Z - GET /api/git/check
+2026-03-06T17:29:07.949Z - GET /api/git/check
+2026-03-06T17:29:17.969Z - GET /api/git/check
+2026-03-06T17:29:27.991Z - GET /api/git/check
+2026-03-06T17:29:38.009Z - GET /api/git/check
+2026-03-06T17:29:48.032Z - GET /api/git/check
+2026-03-06T17:29:58.051Z - GET /api/git/check
+2026-03-06T17:30:08.070Z - GET /api/git/check
+2026-03-06T17:30:18.092Z - GET /api/git/check
+2026-03-06T17:30:28.111Z - GET /api/git/check
+2026-03-06T17:30:38.132Z - GET /api/git/check
+2026-03-06T17:30:48.155Z - GET /api/git/check
+2026-03-06T17:30:58.175Z - GET /api/git/check
+2026-03-06T17:31:08.195Z - GET /api/git/check
+2026-03-06T17:31:18.212Z - GET /api/git/check
+2026-03-06T17:31:28.232Z - GET /api/git/check
+2026-03-06T17:31:38.252Z - GET /api/git/check
+2026-03-06T17:31:48.271Z - GET /api/git/check
+2026-03-06T17:31:58.290Z - GET /api/git/check
+2026-03-06T17:32:08.310Z - GET /api/git/check
+2026-03-06T17:32:18.328Z - GET /api/git/check
+2026-03-06T17:32:28.342Z - GET /api/git/check
+2026-03-06T17:32:38.362Z - GET /api/git/check
+2026-03-06T17:32:48.383Z - GET /api/git/check
+2026-03-06T17:32:58.403Z - GET /api/git/check
+2026-03-06T17:33:08.427Z - GET /api/git/check
+2026-03-06T17:33:18.446Z - GET /api/git/check
+2026-03-06T17:33:28.463Z - GET /api/git/check
+2026-03-06T17:33:38.481Z - GET /api/git/check
+2026-03-06T17:33:48.500Z - GET /api/git/check
+2026-03-06T17:33:58.522Z - GET /api/git/check
+2026-03-06T17:34:08.546Z - GET /api/git/check
+2026-03-06T17:34:18.568Z - GET /api/git/check
+2026-03-06T17:34:28.587Z - GET /api/git/check
+2026-03-06T17:34:38.609Z - GET /api/git/check
+2026-03-06T17:34:48.632Z - GET /api/git/check
+2026-03-06T17:34:58.653Z - GET /api/git/check
+2026-03-06T17:35:08.674Z - GET /api/git/check
+2026-03-06T17:35:18.697Z - GET /api/git/check
+2026-03-06T17:35:28.711Z - GET /api/git/check
+2026-03-06T17:35:38.727Z - GET /api/git/check
+2026-03-06T17:35:48.750Z - GET /api/git/check
+2026-03-06T17:35:58.769Z - GET /api/git/check
+2026-03-06T17:36:08.788Z - GET /api/git/check
+2026-03-06T17:36:18.811Z - GET /api/git/check
+2026-03-06T17:36:28.830Z - GET /api/git/check
+2026-03-06T17:36:38.852Z - GET /api/git/check
+2026-03-06T17:36:48.873Z - GET /api/git/check
+2026-03-06T17:36:58.895Z - GET /api/git/check
+2026-03-06T17:37:08.915Z - GET /api/git/check
+2026-03-06T17:37:18.938Z - GET /api/git/check
+2026-03-06T17:37:28.981Z - GET /api/git/check
+2026-03-06T17:37:39.025Z - GET /api/git/check
+2026-03-06T17:37:49.076Z - GET /api/git/check
+2026-03-06T17:37:59.109Z - GET /api/git/check
+2026-03-06T17:38:09.143Z - GET /api/git/check
+2026-03-06T17:38:19.180Z - GET /api/git/check
+2026-03-06T17:38:29.209Z - GET /api/git/check
+2026-03-06T17:38:39.229Z - GET /api/git/check
+2026-03-06T17:38:49.247Z - GET /api/git/check
+2026-03-06T17:38:59.266Z - GET /api/git/check
+2026-03-06T17:39:09.284Z - GET /api/git/check
+2026-03-06T17:39:19.303Z - GET /api/git/check
+2026-03-06T17:39:29.326Z - GET /api/git/check
+2026-03-06T17:39:39.347Z - GET /api/git/check
+2026-03-06T17:39:49.369Z - GET /api/git/check
+2026-03-06T17:39:59.389Z - GET /api/git/check
+2026-03-06T17:40:09.408Z - GET /api/git/check
+2026-03-06T17:40:19.425Z - GET /api/git/check
+2026-03-06T17:40:26.308Z - GET /sw.js
+2026-03-06T17:40:29.443Z - GET /api/git/check
+2026-03-06T17:40:39.459Z - GET /api/git/check
+2026-03-06T17:40:49.476Z - GET /api/git/check
+2026-03-06T17:40:59.493Z - GET /api/git/check
+2026-03-06T17:41:09.512Z - GET /api/git/check
+2026-03-06T17:41:19.529Z - GET /api/git/check
+2026-03-06T17:41:29.551Z - GET /api/git/check
+2026-03-06T17:41:39.569Z - GET /api/git/check
+2026-03-06T17:41:49.590Z - GET /api/git/check
+2026-03-06T17:41:59.609Z - GET /api/git/check
+2026-03-06T17:42:09.627Z - GET /api/git/check
+2026-03-06T17:42:19.645Z - GET /api/git/check
+2026-03-06T17:42:29.664Z - GET /api/git/check
+2026-03-06T17:42:39.683Z - GET /api/git/check
+2026-03-06T17:42:49.704Z - GET /api/git/check
+2026-03-06T17:42:59.726Z - GET /api/git/check
+2026-03-06T17:43:09.745Z - GET /api/git/check
+2026-03-06T17:43:19.764Z - GET /api/git/check
+2026-03-06T17:43:29.782Z - GET /api/git/check
+2026-03-06T17:43:39.802Z - GET /api/git/check
+2026-03-06T17:43:49.821Z - GET /api/git/check
+2026-03-06T17:43:59.832Z - GET /api/git/check
+2026-03-06T17:44:09.854Z - GET /api/git/check
+2026-03-06T17:44:19.878Z - GET /api/git/check
+2026-03-06T17:44:29.896Z - GET /api/git/check
+2026-03-06T17:44:39.918Z - GET /api/git/check
+2026-03-06T17:44:49.938Z - GET /api/git/check
+2026-03-06T17:44:59.957Z - GET /api/git/check
+2026-03-06T17:45:09.979Z - GET /api/git/check
+2026-03-06T17:45:19.999Z - GET /api/git/check
+2026-03-06T17:45:30.015Z - GET /api/git/check
+2026-03-06T17:45:40.034Z - GET /api/git/check
+2026-03-06T17:45:50.053Z - GET /api/git/check
+2026-03-06T17:46:00.074Z - GET /api/git/check
+2026-03-06T17:46:10.094Z - GET /api/git/check
+2026-03-06T17:46:20.120Z - GET /api/git/check
+2026-03-06T17:46:30.141Z - GET /api/git/check
+2026-03-06T17:46:40.158Z - GET /api/git/check
+2026-03-06T17:46:50.177Z - GET /api/git/check
+2026-03-06T17:47:00.210Z - GET /api/git/check
+2026-03-06T17:47:10.230Z - GET /api/git/check
+2026-03-06T17:47:20.254Z - GET /api/git/check
+2026-03-06T17:47:30.275Z - GET /api/git/check
+2026-03-06T17:47:40.294Z - GET /api/git/check
+2026-03-06T17:47:50.313Z - GET /api/git/check
+2026-03-06T17:48:00.331Z - GET /api/git/check
+2026-03-06T17:48:10.352Z - GET /api/git/check
+2026-03-06T17:48:20.371Z - GET /api/git/check
+2026-03-06T17:48:30.394Z - GET /api/git/check
+2026-03-06T17:48:40.414Z - GET /api/git/check
+2026-03-06T17:48:50.437Z - GET /api/git/check
+2026-03-06T17:49:00.453Z - GET /api/git/check
+2026-03-06T17:49:10.471Z - GET /api/git/check
+2026-03-06T17:49:20.488Z - GET /api/git/check
+2026-03-06T17:49:30.508Z - GET /api/git/check
+2026-03-06T17:49:40.530Z - GET /api/git/check
+2026-03-06T17:49:50.553Z - GET /api/git/check
+2026-03-06T17:50:00.579Z - GET /api/git/check
+2026-03-06T17:50:10.608Z - GET /api/git/check
+2026-03-06T17:50:20.626Z - GET /api/git/check
+2026-03-06T17:50:30.649Z - GET /api/git/check
+2026-03-06T17:50:40.669Z - GET /api/git/check
+2026-03-06T17:50:50.689Z - GET /api/git/check
+2026-03-06T17:51:00.708Z - GET /api/git/check
+2026-03-06T17:51:10.728Z - GET /api/git/check
+2026-03-06T17:51:20.748Z - GET /api/git/check
+2026-03-06T17:51:30.766Z - GET /api/git/check
+2026-03-06T17:51:40.785Z - GET /api/git/check
+2026-03-06T17:51:50.803Z - GET /api/git/check
+2026-03-06T17:52:00.823Z - GET /api/git/check
+2026-03-06T17:52:10.843Z - GET /api/git/check
+2026-03-06T17:52:20.867Z - GET /api/git/check
+2026-03-06T17:52:30.886Z - GET /api/git/check
+2026-03-06T17:52:40.906Z - GET /api/git/check
+2026-03-06T17:52:50.924Z - GET /api/git/check
+2026-03-06T17:53:00.942Z - GET /api/git/check
+2026-03-06T17:53:10.959Z - GET /api/git/check
+2026-03-06T17:53:20.977Z - GET /api/git/check
+2026-03-06T17:53:30.996Z - GET /api/git/check
+2026-03-06T17:53:41.016Z - GET /api/git/check
+2026-03-06T17:53:51.038Z - GET /api/git/check
+2026-03-06T17:54:01.060Z - GET /api/git/check
+2026-03-06T17:54:11.078Z - GET /api/git/check
+2026-03-06T17:54:21.098Z - GET /api/git/check
+2026-03-06T17:54:31.139Z - GET /api/git/check
+2026-03-06T17:54:41.170Z - GET /api/git/check
+2026-03-06T17:54:51.194Z - GET /api/git/check
+2026-03-06T17:55:01.213Z - GET /api/git/check
+2026-03-06T17:55:11.230Z - GET /api/git/check
+2026-03-06T17:55:21.248Z - GET /api/git/check
+2026-03-06T17:55:31.263Z - GET /api/git/check
+2026-03-06T17:55:41.281Z - GET /api/git/check
+2026-03-06T17:55:51.303Z - GET /api/git/check
+2026-03-06T17:56:01.340Z - GET /api/git/check
+2026-03-06T17:56:11.357Z - GET /api/git/check
+2026-03-06T17:56:21.379Z - GET /api/git/check
+2026-03-06T17:56:31.413Z - GET /api/git/check
+2026-03-06T17:56:41.439Z - GET /api/git/check
+2026-03-06T17:56:50.231Z - GET /sw.js
+2026-03-06T17:56:51.454Z - GET /api/git/check
+2026-03-06T17:57:01.475Z - GET /api/git/check
+2026-03-06T17:57:11.507Z - GET /api/git/check
+2026-03-06T17:57:21.522Z - GET /api/git/check
+2026-03-06T17:57:31.542Z - GET /api/git/check
+2026-03-06T17:57:41.565Z - GET /api/git/check
+2026-03-06T17:57:51.583Z - GET /api/git/check
+2026-03-06T17:58:01.605Z - GET /api/git/check
+2026-03-06T17:58:11.624Z - GET /api/git/check
+2026-03-06T17:58:21.650Z - GET /api/git/check
+2026-03-06T17:58:31.668Z - GET /api/git/check
+2026-03-06T17:58:41.701Z - GET /api/git/check
+2026-03-06T17:58:51.716Z - GET /api/git/check
+2026-03-06T17:59:01.737Z - GET /api/git/check
+2026-03-06T17:59:11.758Z - GET /api/git/check
+2026-03-06T17:59:21.777Z - GET /api/git/check
+2026-03-06T17:59:31.800Z - GET /api/git/check
+2026-03-06T17:59:41.821Z - GET /api/git/check
+2026-03-06T17:59:51.842Z - GET /api/git/check
+2026-03-06T18:00:01.864Z - GET /api/git/check
+2026-03-06T18:00:11.887Z - GET /api/git/check
+2026-03-06T18:00:21.909Z - GET /api/git/check
+2026-03-06T18:00:31.928Z - GET /api/git/check
+2026-03-06T18:00:41.947Z - GET /api/git/check
+2026-03-06T18:00:51.970Z - GET /api/git/check
+2026-03-06T18:01:02.002Z - GET /api/git/check
+2026-03-06T18:01:12.024Z - GET /api/git/check
+2026-03-06T18:01:22.047Z - GET /api/git/check
+2026-03-06T18:01:32.070Z - GET /api/git/check
+2026-03-06T18:01:42.090Z - GET /api/git/check
+2026-03-06T18:01:52.109Z - GET /api/git/check
+2026-03-06T18:02:02.129Z - GET /api/git/check
+2026-03-06T18:02:12.152Z - GET /api/git/check
+2026-03-06T18:02:22.174Z - GET /api/git/check
+2026-03-06T18:02:32.198Z - GET /api/git/check
+2026-03-06T18:02:42.231Z - GET /api/git/check
+2026-03-06T18:02:52.316Z - GET /api/git/check
+2026-03-06T18:03:02.374Z - GET /api/git/check
+2026-03-06T18:03:12.403Z - GET /api/git/check
+2026-03-06T18:03:22.423Z - GET /api/git/check
+2026-03-06T18:03:32.441Z - GET /api/git/check
+2026-03-06T18:03:42.463Z - GET /api/git/check
+2026-03-06T18:03:52.482Z - GET /api/git/check
+2026-03-06T18:04:02.504Z - GET /api/git/check
+2026-03-06T18:04:12.526Z - GET /api/git/check
+2026-03-06T18:04:22.548Z - GET /api/git/check
+2026-03-06T18:04:32.568Z - GET /api/git/check
+2026-03-06T18:04:42.592Z - GET /api/git/check
+2026-03-06T18:04:52.610Z - GET /api/git/check
+2026-03-06T18:05:02.630Z - GET /api/git/check
+2026-03-06T18:05:12.649Z - GET /api/git/check
+2026-03-06T18:05:22.667Z - GET /api/git/check
+2026-03-06T18:05:32.687Z - GET /api/git/check
+2026-03-06T18:05:42.709Z - GET /api/git/check
+2026-03-06T18:05:52.730Z - GET /api/git/check
+2026-03-06T18:06:02.752Z - GET /api/git/check
+2026-03-06T18:06:12.776Z - GET /api/git/check
+2026-03-06T18:06:22.796Z - GET /api/git/check
+2026-03-06T18:06:32.817Z - GET /api/git/check
+2026-03-06T18:06:42.836Z - GET /api/git/check
+2026-03-06T18:06:52.857Z - GET /api/git/check
+2026-03-06T18:07:02.880Z - GET /api/git/check
+2026-03-06T18:07:12.902Z - GET /api/git/check
+2026-03-06T18:07:22.921Z - GET /api/git/check
+2026-03-06T18:07:32.939Z - GET /api/git/check
+2026-03-06T18:07:42.953Z - GET /api/git/check
+2026-03-06T18:07:52.973Z - GET /api/git/check
+2026-03-06T18:08:03.001Z - GET /api/git/check
+2026-03-06T18:08:13.021Z - GET /api/git/check
+2026-03-06T18:08:23.037Z - GET /api/git/check
+2026-03-06T18:08:33.055Z - GET /api/git/check
+2026-03-06T18:08:43.076Z - GET /api/git/check
+2026-03-06T18:08:53.098Z - GET /api/git/check
+2026-03-06T18:09:04.653Z - GET /api/sessions/snapshot
+2026-03-06T18:09:04.662Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:09:05.587Z - GET /api/sessions/snapshot
+2026-03-06T18:09:05.588Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:09:38.728Z - POST /api/push/visibility
+2026-03-06T18:09:38.758Z - GET /api/git/check
+2026-03-06T18:09:38.770Z - GET /api/global/event
+[sse] connect scope=global reason=new-stream path=/global/event
+[sse] lifecycle action=connect reason=new-stream scope=global
+2026-03-06T18:09:38.790Z - POST /api/push/visibility
+[sse] close scope=global reason=client-disconnect durationMs=43
+2026-03-06T18:09:38.816Z - POST /api/push/visibility
+2026-03-06T18:09:38.817Z - GET /api/path
+API → KronosCode: GET /path
+2026-03-06T18:09:38.831Z - GET /api/session
+API → KronosCode: GET /session
+2026-03-06T18:09:38.849Z - GET /api/git/worktrees
+2026-03-06T18:09:38.940Z - GET /api/sessions/snapshot
+2026-03-06T18:09:38.941Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:09:38.979Z - GET /api/global/event
+[sse] connect scope=global reason=new-stream path=/global/event
+[sse] lifecycle action=connect reason=new-stream scope=global
+2026-03-06T18:09:38.983Z - GET /api/runtime/tasks
+2026-03-06T18:09:38.986Z - GET /api/session/ses_33ecc3f89ffe52yj0TC6kfHl4Y/message
+API → KronosCode: GET /session/ses_33ecc3f89ffe52yj0TC6kfHl4Y/message
+2026-03-06T18:09:39.134Z - GET /api/sessions/snapshot
+2026-03-06T18:09:39.135Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:09:39.141Z - GET /api/session/ses_33ecc3f89ffe52yj0TC6kfHl4Y
+API → KronosCode: GET /session/ses_33ecc3f89ffe52yj0TC6kfHl4Y
+2026-03-06T18:09:39.420Z - POST /api/push/visibility
+2026-03-06T18:09:39.423Z - POST /api/push/visibility
+2026-03-06T18:09:39.423Z - GET /api/global/event
+[sse] connect scope=global reason=new-stream path=/global/event
+[sse] close scope=global reason=client-disconnect durationMs=445
+[sse] lifecycle action=connect reason=new-stream scope=global
+2026-03-06T18:09:39.427Z - GET /api/runtime/tasks
+2026-03-06T18:09:39.427Z - GET /api/git/check
+2026-03-06T18:09:39.438Z - GET /api/path
+API → KronosCode: GET /path
+[sse] close scope=global reason=client-disconnect durationMs=25
+2026-03-06T18:09:39.458Z - POST /api/push/visibility
+2026-03-06T18:10:19.957Z - GET /api/sessions/snapshot
+2026-03-06T18:10:19.985Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:10:20.815Z - GET /api/sessions/snapshot
+2026-03-06T18:10:20.816Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:11:32.376Z - GET /api/sessions/snapshot
+2026-03-06T18:11:32.378Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:11:33.202Z - GET /api/sessions/snapshot
+2026-03-06T18:11:33.203Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:11:43.677Z - GET /api/sessions/snapshot
+2026-03-06T18:11:43.679Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:11:44.635Z - GET /api/sessions/snapshot
+2026-03-06T18:11:44.637Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:11:48.096Z - GET /api/sessions/snapshot
+2026-03-06T18:11:48.102Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:11:49.043Z - GET /api/sessions/snapshot
+2026-03-06T18:11:49.047Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:12:07.396Z - GET /api/sessions/snapshot
+2026-03-06T18:12:07.404Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:12:08.344Z - GET /api/sessions/snapshot
+2026-03-06T18:12:08.390Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:30:57.575Z - GET /api/sessions/snapshot
+2026-03-06T18:30:57.615Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:30:58.448Z - GET /api/sessions/snapshot
+2026-03-06T18:30:58.450Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:31:16.677Z - GET /api/sessions/snapshot
+2026-03-06T18:31:16.678Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:31:17.626Z - GET /api/sessions/snapshot
+2026-03-06T18:31:17.626Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:32:19.004Z - GET /api/git/check
+2026-03-06T18:32:19.146Z - GET /api/sessions/snapshot
+2026-03-06T18:32:19.149Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:32:20.096Z - GET /api/sessions/snapshot
+2026-03-06T18:32:20.096Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:33:26.538Z - GET /api/sessions/snapshot
+2026-03-06T18:33:26.570Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:33:27.337Z - GET /api/sessions/snapshot
+2026-03-06T18:33:27.338Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:35:36.171Z - GET /api/sessions/snapshot
+2026-03-06T18:35:36.609Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:35:37.666Z - GET /api/sessions/snapshot
+2026-03-06T18:35:37.752Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:36:51.855Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:36:51.867Z - GET /api/sessions/snapshot
+2026-03-06T18:36:52.702Z - GET /api/sessions/snapshot
+2026-03-06T18:36:52.704Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:37:54.295Z - GET /api/sessions/snapshot
+2026-03-06T18:37:54.304Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:37:54.892Z - GET /api/sessions/snapshot
+2026-03-06T18:37:54.892Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:40:26.910Z - GET /sw.js
+2026-03-06T18:41:56.096Z - GET /api/sessions/snapshot
+2026-03-06T18:41:56.100Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:41:57.042Z - GET /api/sessions/snapshot
+2026-03-06T18:41:57.044Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:45:00.232Z - GET /api/sessions/snapshot
+2026-03-06T18:45:00.240Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:45:01.152Z - GET /api/sessions/snapshot
+2026-03-06T18:45:01.152Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:45:02.192Z - GET /
+2026-03-06T18:45:02.770Z - GET /assets/index-CKjpUF5n.js
+2026-03-06T18:45:02.770Z - GET /assets/index-D_kQ3h5B.css
+2026-03-06T18:45:02.800Z - GET /branding/source/gemini-default.png
+2026-03-06T18:45:02.801Z - GET /assets/vendor-shiki-BPTbv4OJ.js
+2026-03-06T18:45:03.125Z - GET /assets/vendor-zustand-uGY5oT4T.js
+2026-03-06T18:45:03.126Z - GET /assets/vendor-radix-DFw4qKnl.js
+2026-03-06T18:45:03.127Z - GET /assets/mermaid-3ZIDBTTL-BvWIagYv.js
+2026-03-06T18:45:03.128Z - GET /assets/vendor-react-CUos4OCh.js
+2026-03-06T18:45:03.129Z - GET /assets/mermaid-3ZIDBTTL-BwOxjOQd.css
+2026-03-06T18:45:03.130Z - GET /assets/vendor-cytoscape-BMdPkac-.js
+2026-03-06T18:45:03.130Z - GET /assets/vendor-syntax-BRLQZ6Rm.js
+2026-03-06T18:45:03.130Z - GET /assets/vendor-markdown-C1vIFQ7e.js
+2026-03-06T18:45:03.130Z - GET /assets/workbox-window.prod.es5-BIl4cyR9.js
+2026-03-06T18:45:03.132Z - GET /assets/vendor-ghostty-web-M-rMj1tG.js
+2026-03-06T18:45:03.135Z - GET /assets/vendor-codemirror-CI_g4nTg.js
+2026-03-06T18:45:03.136Z - GET /assets/vendor-mermaid-Dhbz-51U.js
+2026-03-06T18:45:03.195Z - GET /sw.js
+2026-03-06T18:45:04.055Z - GET /api/config/settings
+2026-03-06T18:45:04.057Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "homeDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "homeDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+2026-03-06T18:45:04.065Z - GET /branding/source/gemini-pack-a.png
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T18:45:04.103Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T18:45:04.129Z - GET /assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2
+2026-03-06T18:45:04.136Z - GET /auth/session
+2026-03-06T18:45:04.136Z - GET /api/config/themes
+2026-03-06T18:45:04.136Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "themeId": "flexoki-dark",
+  "themeVariant": "dark",
+  "useSystemTheme": true,
+  "lightThemeId": "flexoki-light",
+  "darkThemeId": "flexoki-dark"
+}
+[persistSettings] Called with changes: {
+  "themeId": "flexoki-dark",
+  "themeVariant": "dark",
+  "useSystemTheme": true,
+  "lightThemeId": "flexoki-light",
+  "darkThemeId": "flexoki-dark"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T18:45:04.185Z - GET /branding/source/gemini-default.png
+2026-03-06T18:45:04.227Z - GET /api/git/check
+2026-03-06T18:45:04.229Z - GET /api/git/check
+2026-03-06T18:45:04.229Z - GET /api/config/settings
+2026-03-06T18:45:04.236Z - GET /api/git/check
+2026-03-06T18:45:04.236Z - POST /api/fs/exec
+2026-03-06T18:45:04.245Z - GET /api/fs/list
+2026-03-06T18:45:04.246Z - GET /api/git/check
+2026-03-06T18:45:04.250Z - GET /api/tts/status
+2026-03-06T18:45:04.253Z - GET /api/tts/say/status
+2026-03-06T18:45:04.254Z - GET /api/config/settings
+2026-03-06T18:45:04.254Z - GET /assets/window-wR7PPk8S.js
+2026-03-06T18:45:04.254Z - GET /assets/webviewWindow-DiC2lM8R.js
+2026-03-06T18:45:04.264Z - GET /assets/core-DhEqZVGG.js
+2026-03-06T18:45:04.265Z - GET /assets/image-DNK7xb7J.js
+2026-03-06T18:45:04.270Z - GET /api/runtime/status
+2026-03-06T18:45:04.271Z - GET /api/config/settings
+2026-03-06T18:45:04.276Z - GET /api/git/check
+2026-03-06T18:45:04.279Z - GET /api/github/auth/status
+2026-03-06T18:45:04.283Z - GET /api/sessions/snapshot
+2026-03-06T18:45:05.950Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:45:05.951Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:45:05.952Z - GET /api/config/settings
+2026-03-06T18:45:05.957Z - GET /assets/pierre-dark-BXuwtOqb.js
+2026-03-06T18:45:05.957Z - GET /assets/pierre-light-dckrK0oj.js
+2026-03-06T18:45:05.957Z - GET /assets/ibm-plex-sans-latin-400-normal-CDDApCn2.woff2
+2026-03-06T18:45:05.958Z - GET /api/permission
+API → KronosCode: GET /permission
+2026-03-06T18:45:05.960Z - GET /api/question
+API → KronosCode: GET /question
+2026-03-06T18:45:05.964Z - GET /api/question
+API → KronosCode: GET /question
+2026-03-06T18:45:05.965Z - GET /api/path
+API → KronosCode: GET /path
+2026-03-06T18:45:05.966Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "notificationTemplates": {
+    "completion": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    },
+    "error": {
+      "message": "{last_message}",
+      "title": "Tool error"
+    },
+    "question": {
+      "message": "{last_message}",
+      "title": "Input needed"
+    },
+    "subtask": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    }
+  }
+}
+[persistSettings] Called with changes: {
+  "notificationTemplates": {
+    "completion": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    },
+    "error": {
+      "message": "{last_message}",
+      "title": "Tool error"
+    },
+    "question": {
+      "message": "{last_message}",
+      "title": "Input needed"
+    },
+    "subtask": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    }
+  }
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T18:45:05.972Z - PUT /api/agent-mode
+[persistSettings] Called with changes: {
+  "agentMode": "browseros"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+2026-03-06T18:45:06.014Z - GET /api/git/check
+2026-03-06T18:45:06.019Z - GET /api/runtime/tasks
+2026-03-06T18:45:06.021Z - GET /api/runtime/tasks
+2026-03-06T18:45:06.021Z - GET /api/git/status
+2026-03-06T18:45:06.022Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T18:45:06.025Z - GET /assets/worker-suRQxAtO.js
+2026-03-06T18:45:06.046Z - GET /api/path
+API → KronosCode: GET /path
+2026-03-06T18:45:06.220Z - GET /api/kronoschamber/models-metadata
+2026-03-06T18:45:06.228Z - GET /api/config/providers
+API → KronosCode: GET /config/providers
+2026-03-06T18:45:06.230Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "notificationTemplates": {
+    "completion": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    },
+    "error": {
+      "message": "{last_message}",
+      "title": "Tool error"
+    },
+    "question": {
+      "message": "{last_message}",
+      "title": "Input needed"
+    },
+    "subtask": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    }
+  }
+}
+[persistSettings] Called with changes: {
+  "notificationTemplates": {
+    "completion": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    },
+    "error": {
+      "message": "{last_message}",
+      "title": "Tool error"
+    },
+    "question": {
+      "message": "{last_message}",
+      "title": "Input needed"
+    },
+    "subtask": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    }
+  }
+}
+2026-03-06T18:45:06.230Z - GET /api/sessions/snapshot
+2026-03-06T18:45:06.231Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-06T18:45:06.235Z - GET /assets/wasm-CG6Dc4jp.js
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+2026-03-06T18:45:06.237Z - GET /assets/wasm-CG6Dc4jp.js
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-06T18:45:06.301Z - GET /assets/wasm-CG6Dc4jp.js
+2026-03-06T18:45:06.336Z - GET /api/session
+API → KronosCode: GET /session
+2026-03-06T18:45:06.338Z - GET /api/session
+API → KronosCode: GET /session
+2026-03-06T18:45:06.369Z - GET /api/config/settings
+2026-03-06T18:45:06.370Z - GET /api/agent
+API → KronosCode: GET /agent
+2026-03-06T18:45:06.379Z - GET /api/git/worktrees
+2026-03-06T18:45:06.394Z - GET /api/git/worktrees
+2026-03-06T18:45:09.256Z - GET /api/git/check
+2026-03-06T18:45:19.285Z - GET /api/git/check
+2026-03-06T18:45:29.307Z - GET /api/git/check
+2026-03-06T18:45:39.327Z - GET /api/git/check
+2026-03-06T18:45:49.348Z - GET /api/git/check
+2026-03-06T18:45:59.373Z - GET /api/git/check
+2026-03-06T18:46:09.401Z - GET /api/git/check
+2026-03-06T18:46:19.423Z - GET /api/git/check
+2026-03-06T18:46:29.446Z - GET /api/git/check
+2026-03-06T18:46:39.484Z - GET /api/git/check
+2026-03-06T18:46:49.521Z - GET /api/git/check
+2026-03-06T18:46:59.554Z - GET /api/git/check
+2026-03-06T18:47:09.578Z - GET /api/git/check
+2026-03-06T18:47:19.599Z - GET /api/git/check
+2026-03-06T18:47:29.621Z - GET /api/git/check
+2026-03-06T18:47:39.640Z - GET /api/git/check
+2026-03-06T18:47:49.660Z - GET /api/git/check
+2026-03-06T18:47:59.679Z - GET /api/git/check
+2026-03-06T18:48:09.701Z - GET /api/git/check
+2026-03-06T18:48:19.722Z - GET /api/git/check
+2026-03-06T18:48:29.744Z - GET /api/git/check
+2026-03-06T18:48:39.764Z - GET /api/git/check
+Starting graceful shutdown...
+Skipping KronosCode shutdown (external server)
+[sse] close scope=global reason=client-disconnect durationMs=7696318
+Server close timeout reached, forcing shutdown
+Graceful shutdown complete

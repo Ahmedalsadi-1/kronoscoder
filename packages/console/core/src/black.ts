@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { fn } from "./util/fn"
-import { Resource } from "@opencode-ai/console-resource"
+import { Resource } from "@kronoscode-ai/console-resource"
 import { SubscriptionPlan } from "./schema/billing.sql"
 
 export namespace BlackData {

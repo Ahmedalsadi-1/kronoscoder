@@ -1,0 +1,953 @@
+[
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/aws.toml",
+    "id": "aws",
+    "name": "AWS",
+    "description": "Manage Amazon Web Services resources including S3, EC2, Lambda, and more through the MCP server",
+    "tags": [
+      "cloud",
+      "amazon",
+      "infrastructure",
+      "s3",
+      "ec2",
+      "lambda",
+      "devops"
+    ],
+    "category": "cloud",
+    "icon": "☁️",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-aws"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "AWS_ACCESS_KEY_ID",
+        "label": "AWS Access Key ID",
+        "help": "The access key ID from your AWS IAM credentials",
+        "isSecret": true,
+        "getUrl": "https://console.aws.amazon.com/iam/home#/security_credentials"
+      },
+      {
+        "name": "AWS_SECRET_ACCESS_KEY",
+        "label": "AWS Secret Access Key",
+        "help": "The secret access key paired with your access key ID",
+        "isSecret": true,
+        "getUrl": "https://console.aws.amazon.com/iam/home#/security_credentials"
+      },
+      {
+        "name": "AWS_REGION",
+        "label": "AWS Region",
+        "help": "The default AWS region to use (e.g., us-east-1, eu-west-1)",
+        "isSecret": false,
+        "getUrl": ""
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/azure-mcp.toml",
+    "id": "azure-mcp",
+    "name": "Microsoft Azure",
+    "description": "Manage Azure resources including VMs, Storage, and App Services through the MCP server",
+    "tags": [
+      "cloud",
+      "microsoft",
+      "infrastructure",
+      "azure",
+      "devops",
+      "enterprise"
+    ],
+    "category": "cloud",
+    "icon": "🔷",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-azure"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "AZURE_SUBSCRIPTION_ID",
+        "label": "Azure Subscription ID",
+        "help": "Your Azure subscription ID (found in the Azure Portal under Subscriptions)",
+        "isSecret": false,
+        "getUrl": "https://portal.azure.com/#blade/Microsoft_Azure_Billing/SubscriptionsBlade"
+      },
+      {
+        "name": "AZURE_TENANT_ID",
+        "label": "Azure Tenant ID",
+        "help": "Your Azure Active Directory tenant ID",
+        "isSecret": false,
+        "getUrl": "https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview"
+      },
+      {
+        "name": "AZURE_CLIENT_ID",
+        "label": "Azure Client ID",
+        "help": "The application (client) ID of your Azure AD app registration",
+        "isSecret": false,
+        "getUrl": "https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade"
+      },
+      {
+        "name": "AZURE_CLIENT_SECRET",
+        "label": "Azure Client Secret",
+        "help": "A client secret generated for your Azure AD app registration",
+        "isSecret": true,
+        "getUrl": "https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade"
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/bitbucket.toml",
+    "id": "bitbucket",
+    "name": "Bitbucket",
+    "description": "Access Bitbucket repositories, pull requests, and pipelines through the MCP server",
+    "tags": [
+      "git",
+      "vcs",
+      "code",
+      "pull-requests",
+      "ci",
+      "atlassian"
+    ],
+    "category": "devtools",
+    "icon": "🪣",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-bitbucket"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "BITBUCKET_USERNAME",
+        "label": "Bitbucket Username",
+        "help": "Your Bitbucket Cloud username (not email)",
+        "isSecret": false,
+        "getUrl": "https://bitbucket.org/account/settings/"
+      },
+      {
+        "name": "BITBUCKET_APP_PASSWORD",
+        "label": "Bitbucket App Password",
+        "help": "An app password with repository and pull request permissions",
+        "isSecret": true,
+        "getUrl": "https://bitbucket.org/account/settings/app-passwords/"
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/brave-search.toml",
+    "id": "brave-search",
+    "name": "Brave Search",
+    "description": "Perform web searches using the Brave Search API through the MCP server",
+    "tags": [
+      "search",
+      "web",
+      "brave",
+      "api",
+      "information-retrieval"
+    ],
+    "category": "ai",
+    "icon": "🦁",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-brave-search"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "BRAVE_API_KEY",
+        "label": "Brave Search API Key",
+        "help": "An API key from the Brave Search API dashboard",
+        "isSecret": true,
+        "getUrl": "https://brave.com/search/api/"
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/discord-mcp.toml",
+    "id": "discord-mcp",
+    "name": "Discord",
+    "description": "Access Discord servers, channels, and messages through the MCP server",
+    "tags": [
+      "chat",
+      "messaging",
+      "community",
+      "gaming",
+      "voice"
+    ],
+    "category": "communication",
+    "icon": "🎮",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-discord"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "DISCORD_BOT_TOKEN",
+        "label": "Discord Bot Token",
+        "help": "A bot token from the Discord Developer Portal",
+        "isSecret": true,
+        "getUrl": "https://discord.com/developers/applications"
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/dropbox.toml",
+    "id": "dropbox",
+    "name": "Dropbox",
+    "description": "Access and manage Dropbox files and folders through the MCP server",
+    "tags": [
+      "files",
+      "storage",
+      "cloud-storage",
+      "sync",
+      "sharing"
+    ],
+    "category": "productivity",
+    "icon": "📦",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-dropbox"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "DROPBOX_ACCESS_TOKEN",
+        "label": "Dropbox Access Token",
+        "help": "A short-lived or long-lived access token from the Dropbox App Console",
+        "isSecret": true,
+        "getUrl": "https://www.dropbox.com/developers/apps"
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/elasticsearch.toml",
+    "id": "elasticsearch",
+    "name": "Elasticsearch",
+    "description": "Search and manage Elasticsearch indices and documents through the MCP server",
+    "tags": [
+      "search",
+      "database",
+      "indexing",
+      "analytics",
+      "full-text"
+    ],
+    "category": "data",
+    "icon": "🔍",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-elasticsearch"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "ELASTICSEARCH_URL",
+        "label": "Elasticsearch URL",
+        "help": "The base URL of your Elasticsearch cluster (e.g., https://my-cluster.es.us-east-1.aws.found.io:9243)",
+        "isSecret": false,
+        "getUrl": ""
+      },
+      {
+        "name": "ELASTICSEARCH_API_KEY",
+        "label": "Elasticsearch API Key",
+        "help": "An API key with read/write permissions for the target indices",
+        "isSecret": true,
+        "getUrl": ""
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/exa-search.toml",
+    "id": "exa-search",
+    "name": "Exa Search",
+    "description": "Perform AI-powered neural searches and retrieve web content through the Exa MCP server",
+    "tags": [
+      "search",
+      "web",
+      "ai",
+      "neural",
+      "semantic",
+      "information-retrieval"
+    ],
+    "category": "ai",
+    "icon": "🔎",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-exa"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "EXA_API_KEY",
+        "label": "Exa API Key",
+        "help": "An API key from the Exa dashboard",
+        "isSecret": true,
+        "getUrl": "https://dashboard.exa.ai/api-keys"
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/gcp-mcp.toml",
+    "id": "gcp-mcp",
+    "name": "Google Cloud Platform",
+    "description": "Manage GCP resources including Compute Engine, Cloud Storage, and BigQuery through the MCP server",
+    "tags": [
+      "cloud",
+      "google",
+      "infrastructure",
+      "gce",
+      "gcs",
+      "bigquery",
+      "devops"
+    ],
+    "category": "cloud",
+    "icon": "🌐",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-gcp"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "GOOGLE_APPLICATION_CREDENTIALS",
+        "label": "Service Account Key Path",
+        "help": "Absolute path to a GCP service account JSON key file",
+        "isSecret": false,
+        "getUrl": "https://console.cloud.google.com/iam-admin/serviceaccounts"
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/github.toml",
+    "id": "github",
+    "name": "GitHub",
+    "description": "Access GitHub repositories, issues, pull requests, and organizations through the official MCP server",
+    "tags": [
+      "git",
+      "vcs",
+      "code",
+      "issues",
+      "pull-requests",
+      "ci"
+    ],
+    "category": "devtools",
+    "icon": "🐙",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-github"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "label": "GitHub Personal Access Token",
+        "help": "A fine-grained or classic PAT with repo and read:org scopes",
+        "isSecret": true,
+        "getUrl": "https://github.com/settings/tokens"
+      }
+    ],
+    "oauthMeta": {
+      "provider": "github",
+      "scopes": [
+        "repo",
+        "read:org"
+      ],
+      "authUrl": "https://github.com/login/oauth/authorize",
+      "tokenUrl": "https://github.com/login/oauth/access_token"
+    },
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/gitlab.toml",
+    "id": "gitlab",
+    "name": "GitLab",
+    "description": "Access GitLab projects, merge requests, issues, and CI/CD pipelines through the MCP server",
+    "tags": [
+      "git",
+      "vcs",
+      "code",
+      "merge-requests",
+      "ci",
+      "devops"
+    ],
+    "category": "devtools",
+    "icon": "🦊",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-gitlab"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "GITLAB_PERSONAL_ACCESS_TOKEN",
+        "label": "GitLab Personal Access Token",
+        "help": "A personal access token with api scope from your GitLab instance",
+        "isSecret": true,
+        "getUrl": "https://gitlab.com/-/user_settings/personal_access_tokens"
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/gmail.toml",
+    "id": "gmail",
+    "name": "Gmail",
+    "description": "Read, send, and manage Gmail messages and drafts through the Anthropic MCP server",
+    "tags": [
+      "email",
+      "google",
+      "messaging",
+      "inbox",
+      "communication"
+    ],
+    "category": "productivity",
+    "icon": "📧",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@anthropic/server-gmail"
+      ]
+    },
+    "requiredEnv": [],
+    "oauthMeta": {
+      "provider": "google",
+      "scopes": [
+        "https://www.googleapis.com/auth/gmail.modify"
+      ],
+      "authUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+      "tokenUrl": "https://oauth2.googleapis.com/token"
+    },
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/google-calendar.toml",
+    "id": "google-calendar",
+    "name": "Google Calendar",
+    "description": "Manage Google Calendar events, schedules, and availability through the Anthropic MCP server",
+    "tags": [
+      "calendar",
+      "scheduling",
+      "google",
+      "events",
+      "meetings"
+    ],
+    "category": "productivity",
+    "icon": "📅",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@anthropic/server-google-calendar"
+      ]
+    },
+    "requiredEnv": [],
+    "oauthMeta": {
+      "provider": "google",
+      "scopes": [
+        "https://www.googleapis.com/auth/calendar"
+      ],
+      "authUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+      "tokenUrl": "https://oauth2.googleapis.com/token"
+    },
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/google-drive.toml",
+    "id": "google-drive",
+    "name": "Google Drive",
+    "description": "Browse, search, and read files from Google Drive through the Anthropic MCP server",
+    "tags": [
+      "files",
+      "storage",
+      "google",
+      "documents",
+      "cloud-storage"
+    ],
+    "category": "productivity",
+    "icon": "📁",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@anthropic/server-google-drive"
+      ]
+    },
+    "requiredEnv": [],
+    "oauthMeta": {
+      "provider": "google",
+      "scopes": [
+        "https://www.googleapis.com/auth/drive.readonly"
+      ],
+      "authUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+      "tokenUrl": "https://oauth2.googleapis.com/token"
+    },
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/jira.toml",
+    "id": "jira",
+    "name": "Jira",
+    "description": "Access Jira issues, projects, boards, and sprints through the Atlassian MCP server",
+    "tags": [
+      "project-management",
+      "issues",
+      "agile",
+      "atlassian",
+      "tracking"
+    ],
+    "category": "devtools",
+    "icon": "📋",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-atlassian"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "JIRA_API_TOKEN",
+        "label": "Jira API Token",
+        "help": "An API token generated from your Atlassian account",
+        "isSecret": true,
+        "getUrl": "https://id.atlassian.com/manage-profile/security/api-tokens"
+      },
+      {
+        "name": "JIRA_INSTANCE_URL",
+        "label": "Jira Instance URL",
+        "help": "Your Jira Cloud instance URL (e.g., https://yourcompany.atlassian.net)",
+        "isSecret": false,
+        "getUrl": ""
+      },
+      {
+        "name": "JIRA_USER_EMAIL",
+        "label": "Jira User Email",
+        "help": "The email address associated with your Atlassian account",
+        "isSecret": false,
+        "getUrl": ""
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/linear.toml",
+    "id": "linear",
+    "name": "Linear",
+    "description": "Manage Linear issues, projects, cycles, and teams through the MCP server",
+    "tags": [
+      "project-management",
+      "issues",
+      "agile",
+      "tracking",
+      "sprint"
+    ],
+    "category": "devtools",
+    "icon": "📐",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-linear"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "LINEAR_API_KEY",
+        "label": "Linear API Key",
+        "help": "A personal API key from your Linear account settings",
+        "isSecret": true,
+        "getUrl": "https://linear.app/settings/api"
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/mongodb.toml",
+    "id": "mongodb",
+    "name": "MongoDB",
+    "description": "Query and manage MongoDB databases and collections through the MCP server",
+    "tags": [
+      "database",
+      "nosql",
+      "document",
+      "mongo",
+      "queries"
+    ],
+    "category": "data",
+    "icon": "🍃",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-mongodb"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "MONGODB_URI",
+        "label": "MongoDB Connection URI",
+        "help": "A full MongoDB connection string (e.g., mongodb+srv://user:password@cluster.mongodb.net/dbname)",
+        "isSecret": true,
+        "getUrl": ""
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/notion.toml",
+    "id": "notion",
+    "name": "Notion",
+    "description": "Access and manage Notion pages, databases, and blocks through the MCP server",
+    "tags": [
+      "notes",
+      "wiki",
+      "knowledge-base",
+      "documentation",
+      "databases"
+    ],
+    "category": "productivity",
+    "icon": "📝",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-notion"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "NOTION_API_KEY",
+        "label": "Notion Integration Token",
+        "help": "An internal integration token created in your Notion workspace settings",
+        "isSecret": true,
+        "getUrl": "https://www.notion.so/my-integrations"
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/postgresql.toml",
+    "id": "postgresql",
+    "name": "PostgreSQL",
+    "description": "Query and manage PostgreSQL databases through the MCP server",
+    "tags": [
+      "database",
+      "sql",
+      "relational",
+      "postgres",
+      "queries"
+    ],
+    "category": "data",
+    "icon": "🐘",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-postgres"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "POSTGRES_CONNECTION_STRING",
+        "label": "PostgreSQL Connection String",
+        "help": "A full connection URI (e.g., postgresql://user:password@host:5432/dbname)",
+        "isSecret": true,
+        "getUrl": ""
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/redis.toml",
+    "id": "redis",
+    "name": "Redis",
+    "description": "Access and manage Redis key-value stores through the MCP server",
+    "tags": [
+      "database",
+      "cache",
+      "key-value",
+      "in-memory",
+      "nosql"
+    ],
+    "category": "data",
+    "icon": "🔴",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-redis"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "REDIS_URL",
+        "label": "Redis Connection URL",
+        "help": "A Redis connection URL (e.g., redis://user:password@host:6379/0)",
+        "isSecret": true,
+        "getUrl": ""
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/sentry.toml",
+    "id": "sentry",
+    "name": "Sentry",
+    "description": "Monitor and manage Sentry error tracking, issues, and releases through the MCP server",
+    "tags": [
+      "monitoring",
+      "errors",
+      "debugging",
+      "observability",
+      "apm"
+    ],
+    "category": "devtools",
+    "icon": "🐛",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-sentry"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "SENTRY_AUTH_TOKEN",
+        "label": "Sentry Auth Token",
+        "help": "An authentication token with project:read and event:read scopes",
+        "isSecret": true,
+        "getUrl": "https://sentry.io/settings/account/api/auth-tokens/"
+      },
+      {
+        "name": "SENTRY_ORG_SLUG",
+        "label": "Sentry Organization Slug",
+        "help": "Your Sentry organization slug (found in Settings > General)",
+        "isSecret": false,
+        "getUrl": ""
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/slack.toml",
+    "id": "slack",
+    "name": "Slack",
+    "description": "Access Slack channels, messages, and users through the MCP server",
+    "tags": [
+      "chat",
+      "messaging",
+      "team",
+      "channels",
+      "collaboration"
+    ],
+    "category": "communication",
+    "icon": "💬",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-slack"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "SLACK_BOT_TOKEN",
+        "label": "Slack Bot Token",
+        "help": "A bot user OAuth token starting with xoxb-",
+        "isSecret": true,
+        "getUrl": "https://api.slack.com/apps"
+      },
+      {
+        "name": "SLACK_TEAM_ID",
+        "label": "Slack Team ID",
+        "help": "Your Slack workspace team ID (found in workspace settings or URL)",
+        "isSecret": false,
+        "getUrl": ""
+      }
+    ],
+    "oauthMeta": {
+      "provider": "slack",
+      "scopes": [
+        "channels:read",
+        "chat:write",
+        "users:read"
+      ],
+      "authUrl": "https://slack.com/oauth/v2/authorize",
+      "tokenUrl": "https://slack.com/api/oauth.v2.access"
+    },
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/sqlite-mcp.toml",
+    "id": "sqlite-mcp",
+    "name": "SQLite",
+    "description": "Query and manage local SQLite databases through the MCP server",
+    "tags": [
+      "database",
+      "sql",
+      "relational",
+      "sqlite",
+      "local",
+      "embedded"
+    ],
+    "category": "data",
+    "icon": "💾",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-sqlite"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "SQLITE_DB_PATH",
+        "label": "SQLite Database Path",
+        "help": "Absolute path to the SQLite database file (e.g., /home/user/data/mydb.sqlite)",
+        "isSecret": false,
+        "getUrl": ""
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/teams-mcp.toml",
+    "id": "teams-mcp",
+    "name": "Microsoft Teams",
+    "description": "Access Microsoft Teams channels, chats, and messages through the MCP server",
+    "tags": [
+      "chat",
+      "messaging",
+      "microsoft",
+      "enterprise",
+      "collaboration"
+    ],
+    "category": "communication",
+    "icon": "👥",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-teams"
+      ]
+    },
+    "requiredEnv": [],
+    "oauthMeta": {
+      "provider": "microsoft",
+      "scopes": [
+        "Team.ReadBasic.All",
+        "Chat.ReadWrite"
+      ],
+      "authUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+      "tokenUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+    },
+    "setupInstructions": ""
+  },
+  {
+    "source": "openfang:crates/openfang-extensions/integrations/todoist.toml",
+    "id": "todoist",
+    "name": "Todoist",
+    "description": "Manage Todoist tasks, projects, and labels through the MCP server",
+    "tags": [
+      "tasks",
+      "todo",
+      "project-management",
+      "productivity",
+      "gtd"
+    ],
+    "category": "productivity",
+    "icon": "✅",
+    "transport": {
+      "type": "stdio",
+      "command": "npx",
+      "url": null,
+      "args": [
+        "@modelcontextprotocol/server-todoist"
+      ]
+    },
+    "requiredEnv": [
+      {
+        "name": "TODOIST_API_KEY",
+        "label": "Todoist API Token",
+        "help": "Your personal API token from Todoist settings",
+        "isSecret": true,
+        "getUrl": "https://todoist.com/prefs/integrations"
+      }
+    ],
+    "oauthMeta": null,
+    "setupInstructions": ""
+  }
+]

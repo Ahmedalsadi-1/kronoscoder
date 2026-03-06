@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16" />
+    <link rel="mask-icon" href="/favicon.svg" color="#edb449" />
+
+    <!-- Apple touch icon - PNG format required for iOS PWA support -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167x167.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png" />
+
+    <!-- Preload Nerd Fonts for terminal icon display -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/fonts/JetBrainsMonoNerdFont-Regular.woff2"
+          as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/fonts/FiraCodeNerdFont-Regular.woff2"
+          as="font" type="font/woff2" crossorigin="anonymous">
+
+    <!-- Web app manifest (data URL to avoid nginx auth issues) -->
+    <script>
+      const baseUrl = location.origin;
+      const manifest = {
+        "name": "KronosChamber - AI Coding Assistant",
+        "short_name": "KronosChamber",
+        "description": "Desktop-first interface companion for the KronosCode AI coding agent",
+        "start_url": baseUrl + "/",
+        "display": "standalone",
+        "background_color": "#151313",
+        "theme_color": "#edb449",
+        "orientation": "any",
+          "icons": [
+            { "src": baseUrl + "/pwa-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+            { "src": baseUrl + "/pwa-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+            { "src": baseUrl + "/pwa-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+            { "src": baseUrl + "/pwa-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+            { "src": baseUrl + "/apple-touch-icon-180x180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+            { "src": baseUrl + "/apple-touch-icon-152x152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+            { "src": baseUrl + "/favicon-32.png", "sizes": "32x32", "type": "image/png" },
+            { "src": baseUrl + "/favicon-16.png", "sizes": "16x16", "type": "image/png" }
+          ],
+        "categories": ["developer", "tools", "productivity"],
+        "lang": "en"
+      };
+
+      const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+      const manifestURL = URL.createObjectURL(manifestBlob);
+
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = manifestURL;
+      document.head.appendChild(link);
+    </script>
+
+    <script>
+      // Blocking script to detect and apply theme before first paint
+      (function() {
+        try {
+          var themeMode = localStorage.getItem('themeMode');
+          var variant = localStorage.getItem('selectedThemeVariant');
+          var useSystem = localStorage.getItem('useSystemTheme');
+          var isDark;
+          
+          // Check themeMode first (new storage key)
+          if (themeMode === 'dark') {
+            isDark = true;
+          } else if (themeMode === 'light') {
+            isDark = false;
+          } else if (themeMode === 'system' || useSystem === null || useSystem === 'true') {
+            // System preference
+            isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          } else if (variant === 'light' || variant === 'dark') {
+            // Legacy storage key fallback
+            isDark = variant === 'dark';
+          } else {
+            // Default to system
+            isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          }
+          
+          // Apply theme class and data attribute
+          document.documentElement.classList.add(isDark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-splash-variant', isDark ? 'dark' : 'light');
+          document.documentElement.style.setProperty('color-scheme', isDark ? 'dark' : 'light');
+
+          // Splash colors persisted by the app theme system
+          var splashBgLight = localStorage.getItem('splashBgLight');
+          var splashFgLight = localStorage.getItem('splashFgLight');
+          var splashBgDark = localStorage.getItem('splashBgDark');
+          var splashFgDark = localStorage.getItem('splashFgDark');
+
+          if (splashBgLight) document.documentElement.style.setProperty('--splash-background-light', splashBgLight);
+          if (splashFgLight) document.documentElement.style.setProperty('--splash-stroke-light', splashFgLight);
+          if (splashBgDark) document.documentElement.style.setProperty('--splash-background-dark', splashBgDark);
+          if (splashFgDark) document.documentElement.style.setProperty('--splash-stroke-dark', splashFgDark);
+        } catch (error) {
+          console.warn('Failed to apply theme:', error);
+        }
+      })();
+    </script>
+
+    <!-- Theme color - Safari iOS 26+ prioritizes CSS background-color over this, but keep as fallback -->
+    <meta name="theme-color" content="#151313" />
+    <meta name="theme-color" content="#151313" media="(prefers-color-scheme: dark)" />
+
+    <!-- iOS Safari PWA styling -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="KronosChamber" />
+
+    <title>KronosChamber - AI Coding Assistant</title>
+    <meta name="description" content="Desktop-first interface companion for the KronosCode AI coding agent" />
+    <meta name="application-name" content="KronosChamber" />
+    <meta name="apple-mobile-web-app-title" content="KronosChamber" />
+
+    <!-- Inline CSS for loading screen and Nerd Fonts (before Tailwind loads) -->
+    <style>
+      /* Nerd Font @font-face declarations for terminal icon support */
+      @font-face {
+        font-family: 'JetBrainsMono Nerd Font';
+        src:
+          local('JetBrainsMono Nerd Font'),
+          url('https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/fonts/JetBrainsMonoNerdFont-Regular.woff2') format('woff2'),
+          url('https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/fonts/JetBrainsMonoNerdFont-Regular.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+        unicode-range: U+E000-F8FF, U+F0000-FFFFF;
+      }
+
+      @font-face {
+        font-family: 'FiraCode Nerd Font';
+        src:
+          local('FiraCode Nerd Font'),
+          url('https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/fonts/FiraCodeNerdFont-Regular.woff2') format('woff2'),
+          url('https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/fonts/FiraCodeNerdFont-Regular.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+        unicode-range: U+E000-F8FF, U+F0000-FFFFF;
+      }
+
+      :root {
+        --splash-background-dark: #151313;
+        --splash-stroke-dark: white;
+        --splash-background-light: #F6F4EF;
+        --splash-stroke-light: black;
+
+        --splash-background: var(--splash-background-dark);
+        --splash-stroke: var(--splash-stroke-dark);
+
+        /* Fallback fills (overridden below when supported) */
+        --splash-face-fill: rgba(255, 255, 255, 0.15);
+        --splash-cell-fill: rgba(255, 255, 255, 0.35);
+        --splash-logo-fill: var(--splash-stroke);
+      }
+
+      html[data-splash-variant='light'] {
+        --splash-background: var(--splash-background-light);
+        --splash-stroke: var(--splash-stroke-light);
+        --splash-face-fill: rgba(0, 0, 0, 0.15);
+        --splash-cell-fill: rgba(0, 0, 0, 0.4);
+        --splash-logo-fill: var(--splash-stroke);
+      }
+
+      html[data-splash-variant='dark'] {
+        --splash-background: var(--splash-background-dark);
+        --splash-stroke: var(--splash-stroke-dark);
+        --splash-logo-fill: var(--splash-stroke);
+      }
+
+      @supports (color: color-mix(in srgb, white 50%, transparent)) {
+        :root {
+          --splash-face-fill: color-mix(in srgb, var(--splash-stroke) 15%, transparent);
+          --splash-cell-fill: color-mix(in srgb, var(--splash-stroke) 35%, transparent);
+        }
+      }
+      @keyframes logo-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+      .logo-pulse {
+        animation: logo-pulse 3s ease-in-out infinite;
+      }
+      .splash-logo {
+        width: 120px;
+        height: 120px;
+        border-radius: 24px;
+        background-repeat: no-repeat;
+        background-size: 300% 300%;
+        background-position: 0% 0%;
+        background-color: #000;
+        box-shadow: 0 16px 40px color-mix(in srgb, var(--splash-stroke) 20%, transparent);
+      }
+      #initial-loading {
+        background-color: var(--splash-background);
+        color: var(--splash-foreground);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-family: system-ui, -apple-system, sans-serif;
+        transition: opacity 0.3s ease-out;
+        position: absolute;
+        width: 100%;
+        z-index: 9999;
+      }
+      #initial-loading.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body class="h-full bg-background text-foreground">
+    <div id="root" class="h-full">
+      <!-- Loading fallback while React initializes -->
+      <div id="initial-loading">
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <div
+            id="splash-mascot"
+            class="splash-logo logo-pulse"
+            role="img"
+            aria-label="KronosChamber loading logo"
+            title="KronosChamber loading logo"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        const splash = document.getElementById('splash-mascot');
+        if (!splash) return;
+
+        const getMascotFrameCoords = (index) => {
+            const col = index % 3;
+            const row = Math.floor(index / 3);
+            return {
+                x: col,
+                y: row,
+            };
+        };
+
+        const frames = [
+          { src: '/branding/source/gemini-default.png', isCollage: false },
+          { src: '/branding/source/gemini-pack-a.png', isCollage: true },
+          { src: '/branding/source/gemini-pack-b.png', isCollage: true },
+        ];
+
+        let frameIndex = 0;
+        const applyFrame = () => {
+          const frameData = frames[frameIndex % frames.length];
+          frameIndex += 1;
+
+          splash.style.backgroundImage = `url(${frameData.src})`;
+
+          if (frameData.isCollage) {
+            const currentCollageFrameIndex = Math.floor(Math.random() * 9); // Random frame from 0-8
+            const { x, y } = getMascotFrameCoords(currentCollageFrameIndex);
+            splash.style.backgroundSize = '300% 300%'; // Image is 3x larger than visible area
+            splash.style.backgroundPosition = `-${x * 100 / 3}% -${y * 100 / 3}%`; // Position to show correct frame
+          } else {
+            splash.style.backgroundSize = 'cover'; // Show entire image
+            splash.style.backgroundPosition = 'center'; // Center it
+          }
+        };
+
+        applyFrame();
+        window.__KRONOS_SPLASH_MASCOT_TIMER__ = window.setInterval(applyFrame, 1200);
+      })();
+
+      // Fallback: hide loading screen after 10 seconds if React fails to load
+      setTimeout(function() {
+        const loading = document.getElementById('initial-loading');
+        if (loading) {
+          if (window.__KRONOS_SPLASH_MASCOT_TIMER__) {
+            window.clearInterval(window.__KRONOS_SPLASH_MASCOT_TIMER__);
+            window.__KRONOS_SPLASH_MASCOT_TIMER__ = null;
+          }
+          console.warn('Loading screen timeout - forcing hide after 10s');
+          loading.classList.add('fade-out');
+          setTimeout(function() {
+            loading.remove();
+          }, 300);
+        }
+      }, 10000);
+    </script>
+
+    <!-- CSS Font Loading API for reliable Nerd Font loading -->
+    <script>
+      (function() {
+        const fonts = [
+          {
+            name: 'JetBrainsMono Nerd Font',
+            url: 'https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/fonts/JetBrainsMonoNerdFont-Regular.woff2'
+          },
+          {
+            name: 'FiraCode Nerd Font',
+            url: 'https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/fonts/FiraCodeNerdFont-Regular.woff2'
+          }
+        ];
+
+        const fontPromises = fonts.map(font => {
+          const fontFace = new FontFace(font.name, `url(${font.url}) format('woff2')`);
+          document.fonts.add(fontFace);
+          return fontFace.load().catch(err => {
+            console.warn(`Failed to load font: ${font.name}`, err);
+          });
+        });
+
+        Promise.allSettled(fontPromises).then(() => {
+          document.documentElement.classList.add('fonts-loaded');
+        });
+      })();
+    </script>
+
+    <!-- Polyfill for process before loading React -->
+    <script>
+      if (typeof process === 'undefined') {
+        window.process = { env: {} };
+      }
+    </script>
+
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

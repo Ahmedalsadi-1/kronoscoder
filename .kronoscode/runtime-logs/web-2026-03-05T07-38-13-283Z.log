@@ -1,0 +1,27 @@
+$ bun server/index.js --port ${KRONOSCHAMBER_PORT:-3001}
+Starting KronosChamber on port 3001
+macOS Say TTS available with 188 voices
+[zen] Startup model validation failed (non-blocking): Unable to connect. Is the computer able to access the url?
+KRONOSCODE_EXTERNAL_ONLY is enabled; attaching to external KronosCode on port 4096
+Detected KronosCode port: 4096
+Setting up proxy to KronosCode on port 4096
+Serving static files from /Users/albsheralsadi/kronosfinal/kronoscoder/packages/web/dist
+Failed to start server: 13917 |     };
+13918 | 
+13919 |     if (bindHost) {
+13920 |       server.listen(port, bindHost, onListening);
+13921 |     } else {
+13922 |       server.listen(port, onListening);
+                     ^
+error: Failed to start server. Is port 3001 in use?
+ syscall: "listen",
+   errno: 0,
+    code: "EADDRINUSE"
+
+      at <anonymous> (node:_http_server:271:39)
+      at <anonymous> (node:_http_server:248:33)
+      at <anonymous> (/Users/albsheralsadi/kronosfinal/kronoscoder/packages/web/server/index.js:13922:14)
+      at new Promise (1:11)
+      at main (/Users/albsheralsadi/kronosfinal/kronoscoder/packages/web/server/index.js:13874:9)
+
+error: script "dev:server" exited with code 1

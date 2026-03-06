@@ -1,9 +1,25 @@
 {
-  "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"],
   "compilerOptions": {
-    "jsx": "preserve",
-    "jsxImportSource": "solid-js"
-  }
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "types": ["vite/client", "@types/dom-speech-recognition"],
+    "paths": {
+      "@/*": ["../ui/src/*", "./src/*"],
+      "@web/*": ["./src/*"],
+      "@kronoscode-ai/ui/*": ["../ui/src/*"],
+      "@kronoscode-ai/web/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "../ui/src", "../ui/src/types/**/*"]
 }

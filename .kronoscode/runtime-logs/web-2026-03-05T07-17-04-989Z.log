@@ -1,0 +1,17 @@
+$ bun server/index.js --port ${KRONOSCHAMBER_PORT:-3001}
+Starting KronosChamber on port 3001
+macOS Say TTS available with 188 voices
+[zen] Startup model validation failed (non-blocking): Unable to connect. Is the computer able to access the url?
+KRONOSCODE_EXTERNAL_ONLY is enabled; attaching to external KronosCode on port 4096
+Failed to start KronosCode: KRONOSCODE_EXTERNAL_ONLY is enabled but no external KronosCode server is reachable on port 4096. Start KronosCode first and set KRONOSCODE_PORT if needed.
+Failed to start server: 13756 |       }
+13757 |       console.log(
+13758 |         `KRONOSCODE_EXTERNAL_ONLY is enabled; attaching to external KronosCode on port ${externalPort}`
+13759 |       );
+13760 |       if (!(await probeExternalKronosCode(externalPort))) {
+13761 |         throw new Error(
+                          ^
+error: KRONOSCODE_EXTERNAL_ONLY is enabled but no external KronosCode server is reachable on port 4096. Start KronosCode first and set KRONOSCODE_PORT if needed.
+      at main (/Users/albsheralsadi/kronosfinal/kronoscoder/packages/web/server/index.js:13761:19)
+
+error: script "dev:server" exited with code 1

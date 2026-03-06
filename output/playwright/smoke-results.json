@@ -1,0 +1,138 @@
+{
+  "startUrl": "http://127.0.0.1:3100/?directory=%2FUsers%2Falbsheralsadi%2Fkronosfinal%2Fkronoscoder",
+  "pageErrors": [],
+  "consoleErrors": [
+    "ReferenceError: MASCOT_COLLAGE_B is not defined\n    at oA (http://127.0.0.1:3100/assets/mermaid-3ZIDBTTL-Cl7EzUWF.js:1617:12832)\n    at Zf (http://127.0.0.1:3100/assets/vendor-react-CUos4OCh.js:48:47872)\n    at cc (http://127.0.0.1:3100/assets/vendor-react-CUos4OCh.js:48:70619)\n    at By (http://127.0.0.1:3100/assets/vendor-react-CUos4OCh.js:48:80946)\n    at mv (http://127.0.0.1:3100/assets/vendor-react-CUos4OCh.js:48:116566)\n    at ld (http://127.0.0.1:3100/assets/vendor-react-CUos4OCh.js:48:115643)\n    at Hc (http://127.0.0.1:3100/assets/vendor-react-CUos4OCh.js:48:115479)\n    at nv (http://127.0.0.1:3100/assets/vendor-react-CUos4OCh.js:48:112311)\n    at Mv (http://127.0.0.1:3100/assets/vendor-react-CUos4OCh.js:48:124103)\n    at ce (http://127.0.0.1:3100/assets/vendor-react-CUos4OCh.js:48:122655)"
+  ],
+  "warnings": [],
+  "actions": [
+    {
+      "tag": "mcp",
+      "result": "clicked"
+    },
+    {
+      "tag": "settings",
+      "result": "not-found"
+    },
+    {
+      "tag": "desktop",
+      "result": "not-found"
+    },
+    {
+      "tag": "browser",
+      "result": "not-found"
+    },
+    {
+      "tag": "new-session",
+      "result": "not-found"
+    },
+    {
+      "tag": "sessions-link",
+      "result": "not-found"
+    },
+    {
+      "tag": "chat-link",
+      "result": "not-found"
+    }
+  ],
+  "discoveredNav": [
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "Open sessions",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "Add project",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "Project options",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "Open services, usage and MCP",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "Toggle terminal panel",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "Toggle right sidebar",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "New worktree",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "New from issue",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "New from PR",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "New multi-run",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "Manage branches",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "Project notes and todos",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "New session or folder in project root",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "Settings",
+      "aria": "",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "",
+      "aria": "Keyboard shortcuts",
+      "href": ""
+    },
+    {
+      "tag": "button",
+      "text": "Reset Chat",
+      "aria": "",
+      "href": ""
+    }
+  ],
+  "title": "KronosChamber - AI Coding Assistant",
+  "finalUrl": "http://127.0.0.1:3100/?directory=%2FUsers%2Falbsheralsadi%2Fkronosfinal%2Fkronoscoder"
+}

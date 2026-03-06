@@ -83,6 +83,15 @@ export type EventLspUpdated = {
   }
 }
 
+export type EventLspDiagnostics = {
+  type: "lsp.diagnostics"
+  properties: {
+    diagnostics: {
+      [key: string]: Array<unknown>
+    }
+  }
+}
+
 export type EventFileEdited = {
   type: "file.edited"
   properties: {
@@ -950,6 +959,7 @@ export type Event =
   | EventGlobalDisposed
   | EventLspClientDiagnostics
   | EventLspUpdated
+  | EventLspDiagnostics
   | EventFileEdited
   | EventMessageUpdated
   | EventMessageRemoved
@@ -1371,6 +1381,38 @@ export type KeybindsConfig = {
    * Toggle thinking blocks visibility
    */
   display_thinking?: string
+  /**
+   * Toggle media panel
+   */
+  media_panel_toggle?: string
+  /**
+   * Select next media item
+   */
+  media_next?: string
+  /**
+   * Select previous media item
+   */
+  media_previous?: string
+  /**
+   * Pin or unpin selected media item
+   */
+  media_pin?: string
+  /**
+   * Open selected media source
+   */
+  media_open?: string
+  /**
+   * Toggle diff panel
+   */
+  diff_panel_toggle?: string
+  /**
+   * Select next diff item
+   */
+  diff_next?: string
+  /**
+   * Select previous diff item
+   */
+  diff_previous?: string
 }
 
 /**
@@ -1379,7 +1421,7 @@ export type KeybindsConfig = {
 export type LogLevel = "DEBUG" | "INFO" | "WARN" | "ERROR"
 
 /**
- * Server configuration for opencode serve and web commands
+ * Server configuration for kronoscode serve and web commands
  */
 export type ServerConfig = {
   /**
@@ -1395,7 +1437,7 @@ export type ServerConfig = {
    */
   mdns?: boolean
   /**
-   * Custom domain name for mDNS service (default: opencode.local)
+   * Custom domain name for mDNS service (default: kronoscode.local)
    */
   mdnsDomain?: string
   /**
@@ -1696,13 +1738,71 @@ export type Config = {
       enabled: boolean
     }
     /**
+     * Operator Pro whole-TUI styling
+     */
+    operator_ui?: {
+      /**
+       * Enable Operator Pro visual treatment across TUI surfaces
+       */
+      enabled?: boolean
+      /**
+       * Operator Pro density profile for spacing and list compression
+       */
+      density?: "compact" | "comfortable" | "detailed"
+      /**
+       * Operator Pro motion profile
+       */
+      motion?: "off" | "subtle"
+      /**
+       * Increase contrast for Operator Pro borders and metadata
+       */
+      high_contrast?: boolean
+    }
+    /**
      * Control diff rendering style: 'auto' adapts to terminal width, 'stacked' always shows single column
      */
     diff_style?: "auto" | "stacked"
+    /**
+     * Media preview settings
+     */
+    media_preview?: {
+      /**
+       * Enable right-side media preview panel
+       */
+      enabled?: boolean
+      /**
+       * Media rendering mode preference
+       */
+      mode?: "auto" | "kitty" | "rgb" | "ascii"
+      /**
+       * Right-side media panel width in columns
+       */
+      width?: number
+      /**
+       * Auto-open media panel when new media appears
+       */
+      auto_open?: boolean
+      /**
+       * Auto-open the diff tab when file changes are updated
+       */
+      diff_auto_open?: boolean
+      /**
+       * Regex pattern to determine which tools contribute media to the panel (default matches browser_* and browser MCP tools)
+       */
+      browser_tool_pattern?: string
+      /**
+       * Media preview quality profile
+       */
+      quality?: "max" | "balanced"
+      /**
+       * Render browser-style chrome around media previews
+       */
+      browser_chrome?: boolean
+    }
   }
   server?: ServerConfig
   /**
-   * Command configuration, see https://opencode.ai/docs/commands
+   * Command configuration, see https://kronoscode.ai/docs/commands
    */
   command?: {
     [key: string]: {
@@ -1776,7 +1876,7 @@ export type Config = {
     [key: string]: AgentConfig | undefined
   }
   /**
-   * Agent configuration, see https://opencode.ai/docs/agents
+   * Agent configuration, see https://kronoscode.ai/docs/agents
    */
   agent?: {
     plan?: AgentConfig
@@ -2953,6 +3053,663 @@ export type ExperimentalSessionListResponses = {
 }
 
 export type ExperimentalSessionListResponse = ExperimentalSessionListResponses[keyof ExperimentalSessionListResponses]
+
+export type ExperimentalBrowserStateData = {
+  body?: never
+  path?: never
+  query: {
+    directory?: string
+    sessionID: string
+  }
+  url: "/experimental/browser/state"
+}
+
+export type ExperimentalBrowserStateErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ExperimentalBrowserStateError = ExperimentalBrowserStateErrors[keyof ExperimentalBrowserStateErrors]
+
+export type ExperimentalBrowserStateResponses = {
+  /**
+   * Browser runtime state
+   */
+  200: unknown
+}
+
+export type ExperimentalBrowserEventsData = {
+  body?: never
+  path?: never
+  query: {
+    directory?: string
+    sessionID: string
+  }
+  url: "/experimental/browser/events"
+}
+
+export type ExperimentalBrowserEventsErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ExperimentalBrowserEventsError = ExperimentalBrowserEventsErrors[keyof ExperimentalBrowserEventsErrors]
+
+export type ExperimentalBrowserEventsResponses = {
+  /**
+   * Browser runtime event stream
+   */
+  200: unknown
+}
+
+export type ExperimentalBrowserFrameData = {
+  body?: never
+  path?: never
+  query: {
+    directory?: string
+    sessionID: string
+  }
+  url: "/experimental/browser/frame"
+}
+
+export type ExperimentalBrowserFrameErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ExperimentalBrowserFrameError = ExperimentalBrowserFrameErrors[keyof ExperimentalBrowserFrameErrors]
+
+export type ExperimentalBrowserFrameResponses = {
+  /**
+   * Browser frame
+   */
+  200: unknown
+}
+
+export type ExperimentalBrowserActionData = {
+  body?:
+    | {
+        sessionID: string
+        action: "newPage"
+        payload?: {
+          url?: string
+          timeout?: number
+          [key: string]: unknown | string | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "navigate"
+        payload?: {
+          type?: "url" | "back" | "forward" | "reload"
+          url?: string
+          timeout?: number
+          [key: string]: unknown | "url" | "back" | "forward" | "reload" | string | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "selectPage"
+        payload?: {
+          pageIdx?: number
+          [key: string]: unknown | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "closePage"
+        payload?: {
+          pageIdx?: number
+          [key: string]: unknown | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "back"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "forward"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "reload"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "stop"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "waitFor"
+        payload?: {
+          text: string
+          timeout?: number
+          [key: string]: unknown | string | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "resize"
+        payload?: {
+          width?: number
+          height?: number
+          [key: string]: unknown | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "handleDialog"
+        payload?: {
+          action?: "accept" | "dismiss"
+          promptText?: string
+          [key: string]: unknown | "accept" | "dismiss" | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "click"
+        payload?: {
+          uid?: string
+          selector?: string
+          button?: "left" | "right" | "middle"
+          doubleClick?: boolean
+          [key: string]: unknown | string | "left" | "right" | "middle" | boolean | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "hover"
+        payload?: {
+          uid?: string
+          selector?: string
+          [key: string]: unknown | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "fill"
+        payload?: {
+          uid?: string
+          selector?: string
+          value?: string
+          [key: string]: unknown | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "fillForm"
+        payload?: {
+          fields?: Array<{
+            uid?: string
+            selector?: string
+            value: string
+            [key: string]: unknown | string | undefined
+          }>
+          [key: string]:
+            | unknown
+            | Array<{
+                uid?: string
+                selector?: string
+                value: string
+                [key: string]: unknown | string | undefined
+              }>
+            | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "drag"
+        payload?: {
+          sourceUid?: string
+          sourceSelector?: string
+          targetUid?: string
+          targetSelector?: string
+          [key: string]: unknown | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "pressKey"
+        payload?: {
+          key?: string
+          [key: string]: unknown | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "uploadFile"
+        payload?: {
+          uid?: string
+          selector?: string
+          files?: Array<string>
+          [key: string]: unknown | string | Array<string> | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "snapshot"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "screenshot"
+        payload?: {
+          fullPage?: boolean
+          [key: string]: unknown | boolean | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "evaluate"
+        payload?: {
+          script?: string
+          [key: string]: unknown | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "networkRequests"
+        payload?: {
+          limit?: number
+          [key: string]: unknown | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "networkRequest"
+        payload?: {
+          index?: number
+          urlContains?: string
+          [key: string]: unknown | number | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "console"
+        payload?: {
+          limit?: number
+          [key: string]: unknown | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "consoleMessage"
+        payload?: {
+          index?: number
+          [key: string]: unknown | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "emulate"
+        payload?: {
+          width?: number
+          height?: number
+          colorScheme?: "light" | "dark" | "no-preference"
+          reducedMotion?: "reduce" | "no-preference"
+          locale?: string
+          timezoneId?: string
+          geolocation?: {
+            latitude: number
+            longitude: number
+          }
+          [key: string]:
+            | unknown
+            | number
+            | "light"
+            | "dark"
+            | "no-preference"
+            | "reduce"
+            | "no-preference"
+            | string
+            | {
+                latitude: number
+                longitude: number
+              }
+            | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "perfStart"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "perfStop"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "perfInsight"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_new_page"
+        payload?: {
+          url?: string
+          timeout?: number
+          [key: string]: unknown | string | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_navigate"
+        payload?: {
+          type?: "url" | "back" | "forward" | "reload"
+          url?: string
+          timeout?: number
+          [key: string]: unknown | "url" | "back" | "forward" | "reload" | string | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_select_page"
+        payload?: {
+          pageIdx?: number
+          [key: string]: unknown | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_close_page"
+        payload?: {
+          pageIdx?: number
+          [key: string]: unknown | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_back"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_forward"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_reload"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_stop"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_wait_for"
+        payload?: {
+          text: string
+          timeout?: number
+          [key: string]: unknown | string | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_resize"
+        payload?: {
+          width?: number
+          height?: number
+          [key: string]: unknown | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_handle_dialog"
+        payload?: {
+          action?: "accept" | "dismiss"
+          promptText?: string
+          [key: string]: unknown | "accept" | "dismiss" | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_click"
+        payload?: {
+          uid?: string
+          selector?: string
+          button?: "left" | "right" | "middle"
+          doubleClick?: boolean
+          [key: string]: unknown | string | "left" | "right" | "middle" | boolean | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_hover"
+        payload?: {
+          uid?: string
+          selector?: string
+          [key: string]: unknown | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_fill"
+        payload?: {
+          uid?: string
+          selector?: string
+          value?: string
+          [key: string]: unknown | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_fill_form"
+        payload?: {
+          fields?: Array<{
+            uid?: string
+            selector?: string
+            value: string
+            [key: string]: unknown | string | undefined
+          }>
+          [key: string]:
+            | unknown
+            | Array<{
+                uid?: string
+                selector?: string
+                value: string
+                [key: string]: unknown | string | undefined
+              }>
+            | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_drag"
+        payload?: {
+          sourceUid?: string
+          sourceSelector?: string
+          targetUid?: string
+          targetSelector?: string
+          [key: string]: unknown | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_press_key"
+        payload?: {
+          key?: string
+          [key: string]: unknown | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_upload_file"
+        payload?: {
+          uid?: string
+          selector?: string
+          files?: Array<string>
+          [key: string]: unknown | string | Array<string> | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_snapshot"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_screenshot"
+        payload?: {
+          fullPage?: boolean
+          [key: string]: unknown | boolean | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_evaluate"
+        payload?: {
+          script?: string
+          [key: string]: unknown | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_network_requests"
+        payload?: {
+          limit?: number
+          [key: string]: unknown | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_network_request"
+        payload?: {
+          index?: number
+          urlContains?: string
+          [key: string]: unknown | number | string | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_console"
+        payload?: {
+          limit?: number
+          [key: string]: unknown | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_console_message"
+        payload?: {
+          index?: number
+          [key: string]: unknown | number | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_emulate"
+        payload?: {
+          width?: number
+          height?: number
+          colorScheme?: "light" | "dark" | "no-preference"
+          reducedMotion?: "reduce" | "no-preference"
+          locale?: string
+          timezoneId?: string
+          geolocation?: {
+            latitude: number
+            longitude: number
+          }
+          [key: string]:
+            | unknown
+            | number
+            | "light"
+            | "dark"
+            | "no-preference"
+            | "reduce"
+            | "no-preference"
+            | string
+            | {
+                latitude: number
+                longitude: number
+              }
+            | undefined
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_perf_start"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_perf_stop"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+    | {
+        sessionID: string
+        action: "browser_perf_insight"
+        payload?: {
+          [key: string]: unknown
+        }
+      }
+  path?: never
+  query?: {
+    directory?: string
+  }
+  url: "/experimental/browser/action"
+}
+
+export type ExperimentalBrowserActionErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ExperimentalBrowserActionError = ExperimentalBrowserActionErrors[keyof ExperimentalBrowserActionErrors]
+
+export type ExperimentalBrowserActionResponses = {
+  /**
+   * Action result
+   */
+  200: unknown
+}
 
 export type ExperimentalResourceListData = {
   body?: never
@@ -5094,6 +5851,69 @@ export type AppSkillsResponses = {
 
 export type AppSkillsResponse = AppSkillsResponses[keyof AppSkillsResponses]
 
+export type AppSkillsSuggestData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+  }
+  url: "/skill/suggest"
+}
+
+export type AppSkillsSuggestResponses = {
+  /**
+   * Suggested skills
+   */
+  200: Array<{
+    name: string
+    description: string
+    location: string
+    content: string
+  }>
+}
+
+export type AppSkillsSuggestResponse = AppSkillsSuggestResponses[keyof AppSkillsSuggestResponses]
+
+export type SessionPlanContentData = {
+  body?: never
+  path: {
+    sessionID: string
+  }
+  query?: {
+    directory?: string
+  }
+  url: "/session/{sessionID}/plan"
+}
+
+export type SessionPlanContentResponses = {
+  /**
+   * Plan content
+   */
+  200: {
+    content: string
+  }
+}
+
+export type SessionPlanContentResponse = SessionPlanContentResponses[keyof SessionPlanContentResponses]
+
+export type AppProxyFetchData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+  }
+  url: "/proxy/fetch"
+}
+
+export type AppProxyFetchResponses = {
+  /**
+   * Fetched content
+   */
+  200: string
+}
+
+export type AppProxyFetchResponse = AppProxyFetchResponses[keyof AppProxyFetchResponses]
+
 export type LspStatusData = {
   body?: never
   path?: never
@@ -5129,6 +5949,28 @@ export type FormatterStatusResponses = {
 }
 
 export type FormatterStatusResponse = FormatterStatusResponses[keyof FormatterStatusResponses]
+
+export type GlobalPeersData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+  }
+  url: "/global/peers"
+}
+
+export type GlobalPeersResponses = {
+  /**
+   * List of peers
+   */
+  200: Array<{
+    name: string
+    host: string
+    port: number
+  }>
+}
+
+export type GlobalPeersResponse = GlobalPeersResponses[keyof GlobalPeersResponses]
 
 export type EventSubscribeData = {
   body?: never

@@ -1,18 +1,18 @@
 {
   "$schema": "https://turborepo.com/schema.json",
-  "globalEnv": ["CI", "OPENCODE_DISABLE_SHARE"],
-  "globalPassThroughEnv": ["CI", "OPENCODE_DISABLE_SHARE"],
+  "globalEnv": ["CI", "KRONOSCODE_DISABLE_SHARE"],
+  "globalPassThroughEnv": ["CI", "KRONOSCODE_DISABLE_SHARE"],
   "tasks": {
     "typecheck": {},
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
-    "opencode#test": {
+    "kronoscode#test": {
       "dependsOn": ["^build"],
       "outputs": []
     },
-    "@opencode-ai/app#test": {
+    "@kronoscode-ai/app#test": {
       "dependsOn": ["^build"],
       "outputs": []
     }

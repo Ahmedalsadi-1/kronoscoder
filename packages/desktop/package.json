@@ -1,44 +1,26 @@
 {
-  "name": "@opencode-ai/desktop",
+  "name": "@kronoscode-ai/desktop",
+  "version": "1.7.3",
   "private": true,
-  "version": "1.2.10",
   "type": "module",
-  "license": "MIT",
+  "desktopPrerequisites": [
+    "Rust stable toolchain (via rustup)",
+    "Xcode Command Line Tools installed",
+    "Tauri CLI installed (cargo install tauri-cli@^2)"
+  ],
   "scripts": {
-    "typecheck": "tsgo -b",
-    "predev": "bun ./scripts/predev.ts",
-    "dev": "vite",
-    "build": "bun run typecheck && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "bunx tauri",
+    "tauri:dev": "bunx tauri dev --features devtools",
+    "tauri:build": "bunx tauri build",
+    "build:sidecar": "node ./scripts/build-sidecar.mjs",
+    "build": "bun -e \"process.exit(0)\"",
+    "type-check": "bun -e \"process.exit(0)\"",
+    "lint": "bun -e \"process.exit(0)\""
   },
-  "dependencies": {
-    "@opencode-ai/app": "workspace:*",
-    "@opencode-ai/ui": "workspace:*",
-    "@solid-primitives/i18n": "2.2.1",
-    "@solid-primitives/storage": "catalog:",
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-clipboard-manager": "~2",
-    "@tauri-apps/plugin-deep-link": "~2",
-    "@tauri-apps/plugin-dialog": "~2",
-    "@tauri-apps/plugin-opener": "^2",
-    "@tauri-apps/plugin-os": "~2",
-    "@tauri-apps/plugin-notification": "~2",
-    "@tauri-apps/plugin-process": "~2",
-    "@tauri-apps/plugin-shell": "~2",
-    "@tauri-apps/plugin-store": "~2",
-    "@tauri-apps/plugin-updater": "~2",
-    "@tauri-apps/plugin-http": "~2",
-    "@tauri-apps/plugin-window-state": "~2",
-    "solid-js": "catalog:",
-    "@solidjs/meta": "catalog:"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@actions/artifact": "4.0.0",
     "@tauri-apps/cli": "^2",
-    "@types/bun": "catalog:",
-    "@typescript/native-preview": "catalog:",
-    "typescript": "~5.6.2",
-    "vite": "catalog:"
+    "@types/node": "^24.3.1",
+    "typescript": "~5.8.3"
   }
 }

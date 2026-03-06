@@ -1,0 +1,4 @@
+Warning: KRONOSCODE_SERVER_PASSWORD is not set; server is unsecured.
+[91m[1mError: [0mUnexpected error, check log file at /Users/albsheralsadi/.local/share/kronoscode/log/dev.log for more details
+
+Failed to start server on port 4096

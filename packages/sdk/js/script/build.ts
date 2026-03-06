@@ -8,7 +8,7 @@ import path from "path"
 
 import { createClient } from "@hey-api/openapi-ts"
 
-await $`bun dev generate > ${dir}/openapi.json`.cwd(path.resolve(dir, "../../opencode"))
+await $`bun dev generate > ${dir}/openapi.json`.cwd(path.resolve(dir, "../../kronoscode"))
 
 await createClient({
   input: "./openapi.json",
@@ -39,6 +39,9 @@ await createClient({
 
 await $`bun prettier --write src/gen`
 await $`bun prettier --write src/v2`
-await $`rm -rf dist`
-await $`bun tsc`
+await $`rm -rf dist tsconfig.tsbuildinfo`
+await $`bunx tsc -p tsconfig.json`
+if (!(await Bun.file(path.join(dir, "dist/v2/client.js")).exists())) {
+  throw new Error(`Missing SDK output: ${path.join(dir, "dist/v2/client.js")}`)
+}
 await $`rm openapi.json`

@@ -1,0 +1,24 @@
+$ bun server/index.js --port ${KRONOSCHAMBER_PORT:-3001}
+Starting KronosChamber on port 3001
+macOS Say TTS available with 188 voices
+[zen] Startup model validation failed (non-blocking): Unable to connect. Is the computer able to access the url?
+KRONOSCODE_EXTERNAL_ONLY is enabled; attaching to external KronosCode on port 4096
+Detected KronosCode port: 4096
+Setting up proxy to KronosCode on port 4096
+Serving static files from /Users/albsheralsadi/kronosfinal/kronoscoder/packages/web/dist
+KronosChamber server running on port 3001
+Health check: http://localhost:3001/health
+Web interface: http://localhost:3001
+[PushWatcher] connected
+2026-03-05T01:31:35.994Z - GET /api/runtime/status
+2026-03-05T01:31:39.002Z - GET /api/runtime/status
+2026-03-05T01:31:42.010Z - GET /api/runtime/status
+2026-03-05T01:31:45.016Z - GET /api/runtime/status
+2026-03-05T01:31:48.020Z - GET /api/runtime/status
+2026-03-05T01:31:51.022Z - GET /api/runtime/status
+2026-03-05T01:31:54.025Z - GET /api/runtime/status
+2026-03-05T01:31:57.030Z - GET /api/runtime/status
+2026-03-05T01:32:00.038Z - GET /api/runtime/status
+2026-03-05T01:32:03.046Z - GET /api/runtime/status
+2026-03-05T01:32:06.051Z - GET /api/runtime/status
+error: script "dev:server" was terminated by signal SIGKILL (Forced quit)

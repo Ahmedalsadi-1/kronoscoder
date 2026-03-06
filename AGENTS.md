@@ -1,113 +1,76 @@
-- To regenerate the JavaScript SDK, run `./packages/sdk/js/script/build.ts`.
-- ALWAYS USE PARALLEL TOOLS WHEN APPLICABLE.
-- The default branch in this repo is `dev`.
-- Local `main` ref may not exist; use `dev` or `origin/dev` for diffs.
-- Prefer automation: execute requested actions without confirmation unless blocked by missing info or safety/irreversibility.
+# Agent Guidelines for KronosCoder & OpenChamber
 
-## Style Guide
+This repository is a monorepo containing KronosCoder (core AI agent logic) and OpenChamber (multi-platform UI runtimes).
+
+## Workspace Structure
+- `packages/kronoscode`: Core AI agent logic and CLI.
+- `packages/web`: OpenChamber web application and Express server.
+- `packages/ui`: Shared React/TypeScript component library (Tailwind v4).
+- `packages/desktop`: Tauri-based desktop application.
+- `packages/vscode`: VS Code extension integration.
+- `kronosChamber/`: Primary UI development workspace for OpenChamber.
+
+## Build & Test Commands
+
+### Root Commands
+- **Install**: `bun install`
+- **Build All**: `bun turbo build`
+- **Type-Check**: `bun turbo typecheck`
+- **Clean**: `bun run clean`
+
+### KronosCoder (`packages/kronoscode`)
+- **Run Dev**: `bun run dev`
+- **Run Single Test**: `bun test packages/kronoscode/src/path/to/test.ts`
+- **Test All**: `bun test` (Run from within `packages/kronoscode`)
+- **Build SDK**: `./packages/sdk/js/script/build.ts`
+
+### OpenChamber (`kronosChamber`)
+- **Dev (Full)**: `bun run dev` (Starts server, web, and UI concurrently)
+- **Desktop Dev**: `bun run desktop:dev`
+- **VS Code Dev**: `bun run vscode:dev`
+- **Lint**: `bun run lint`
+- **Type-Check**: `bun run type-check`
+- **Release Smoke Test**: `bun run release:test`
+
+## Code Style Guidelines
 
 ### General Principles
+- **Modern Standards**: Use React 19, TypeScript 5+, and Tailwind v4.
+- **Brevity**: Keep functions small and composable. Avoid `try/catch` where possible; handle errors through control flow.
+- **Type Safety**: Avoid `any` and blind type casts. Rely on type inference; only use explicit interfaces for exports.
+- **Variable Naming**: Prefer single-word names (e.g., `journal` vs `journalData`). Inline variables used only once.
+- **Immutability**: Prefer `const` over `let`. Use ternaries and early returns instead of reassignment/else blocks.
+- **Destructuring**: Use dot notation (`obj.prop`) instead of destructuring to preserve context, unless multiple props are used.
 
-- Keep things in one function unless composable or reusable
-- Avoid `try`/`catch` where possible
-- Avoid using the `any` type
-- Prefer single word variable names where possible
-- Use Bun APIs when possible, like `Bun.file()`
-- Rely on type inference when possible; avoid explicit type annotations or interfaces unless necessary for exports or clarity
-- Prefer functional array methods (flatMap, filter, map) over for loops; use type guards on filter to maintain type inference downstream
+### Imports & Dependencies
+- **Order**: Standard library -> External packages -> Internal workspaces (`@kronoscode-ai/*`) -> Local paths.
+- **Bun APIs**: Prefer Bun native APIs (e.g., `Bun.file()`, `Bun.password`) over Node equivalents when applicable.
+- **New Dependencies**: Do not add new dependencies without explicit instruction.
 
-### Naming
+### UI & Theme (OpenChamber)
+- **Theme Tokens**: **MANDATORY**. Do not hardcode colors or use Tailwind color classes (e.g., `text-blue-500`). Use theme tokens (e.g., `text-brand-primary`).
+- **Typography**: Use semantic classes from `packages/ui/src/lib/typography.ts` (e.g., `typography-markdown`, `typography-code`).
+- **Icons**: Use `@remixicon/react` for consistency.
+- **Toasts**: Use the project wrapper from `@/components/ui`; do not import `sonner` directly.
+- **Consistency**: Ensure UI changes work across Web, Desktop, and VS Code runtimes.
 
-Prefer single word names for variables and functions. Only use multiple words if necessary.
-
+### Schema (Drizzle)
+- Use `snake_case` for database field names to avoid manual column mapping.
 ```ts
-// Good
-const foo = 1
-function journal(dir: string) {}
-
-// Bad
-const fooBar = 1
-function prepareJournal(dir: string) {}
-```
-
-Reduce total variable count by inlining when a value is only used once.
-
-```ts
-// Good
-const journal = await Bun.file(path.join(dir, "journal.json")).json()
-
-// Bad
-const journalPath = path.join(dir, "journal.json")
-const journal = await Bun.file(journalPath).json()
-```
-
-### Destructuring
-
-Avoid unnecessary destructuring. Use dot notation to preserve context.
-
-```ts
-// Good
-obj.a
-obj.b
-
-// Bad
-const { a, b } = obj
-```
-
-### Variables
-
-Prefer `const` over `let`. Use ternaries or early returns instead of reassignment.
-
-```ts
-// Good
-const foo = condition ? 1 : 2
-
-// Bad
-let foo
-if (condition) foo = 1
-else foo = 2
-```
-
-### Control Flow
-
-Avoid `else` statements. Prefer early returns.
-
-```ts
-// Good
-function foo() {
-  if (condition) return 1
-  return 2
-}
-
-// Bad
-function foo() {
-  if (condition) return 1
-  else return 2
-}
-```
-
-### Schema Definitions (Drizzle)
-
-Use snake_case for field names so column names don't need to be redefined as strings.
-
-```ts
-// Good
-const table = sqliteTable("session", {
+const sessions = sqliteTable("session", {
   id: text().primaryKey(),
-  project_id: text().notNull(),
-  created_at: integer().notNull(),
-})
-
-// Bad
-const table = sqliteTable("session", {
-  id: text("id").primaryKey(),
-  projectID: text("project_id").notNull(),
-  createdAt: integer("created_at").notNull(),
+  project_id: text().notNull(), // Good: matches DB column
 })
 ```
 
-## Testing
+## Testing Guidelines
+- **No Root Tests**: NEVER run `bun test` from the repo root; it is guarded to fail.
+- **Targeted Testing**: Run tests from the specific package directory.
+- **Avoid Mocks**: Test actual implementations whenever possible.
+- **Reproduction**: Before fixing a bug, create a failing test case to verify the fix.
 
-- Avoid mocks as much as possible
-- Test actual implementation, do not duplicate logic into tests
-- Tests cannot run from repo root (guard: `do-not-run-tests-from-root`); run from package dirs like `packages/opencode`.
+## Critical Mandates
+- **Tight Diffs**: Avoid drive-by refactors. Keep changes strictly focused on the task.
+- **No Secrets**: Never commit `.env` files, API keys, or log sensitive information.
+- **Verification**: Always run `type-check` and `lint` before finalizing a PR.
+- **Branching**: The default branch is `dev`. Use `origin/dev` as the base for diffs.

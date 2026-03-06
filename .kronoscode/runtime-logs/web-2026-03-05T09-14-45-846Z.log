@@ -1,0 +1,69 @@
+$ bun server/index.js --port ${KRONOSCHAMBER_PORT:-3001}
+Starting KronosChamber on port 3001
+macOS Say TTS available with 188 voices
+[zen] Startup model validation failed (non-blocking): Unable to connect. Is the computer able to access the url?
+KRONOSCODE_EXTERNAL_ONLY is enabled; attaching to external KronosCode on port 4096
+Detected KronosCode port: 4096
+Setting up proxy to KronosCode on port 4096
+Serving static files from /Users/albsheralsadi/kronosfinal/kronoscoder/packages/web/dist
+KronosChamber server running on port 3001
+Health check: http://localhost:3001/health
+Web interface: http://localhost:3001
+[PushWatcher] connected
+2026-03-05T09:14:50.364Z - GET /api/runtime/status
+2026-03-05T09:14:51.206Z - POST /api/push/visibility
+2026-03-05T09:14:53.078Z - GET /api/global/event
+[sse] connect scope=global reason=new-stream path=/global/event
+[sse] lifecycle action=connect reason=new-stream scope=global
+2026-03-05T09:14:53.087Z - GET /api/runtime/tasks
+2026-03-05T09:14:53.237Z - GET /api/sessions/snapshot
+2026-03-05T09:14:53.239Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-05T09:14:53.366Z - GET /api/runtime/status
+2026-03-05T09:14:54.186Z - GET /api/sessions/snapshot
+2026-03-05T09:14:54.187Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-05T09:14:56.962Z - GET /api/git/check
+2026-03-05T09:14:56.966Z - GET /api/runtime/status
+2026-03-05T09:14:59.959Z - GET /api/runtime/status
+2026-03-05T09:15:01.227Z - POST /api/push/visibility
+2026-03-05T09:15:03.604Z - GET /api/runtime/status
+2026-03-05T09:15:06.664Z - GET /api/runtime/status
+2026-03-05T09:15:06.974Z - GET /api/git/check
+2026-03-05T09:15:08.386Z - GET /api/runtime/status
+2026-03-05T09:15:11.219Z - POST /api/push/visibility
+2026-03-05T09:15:11.411Z - GET /api/runtime/status
+2026-03-05T09:15:15.322Z - GET /api/runtime/status
+2026-03-05T09:15:18.137Z - GET /api/git/check
+2026-03-05T09:15:18.139Z - GET /api/runtime/status
+2026-03-05T09:15:23.810Z - POST /api/push/visibility
+2026-03-05T09:15:23.813Z - GET /api/runtime/status
+2026-03-05T09:15:23.814Z - GET /api/runtime/status
+2026-03-05T09:15:27.872Z - GET /api/runtime/status
+2026-03-05T09:15:29.914Z - GET /api/git/check
+2026-03-05T09:15:29.934Z - GET /api/runtime/status
+2026-03-05T09:15:31.964Z - POST /api/push/visibility
+2026-03-05T09:15:32.494Z - GET /api/runtime/status
+2026-03-05T09:15:39.946Z - GET /api/git/check
+2026-03-05T09:15:41.303Z - POST /api/push/visibility
+2026-03-05T09:15:49.977Z - GET /api/git/check
+2026-03-05T09:15:51.187Z - POST /api/push/visibility
+2026-03-05T09:15:59.985Z - GET /api/git/check
+2026-03-05T09:16:01.186Z - POST /api/push/visibility
+2026-03-05T09:16:09.992Z - GET /api/git/check
+2026-03-05T09:16:11.186Z - POST /api/push/visibility
+2026-03-05T09:16:19.999Z - GET /api/git/check
+2026-03-05T09:16:21.186Z - POST /api/push/visibility
+2026-03-05T09:16:30.011Z - GET /api/git/check
+2026-03-05T09:16:31.194Z - POST /api/push/visibility
+2026-03-05T09:16:40.038Z - GET /api/git/check
+2026-03-05T09:16:41.212Z - POST /api/push/visibility
+2026-03-05T09:16:50.094Z - GET /api/git/check
+2026-03-05T09:16:51.232Z - POST /api/push/visibility
+2026-03-05T09:17:00.118Z - GET /api/git/check
+2026-03-05T09:17:01.186Z - POST /api/push/visibility
+2026-03-05T09:17:10.129Z - GET /api/git/check
+2026-03-05T09:17:11.187Z - POST /api/push/visibility
+2026-03-05T09:17:20.135Z - GET /api/git/check
+2026-03-05T09:17:21.186Z - POST /api/push/visibility
+error: script "dev:server" was terminated by signal SIGKILL (Forced quit)

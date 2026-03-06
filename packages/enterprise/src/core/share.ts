@@ -1,10 +1,10 @@
-import { FileDiff, Message, Model, Part, Session } from "@opencode-ai/sdk/v2"
-import { fn } from "@opencode-ai/util/fn"
-import { iife } from "@opencode-ai/util/iife"
-import { Identifier } from "@opencode-ai/util/identifier"
+import { FileDiff, Message, Model, Part, Session } from "@kronoscode-ai/sdk/v2"
+import { fn } from "@kronoscode-ai/util/fn"
+import { iife } from "@kronoscode-ai/util/iife"
+import { Identifier } from "@kronoscode-ai/util/identifier"
 import z from "zod"
 import { Storage } from "./storage"
-import { Binary } from "@opencode-ai/util/binary"
+import { Binary } from "@kronoscode-ai/util/binary"
 
 export namespace Share {
   export const Info = z.object({

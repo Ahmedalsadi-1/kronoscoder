@@ -1,0 +1,217 @@
+$ bun server/index.js --port ${KRONOSCHAMBER_PORT:-3001}
+Starting KronosChamber on port 3001
+macOS Say TTS available with 188 voices
+[zen] Startup model validation failed (non-blocking): Unable to connect. Is the computer able to access the url?
+KRONOSCODE_EXTERNAL_ONLY is enabled; attaching to external KronosCode on port 4096
+Detected KronosCode port: 4096
+Setting up proxy to KronosCode on port 4096
+Serving static files from /Users/albsheralsadi/kronosfinal/kronoscoder/packages/web/dist
+KronosChamber server running on port 3001
+Health check: http://localhost:3001/health
+Web interface: http://localhost:3001
+[PushWatcher] connected
+2026-03-05T01:23:35.186Z - GET /api/runtime/status
+2026-03-05T01:23:38.189Z - GET /api/runtime/status
+2026-03-05T01:23:41.191Z - GET /api/runtime/status
+2026-03-05T01:23:44.193Z - GET /api/runtime/status
+2026-03-05T01:23:47.195Z - GET /api/runtime/status
+2026-03-05T01:23:50.197Z - GET /api/runtime/status
+2026-03-05T01:23:53.210Z - GET /api/runtime/status
+2026-03-05T01:23:56.212Z - GET /api/runtime/status
+2026-03-05T01:23:59.215Z - GET /api/runtime/status
+2026-03-05T01:24:02.219Z - GET /api/runtime/status
+2026-03-05T01:24:05.223Z - GET /api/runtime/status
+2026-03-05T01:24:19.229Z - GET /api/runtime/status
+2026-03-05T01:24:59.848Z - GET /
+2026-03-05T01:24:59.855Z - GET /assets/index-DzBp6vjv.js
+2026-03-05T01:24:59.857Z - GET /assets/vendor-shiki-BPTbv4OJ.js
+2026-03-05T01:24:59.858Z - GET /assets/index-D_kQ3h5B.css
+2026-03-05T01:24:59.895Z - GET /branding/source/gemini-default.png
+2026-03-05T01:24:59.973Z - GET /assets/mermaid-3ZIDBTTL-LexQsLxP.js
+2026-03-05T01:24:59.973Z - GET /assets/vendor-react-CUos4OCh.js
+2026-03-05T01:24:59.974Z - GET /assets/vendor-radix-DFw4qKnl.js
+2026-03-05T01:24:59.975Z - GET /assets/vendor-zustand-uGY5oT4T.js
+2026-03-05T01:24:59.975Z - GET /assets/vendor-cytoscape-BMdPkac-.js
+2026-03-05T01:24:59.979Z - GET /assets/mermaid-3ZIDBTTL-BwOxjOQd.css
+2026-03-05T01:24:59.980Z - GET /assets/vendor-mermaid-Dhbz-51U.js
+2026-03-05T01:24:59.980Z - GET /assets/vendor-markdown-C1vIFQ7e.js
+2026-03-05T01:24:59.983Z - GET /assets/vendor-ghostty-web-M-rMj1tG.js
+2026-03-05T01:24:59.987Z - GET /assets/workbox-window.prod.es5-BIl4cyR9.js
+2026-03-05T01:24:59.988Z - GET /assets/vendor-syntax-BRLQZ6Rm.js
+2026-03-05T01:24:59.988Z - GET /assets/vendor-codemirror-CI_g4nTg.js
+2026-03-05T01:24:59.994Z - GET /apple-touch-icon-152x152.png
+2026-03-05T01:25:00.339Z - GET /api/config/settings
+2026-03-05T01:25:00.340Z - GET /api/fs/home
+2026-03-05T01:25:00.386Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "homeDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "homeDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-05T01:25:00.389Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-05T01:25:00.392Z - GET /auth/session
+2026-03-05T01:25:00.393Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "themeId": "flexoki-light",
+  "themeVariant": "light",
+  "useSystemTheme": true,
+  "lightThemeId": "flexoki-light",
+  "darkThemeId": "flexoki-dark"
+}
+[persistSettings] Called with changes: {
+  "themeId": "flexoki-light",
+  "themeVariant": "light",
+  "useSystemTheme": true,
+  "lightThemeId": "flexoki-light",
+  "darkThemeId": "flexoki-dark"
+}
+2026-03-05T01:25:00.393Z - GET /api/config/themes
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-05T01:25:00.429Z - GET /assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2
+2026-03-05T01:25:00.436Z - GET /api/git/check
+2026-03-05T01:25:00.437Z - GET /api/config/settings
+2026-03-05T01:25:00.437Z - GET /api/git/check
+2026-03-05T01:25:00.438Z - GET /api/git/check
+2026-03-05T01:25:00.439Z - GET /api/fs/list
+2026-03-05T01:25:00.441Z - POST /api/fs/exec
+2026-03-05T01:25:00.445Z - GET /api/git/check
+2026-03-05T01:25:00.447Z - GET /api/tts/status
+2026-03-05T01:25:00.510Z - GET /api/tts/say/status
+2026-03-05T01:25:00.511Z - GET /assets/ibm-plex-sans-latin-400-normal-CDDApCn2.woff2
+2026-03-05T01:25:00.511Z - GET /api/git/remotes
+2026-03-05T01:25:00.516Z - GET /api/git/identities
+2026-03-05T01:25:00.517Z - GET /api/config/settings
+2026-03-05T01:25:00.517Z - GET /api/git/global-identity
+2026-03-05T01:25:00.526Z - GET /api/github/auth/status
+2026-03-05T01:25:00.573Z - GET /api/git/check
+2026-03-05T01:25:00.577Z - POST /api/terminal/create
+Using bun-pty for terminal sessions
+Created terminal session: 5kttuiob6f9c15gj9xz1d in /Users/albsheralsadi
+2026-03-05T01:25:00.634Z - GET /api/sessions/snapshot
+2026-03-05T01:25:00.635Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-05T01:25:00.637Z - POST /api/terminal/create
+2026-03-05T01:25:00.637Z - GET /assets/pierre-light-dckrK0oj.js
+2026-03-05T01:25:00.637Z - GET /assets/pierre-dark-BXuwtOqb.js
+Created terminal session: o8noavmbjy9c054hbsfe9 in /Users/albsheralsadi
+2026-03-05T01:25:00.657Z - GET /api/permission
+API → KronosCode: GET /permission
+2026-03-05T01:25:00.658Z - POST /api/push/visibility
+2026-03-05T01:25:00.659Z - GET /api/question
+API → KronosCode: GET /question
+2026-03-05T01:25:00.659Z - GET /branding/source/gemini-default.png
+2026-03-05T01:25:00.660Z - GET /api/question
+API → KronosCode: GET /question
+2026-03-05T01:25:00.660Z - GET /api/config/settings
+2026-03-05T01:25:00.663Z - GET /api/git/status
+2026-03-05T01:25:00.669Z - GET /api/path
+API → KronosCode: GET /path
+2026-03-05T01:25:00.669Z - GET /api/global/event
+[sse] connect scope=global reason=new-stream path=/global/event
+2026-03-05T01:25:00.670Z - GET /api/git/check
+[sse] lifecycle action=connect reason=new-stream scope=global
+2026-03-05T01:25:00.674Z - DELETE /api/terminal/5kttuiob6f9c15gj9xz1d
+Terminal session 5kttuiob6f9c15gj9xz1d exited with code 0, signal SIGTERM
+Closed terminal session: 5kttuiob6f9c15gj9xz1d
+2026-03-05T01:25:00.675Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-05T01:25:00.677Z - POST /api/terminal/o8noavmbjy9c054hbsfe9/resize
+2026-03-05T01:25:00.681Z - GET /api/terminal/o8noavmbjy9c054hbsfe9/stream
+Terminal connected: session=o8noavmbjy9c054hbsfe9 client=jtbjwb5 runtime=bun pty=bun-pty
+2026-03-05T01:25:00.814Z - POST /api/terminal/o8noavmbjy9c054hbsfe9/resize
+2026-03-05T01:25:00.815Z - GET /api/git/check
+2026-03-05T01:25:00.816Z - GET /api/runtime/tasks
+2026-03-05T01:25:00.818Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+[API:PUT /api/config/settings] Success, returning 1 projects
+2026-03-05T01:25:00.819Z - GET /api/kronoschamber/models-metadata
+2026-03-05T01:25:00.944Z - GET /api/config/providers
+API → KronosCode: GET /config/providers
+2026-03-05T01:25:00.946Z - GET /api/sessions/snapshot
+2026-03-05T01:25:00.947Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-05T01:25:00.968Z - GET /api/path
+API → KronosCode: GET /path
+2026-03-05T01:25:00.969Z - GET /api/session
+API → KronosCode: GET /session
+2026-03-05T01:25:00.971Z - GET /assets/worker-suRQxAtO.js
+2026-03-05T01:25:00.976Z - GET /assets/worker-suRQxAtO.js
+2026-03-05T01:25:00.979Z - GET /assets/worker-suRQxAtO.js
+2026-03-05T01:25:01.018Z - GET /api/config/settings
+2026-03-05T01:25:01.020Z - GET /api/agent
+API → KronosCode: GET /agent
+2026-03-05T01:25:01.050Z - GET /api/session
+API → KronosCode: GET /session
+2026-03-05T01:25:01.051Z - GET /api/git/worktrees
+2026-03-05T01:25:01.070Z - GET /assets/wasm-CG6Dc4jp.js
+2026-03-05T01:25:01.073Z - GET /api/git/worktrees
+2026-03-05T01:25:01.076Z - GET /assets/wasm-CG6Dc4jp.js
+2026-03-05T01:25:01.078Z - GET /assets/wasm-CG6Dc4jp.js
+2026-03-05T01:25:01.114Z - GET /api/git/worktrees
+2026-03-05T01:25:01.136Z - GET /api/git/worktrees
+2026-03-05T01:25:01.783Z - GET /api/sessions/snapshot
+2026-03-05T01:25:01.783Z - GET /api/session/status
+API → KronosCode: GET /session/status
+2026-03-05T01:25:03.456Z - GET /api/kronoschamber/update-check
+Failed to fetch latest version from npm: Registry responded with 404
+2026-03-05T01:25:04.335Z - GET /assets/ibm-plex-mono-latin-600-normal-BgSNZQsw.woff2
+2026-03-05T01:25:05.457Z - GET /api/git/check
+2026-03-05T01:25:10.458Z - POST /api/push/visibility
+2026-03-05T01:25:20.457Z - POST /api/push/visibility
+2026-03-05T01:25:20.542Z - GET /api/git/status
+2026-03-05T01:25:20.576Z - GET /api/git/status
+2026-03-05T01:25:20.604Z - GET /api/git/status
+2026-03-05T01:25:47.364Z - GET /api/git/check
+2026-03-05T01:26:00.705Z - GET /api/git/status
+Client jtbjwb5 disconnected from terminal session o8noavmbjy9c054hbsfe9
+Client jtbjwb5 disconnected from terminal session o8noavmbjy9c054hbsfe9
+[sse] close scope=global reason=client-disconnect durationMs=138650
+2026-03-05T01:27:19.330Z - POST /api/push/visibility
+2026-03-05T01:27:19.335Z - POST /api/push/visibility
+2026-03-05T01:27:19.336Z - POST /api/push/visibility
+2026-03-05T01:27:19.336Z - POST /api/push/visibility
+2026-03-05T01:27:19.337Z - GET /sw.js
+2026-03-05T01:27:54.056Z - GET /api/runtime/status
+error: script "dev:server" was terminated by signal SIGKILL (Forced quit)

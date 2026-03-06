@@ -1,54 +1,70 @@
-# Starlight Starter Kit: Basics
+# <picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/btriapitsyn/kronoschamber/raw/HEAD/docs/references/badges/kronoschamber-logo-dark.svg"><img src="https://github.com/btriapitsyn/kronoschamber/raw/HEAD/docs/references/badges/kronoschamber-logo-light.svg" width="32" height="32" align="absmiddle" /></picture> @kronoscode-ai/web
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+[![GitHub stars](https://img.shields.io/github/stars/btriapitsyn/kronoschamber?style=flat&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0iI2YxZWNlYyIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0yMjkuMDYsMTA4Ljc5bC00OC43LDQyLDE0Ljg4LDYyLjc5YTguNCw4LjQsMCwwLDEtMTIuNTIsOS4xN0wxMjgsMTg5LjA5LDczLjI4LDIyMi43NGE4LjQsOC40LDAsMCwxLTEyLjUyLTkuMTdsMTQuODgtNjIuNzktNDguNy00MkE4LjQ2LDguNDYsMCwwLDEsMzEuNzMsOTRMOTUuNjQsODguOGwyNC42Mi01OS42YTguMzYsOC4zNiwwLDAsMSwxNS40OCwwbDI0LjYyLDU5LjZMMjI0LjI3LDk0QTguNDYsOC40NiwwLDAsMSwyMjkuMDYsMTA4Ljc5WiIgb3BhY2l0eT0iMC4yIj48L3BhdGg%2BPHBhdGggZD0iTTIzOS4xOCw5Ny4yNkExNi4zOCwxNi4zOCwwLDAsMCwyMjQuOTIsODZsLTU5LTQuNzZMMTQzLjE0LDI2LjE1YTE2LjM2LDE2LjM2LDAsMCwwLTMwLjI3LDBMOTAuMTEsODEuMjMsMzEuMDgsODZhMTYuNDYsMTYuNDYsMCwwLDAtOS4zNywyOC44Nmw0NSwzOC44M0w1MywyMTEuNzVhMTYuMzgsMTYuMzgsMCwwLDAsMjQuNSwxNy44MkwxMjgsMTk4LjQ5bDUwLjUzLDMxLjA4QTE2LjQsMTYuNCwwLDAsMCwyMDMsMjExLjc1bC0xMy43Ni01OC4wNyw0NS0zOC44M0ExNi40MywxNi40MywwLDAsMCwyMzkuMTgsOTcuMjZabS0xNS4zNCw1LjQ3LTQ4LjcsNDJhOCw4LDAsMCwwLTIuNTYsNy45MWwxNC44OCw2Mi44YS4zNy4zNywwLDAsMS0uMTcuNDhjLS4xOC4xNC0uMjMuMTEtLjM4LDBsLTU0LjcyLTMzLjY1YTgsOCwwLDAsMC04LjM4LDBMNjkuMDksMjE1Ljk0Yy0uMTUuMDktLjE5LjEyLS4zOCwwYS4zNy4zNywwLDAsMS0uMTctLjQ4bDE0Ljg4LTYyLjhhOCw4LDAsMCwwLTIuNTYtNy45MWwtNDguNy00MmMtLjEyLS4xLS4yMy0uMTktLjEzLS41cy4xOC0uMjcuMzMtLjI5bDYzLjkyLTUuMTZBOCw4LDAsMCwwLDEwMyw5MS44NmwyNC42Mi01OS42MWMuMDgtLjE3LjExLS4yNS4zNS0uMjVzLjI3LjA4LjM1LjI1TDE1Myw5MS44NmE4LDgsMCwwLDAsNi43NSw0LjkybDYzLjkyLDUuMTZjLjE1LDAsLjI0LDAsLjMzLjI5UzIyNCwxMDIuNjMsMjIzLjg0LDEwMi43M1oiPjwvcGF0aD48L3N2Zz4%3D&logoColor=FFFCF0&labelColor=100F0F&color=66800B)](https://github.com/btriapitsyn/kronoschamber/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/btriapitsyn/kronoschamber?style=flat&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0iI2YxZWNlYyIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik04OCw2NEEyNCwyNCwwLDEsMSw2NCw0MCwyNCwyNCwwLDAsMSw4OCw2NFpNMTkyLDQwYTI0LDI0LDAsMSwwLDI0LDI0QTI0LDI0LDAsMCwwLDE5Miw0MFoiIG9wYWNpdHk9IjAuMiI%2BPC9wYXRoPjxwYXRoIGQ9Ik0yMjQsNjRhMzIsMzIsMCwxLDAtNDAsMzF2MTdhOCw4LDAsMCwxLTgsOEg4MGE4LDgsMCwwLDEtOC04Vjk1YTMyLDMyLDAsMSwwLTE2LDB2MTdhMjQsMjQsMCwwLDAsMjQsMjRoNDB2MjVhMzIsMzIsMCwxLDAsMTYsMFYxMzZoNDBhMjQsMjQsMCwwLDAsMjQtMjRWOTVBMzIuMDYsMzIuMDYsMCwwLDAsMjI0LDY0Wk00OCw2NEExNiwxNiwwLDEsMSw2NCw4MCwxNiwxNiwwLDAsMSw0OCw2NFptOTYsMTI4YTE2LDE2LDAsMSwxLTE2LTE2QTE2LDE2LDAsMCwxLDE0NCwxOTJaTTE5Miw4MGExNiwxNiwwLDEsMSwxNi0xNkExNiwxNiwwLDAsMSwxOTIsODBaIj48L3BhdGg%2BPC9zdmc%2B&logoColor=FFFCF0&labelColor=100F0F&color=BC5215)](https://github.com/btriapitsyn/kronoschamber/network/members)
+[![GitHub release](https://img.shields.io/github/v/release/btriapitsyn/kronoschamber?style=flat&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0iI2YxZWNlYyIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0xMjgsMTI5LjA5VjIzMmE4LDgsMCwwLDEtMy44NC0xbC04OC00OC4xOGE4LDgsMCwwLDEtNC4xNi03VjgwLjE4YTgsOCwwLDAsMSwuNy0zLjI1WiIgb3BhY2l0eT0iMC4yIj48L3BhdGg%2BPHBhdGggZD0iTTIyMy42OCw2Ni4xNSwxMzUuNjgsMThhMTUuODgsMTUuODgsMCwwLDAtMTUuMzYsMGwtODgsNDguMTdhMTYsMTYsMCwwLDAtOC4zMiwxNHY5NS42NGExNiwxNiwwLDAsMCw4LjMyLDE0bDg4LDQ4LjE3YTE1Ljg4LDE1Ljg4LDAsMCwwLDE1LjM2LDBsODgtNDguMTdhMTYsMTYsMCwwLDAsOC4zMi0xNFY4MC4xOEExNiwxNiwwLDAsMCwyMjMuNjgsNjYuMTVaTTEyOCwzMmw4MC4zNCw0NC0yOS43NywxNi4zLTgwLjM1LTQ0Wk0xMjgsMTIwLDQ3LjY2LDc2bDMzLjktMTguNTYsODAuMzQsNDRaTTQwLDkwbDgwLDQzLjc4djg1Ljc5TDQwLDE3NS44MlptMTc2LDg1Ljc4aDBsLTgwLDQzLjc5VjEzMy44MmwzMi0xNy41MVYxNTJhOCw4LDAsMCwwLDE2LDBWMTA3LjU1TDIxNiw5MHY4NS43N1oiPjwvcGF0aD48L3N2Zz4%3D&logoColor=FFFCF0&labelColor=100F0F&color=205EA6)](https://github.com/btriapitsyn/kronoschamber/releases/latest)
+[![Created with KronosCode](https://github.com/btriapitsyn/kronoschamber/raw/HEAD/docs/references/badges/created-with-kronoscode.svg)](https://kronoscode.ai)
+[![Ask Zread](https://img.shields.io/badge/Ask_Zread-_.svg?style=flat&labelColor=100F0F&color=3AA99F&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTM1MiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=FFFCF0)](https://zread.ai/btriapitsyn/kronoschamber)
+[![Discord](https://img.shields.io/badge/Discord-join.svg?style=flat&labelColor=100F0F&color=8B7EC8&logo=discord&logoColor=FFFCF0)](https://discord.gg/ZYRSdnwwKA)
+[![Support the project](https://img.shields.io/badge/Support-Project-black?style=flat&labelColor=100F0F&color=EC8B49&logo=ko-fi&logoColor=FFFCF0)](https://ko-fi.com/G2G41SAWNS)
 
-```
-npm create astro@latest -- --template starlight
-```
+Web/PWA interface for the [KronosCode](https://kronoscode.ai) AI coding agent.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/starlight/tree/main/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/starlight/tree/main/examples/basics)
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/withastro/starlight&create_from_path=examples/basics)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fwithastro%2Fstarlight%2Ftree%2Fmain%2Fexamples%2Fbasics&project-name=my-starlight-docs&repository-name=my-starlight-docs)
+This package installs the `kronoschamber` CLI that runs a local web server. For the full project overview and screenshots, see the main repo:
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+https://github.com/btriapitsyn/kronoschamber
 
-## 🚀 Project Structure
+## Installation
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+```bash
+# Quick install (auto-detects your package manager)
+curl -fsSL https://raw.githubusercontent.com/btriapitsyn/kronoschamber/main/scripts/install.sh | bash
 
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   ├── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
+# Or install manually
+bun add -g @kronoscode-ai/web    # or npm, pnpm, yarn
 ```
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+## Usage
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+```bash
+kronoschamber                          # Start on port 3000
+kronoschamber --port 8080              # Custom port
+kronoschamber --daemon                 # Background mode
+kronoschamber --ui-password secret     # Password-protect UI
+KRONOSCODE_PORT=4096 KRONOSCODE_SKIP_START=true kronoschamber  # Connect to external KronosCode server
+kronoschamber stop                     # Stop server
+kronoschamber update                   # Update to latest version
+```
 
-Static assets, like favicons, can be placed in the `public/` directory.
+### Environment Variables
 
-## 🧞 Commands
+- `KRONOSCODE_PORT` - Port of external KronosCode server to connect to (instead of starting embedded server)
+- `KRONOSCODE_SKIP_START` - Skip starting embedded KronosCode server (use with `KRONOSCODE_PORT` to connect to external instance)
 
-All commands are run from the root of the project, from a terminal:
+## Prerequisites
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+- [KronosCode CLI](https://kronoscode.ai) installed (`kronoscode`)
+- Node.js 20+
 
-## 👀 Want to learn more?
+## Features
 
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+### Core UI
+
+- Branchable chat timeline with `/undo`, `/redo`, and one-click forks from earlier turns
+- Smart tool UIs for diffs, file operations, permissions, and long-running task progress
+- Multi-agent runs from one prompt with isolated worktrees for safe comparisons
+- Git workflows in-app: identities, commits, PR creation, checks, and merge actions
+- Context visibility tools (token/cost breakdowns, raw message inspection, and activity summaries)
+- Integrated terminal with per-directory sessions and stable performance on heavy output
+
+### Web / PWA
+
+- Cloudflare Quick Tunnel for instant remote access (`--try-cf-tunnel`)
+- One-scan onboarding with tunnel QR + password URL helpers
+- Mobile-first experience: optimized chat controls, keyboard-safe layouts, and attachment-friendly UI
+- Background notifications plus reliable cross-tab session activity tracking
+- Built-in self-update + restart flow that keeps your server settings intact
+
+## License
+
+MIT

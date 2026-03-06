@@ -1,36 +1,36 @@
-id = "opencode"
-name = "OpenCode"
+id = "kronoscode"
+name = "KronosCode"
 description = "The open source coding agent."
 version = "1.2.10"
 schema_version = 1
 authors = ["Anomaly"]
-repository = "https://github.com/anomalyco/opencode"
+repository = "https://github.com/anomalyco/kronoscode"
 
-[agent_servers.opencode]
-name = "OpenCode"
-icon = "./icons/opencode.svg"
+[agent_servers.kronoscode]
+name = "KronosCode"
+icon = "./icons/kronoscode.svg"
 
-[agent_servers.opencode.targets.darwin-aarch64]
-archive = "https://github.com/anomalyco/opencode/releases/download/v1.2.10/opencode-darwin-arm64.zip"
-cmd = "./opencode"
+[agent_servers.kronoscode.targets.darwin-aarch64]
+archive = "https://github.com/anomalyco/kronoscode/releases/download/v1.2.10/kronoscode-darwin-arm64.zip"
+cmd = "./kronoscode"
 args = ["acp"]
 
-[agent_servers.opencode.targets.darwin-x86_64]
-archive = "https://github.com/anomalyco/opencode/releases/download/v1.2.10/opencode-darwin-x64.zip"
-cmd = "./opencode"
+[agent_servers.kronoscode.targets.darwin-x86_64]
+archive = "https://github.com/anomalyco/kronoscode/releases/download/v1.2.10/kronoscode-darwin-x64.zip"
+cmd = "./kronoscode"
 args = ["acp"]
 
-[agent_servers.opencode.targets.linux-aarch64]
-archive = "https://github.com/anomalyco/opencode/releases/download/v1.2.10/opencode-linux-arm64.tar.gz"
-cmd = "./opencode"
+[agent_servers.kronoscode.targets.linux-aarch64]
+archive = "https://github.com/anomalyco/kronoscode/releases/download/v1.2.10/kronoscode-linux-arm64.tar.gz"
+cmd = "./kronoscode"
 args = ["acp"]
 
-[agent_servers.opencode.targets.linux-x86_64]
-archive = "https://github.com/anomalyco/opencode/releases/download/v1.2.10/opencode-linux-x64.tar.gz"
-cmd = "./opencode"
+[agent_servers.kronoscode.targets.linux-x86_64]
+archive = "https://github.com/anomalyco/kronoscode/releases/download/v1.2.10/kronoscode-linux-x64.tar.gz"
+cmd = "./kronoscode"
 args = ["acp"]
 
-[agent_servers.opencode.targets.windows-x86_64]
-archive = "https://github.com/anomalyco/opencode/releases/download/v1.2.10/opencode-windows-x64.zip"
-cmd = "./opencode.exe"
+[agent_servers.kronoscode.targets.windows-x86_64]
+archive = "https://github.com/anomalyco/kronoscode/releases/download/v1.2.10/kronoscode-windows-x64.zip"
+cmd = "./kronoscode.exe"
 args = ["acp"]
