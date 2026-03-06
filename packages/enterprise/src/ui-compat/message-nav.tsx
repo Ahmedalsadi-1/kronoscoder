@@ -1,18 +1,18 @@
 import { For } from "solid-js"
 
-type Message = {
+type NavMessage = {
   id: string
 }
 
-type Props = {
-  messages: Message[]
-  current?: Message
+type Props<T extends NavMessage> = {
+  messages: T[]
+  current?: T
   size?: "compact" | "regular"
   class?: string
-  onMessageSelect: (message: Message) => void
+  onMessageSelect: (message: T) => void
 }
 
-export function MessageNav(props: Props) {
+export function MessageNav<T extends NavMessage>(props: Props<T>) {
   return (
     <div class={props.class}>
       <div class="flex flex-col gap-1">

@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -15,6 +14,7 @@
     "types": ["@cloudflare/workers-types", "vite/client"],
     "isolatedModules": true,
     "paths": {
+      "*": ["./*"],
       "~/*": ["./src/*"],
       "@kronoscode-ai/ui": ["./src/ui-compat/index.ts"],
       "@kronoscode-ai/ui/*": ["./src/ui-compat/*"]
