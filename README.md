@@ -1,30 +1,30 @@
 <p align="center">
-  <a href="https://opencode.ai">
+  <a href="https://kronoscode.ai">
     <picture>
       <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
       <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo" width="200">
+      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="KronosCode logo" width="200">
     </picture>
   </a>
 </p>
 <p align="center">The enterprise-grade AI coding assistant.</p>
 <p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/@opencode-ai/sdk"><img alt="npm" src="https://img.shields.io/npm/v/@opencode-ai/sdk?style=flat-square" /></a>
+  <a href="https://kronoscode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
+  <a href="https://www.npmjs.com/package/@kronoscode-ai/sdk"><img alt="npm" src="https://img.shields.io/npm/v/@kronoscode-ai/sdk?style=flat-square" /></a>
   <a href="https://github.com/anomalyco/kronoscoder/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/kronoscoder/publish.yml?style=flat-square&branch=dev" /></a>
 </p>
 
 ---
 
-## OpenCode — The Production-Ready AI Coding Platform
+## KronosCode — The Production-Ready AI Coding Platform
 
-OpenCode is an **enterprise-grade AI coding assistant** designed for professional development teams. Built with security, reliability, and performance in mind, OpenCode combines cutting-edge AI capabilities with deep system integration.
+KronosCode is an **enterprise-grade AI coding assistant** designed for professional development teams. Built with security, reliability, and performance in mind, KronosCode combines cutting-edge AI capabilities with deep system integration.
 
-### Why OpenCode?
+### Why KronosCode?
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    OpenCode Architecture                         │
+│                    KronosCode Architecture                         │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐       │
@@ -40,7 +40,7 @@ OpenCode is an **enterprise-grade AI coding assistant** designed for professiona
 │                 └───────────┬─────────────┘                     │
 │                             ▼                                   │
 │   ┌─────────────────────────────────────────────────────────┐  │
-│   │              OpenCode Core Engine                       │  │
+│   │              KronosCode Core Engine                       │  │
 │   │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────────┐  │  │
 │   │  │ Tools   │ │Provider │ │ Session │ │  Native     │  │  │
 │   │  │ (50+)   │ │  Layer   │ │ Manager │ │ Capabilities│  │  │
@@ -163,7 +163,7 @@ pie title AI Provider Market Share (Supported)
 
 ## kronosChamber — The Flagship Product
 
-**kronosChamber** is the official OpenCode desktop application — a polished, production-ready IDE alternative that brings the full power of AI-assisted coding to your desktop.
+**kronosChamber** is the official KronosCode desktop application — a polished, production-ready IDE alternative that brings the full power of AI-assisted coding to your desktop.
 
 ```mermaid
 flowchart TB
@@ -171,7 +171,7 @@ flowchart TB
         A[React 19 UI] --> B[State Management]
         B --> C[Tool Registry]
         C --> D[API Layer]
-        D --> E[OpenCode Core]
+        D --> E[KronosCode Core]
     end
 
     subgraph Runtime Features
@@ -199,7 +199,7 @@ flowchart TB
 
 ### Screenshots
 
-![OpenCode Terminal](packages/web/src/assets/lander/screenshot.png)
+![KronosCode Terminal](packages/web/src/assets/lander/screenshot.png)
 
 ---
 
@@ -266,12 +266,12 @@ Control other applications via:
 
 Download the desktop app for the best experience:
 
-| Platform              | Download                              |
-| --------------------- | ------------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-darwin-aarch64.dmg` |
-| macOS (Intel)         | `opencode-desktop-darwin-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe`    |
-| Linux                 | `.deb`, `.rpm`, or AppImage           |
+| Platform              | Download                                |
+| --------------------- | --------------------------------------- |
+| macOS (Apple Silicon) | `kronoscode-desktop-darwin-aarch64.dmg` |
+| macOS (Intel)         | `kronoscode-desktop-darwin-x64.dmg`     |
+| Windows               | `kronoscode-desktop-windows-x64.exe`    |
+| Linux                 | `.deb`, `.rpm`, or AppImage             |
 
 ```bash
 # macOS
@@ -285,10 +285,10 @@ brew install --cask kronosChamber
 
 ```bash
 # Install universally
-curl -fsSL https://opencode.ai/install | bash
+curl -fsSL https://kronoscode.ai/install | bash
 
 # Or via package manager
-bun add -g opencode
+bun add -g kronoscode
 ```
 
 ---
@@ -336,7 +336,7 @@ sequenceDiagram
 
 ```bash
 # API Keys
-OPENCODE_API_KEY          # OpenCode Zen (recommended)
+OPENCODE_API_KEY          # KronosCode Zen (recommended)
 ANTHROPIC_API_KEY         # Anthropic
 OPENAI_API_KEY            # OpenAI
 GOOGLE_API_KEY            # Google
@@ -396,17 +396,17 @@ flowchart LR
 
 ## Comparison
 
-| Feature                 | OpenCode  | Claude Code | Cursor | Windsurf |
-| ----------------------- | --------- | ----------- | ------ | -------- |
-| **Open Source**         | Core Only | ✅          | ❌     | ❌       |
-| **Providers**           | 20+       | 1           | 3      | 3        |
-| **Tools**               | 50+       | 15          | 30+    | 30+      |
-| **Native Integrations** | ✅        | ❌          | ❌     | ❌       |
-| **Screenpipe**          | ✅        | ❌          | ❌     | ❌       |
-| **AI Browser**          | ✅        | ❌          | ✅     | ✅       |
-| **Cross-App Control**   | ✅        | ❌          | ❌     | ❌       |
-| **Desktop App**         | ✅        | ❌          | ✅     | ✅       |
-| **VS Code**             | ✅        | ❌          | ✅     | ✅       |
+| Feature                 | KronosCode | Claude Code | Cursor | Windsurf |
+| ----------------------- | ---------- | ----------- | ------ | -------- |
+| **Open Source**         | Core Only  | ✅          | ❌     | ❌       |
+| **Providers**           | 20+        | 1           | 3      | 3        |
+| **Tools**               | 50+        | 15          | 30+    | 30+      |
+| **Native Integrations** | ✅         | ❌          | ❌     | ❌       |
+| **Screenpipe**          | ✅         | ❌          | ❌     | ❌       |
+| **AI Browser**          | ✅         | ❌          | ✅     | ✅       |
+| **Cross-App Control**   | ✅         | ❌          | ❌     | ❌       |
+| **Desktop App**         | ✅         | ❌          | ✅     | ✅       |
+| **VS Code**             | ✅         | ❌          | ✅     | ✅       |
 
 ---
 
@@ -414,7 +414,7 @@ flowchart LR
 
 ```mermaid
 gantt
-    title OpenCode Development Roadmap
+    title KronosCode Development Roadmap
     dateFormat  YYYY-MM-DD
     section Core
     Tool Expansion       :2026-01-01, 90d
@@ -433,21 +433,21 @@ gantt
 
 ## Documentation & Support
 
-- 📖 **Docs** — [opencode.ai/docs](https://opencode.ai/docs)
-- 💬 **Discord** — [discord.gg/opencode](https://discord.gg/opencode)
-- 🐦 **Twitter** — [x.com/opencodeai](https://x.com/opencodeai)
+- 📖 **Docs** — [kronoscode.ai/docs](https://kronoscode.ai/docs)
+- 💬 **Discord** — [discord.gg/kronoscode](https://discord.gg/kronoscode)
+- 🐦 **Twitter** — [x.com/kronoscodeai](https://x.com/kronoscodeai)
 - 🐛 **Issues** — [github.com/anomalyco/kronoscoder/issues](https://github.com/anomalyco/kronoscoder/issues)
 
 ---
 
 ## License
 
-**OpenCode Core** is open source (MIT License).
+**KronosCode Core** is open source (MIT License).
 
-**kronosChamber** and the **OpenCode Zen** service are proprietary. Contact sales@opencode.ai for enterprise licensing.
+**kronosChamber** and the **KronosCode Zen** service are proprietary. Contact sales@kronoscode.ai for enterprise licensing.
 
 ---
 
 <p align="center">
-  <strong>Built with ❤️ by the OpenCode Team</strong>
+  <strong>Built with ❤️ by the KronosCode Team</strong>
 </p>
