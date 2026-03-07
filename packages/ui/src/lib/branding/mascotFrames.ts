@@ -35,9 +35,9 @@ export const getMascotFrameCoords = (index: number): MascotFrame => {
 };
 
 // You might also want to export the image paths for convenience
-export const MASCOT_COLLAGE_A = '/branding/source/gemini-pack-a.png';
-export const MASCOT_COLLAGE_B = '/branding/source/gemini-pack-b.png';
-export const MASCOT_DEFAULT = '/branding/source/gemini-default.png';
+export const MASCOT_COLLAGE_A = '/branding/kronoscat-pack-a.png';
+export const MASCOT_COLLAGE_B = '/branding/kronoscat-pack-b.png';
+export const MASCOT_DEFAULT = '/branding/kronoscat-default.png';
 
 // Build assertion: keep these exports as concrete strings for runtime consumers.
 const MASCOT_EXPORT_ASSERT: [string, string, string] = [MASCOT_COLLAGE_A, MASCOT_COLLAGE_B, MASCOT_DEFAULT];

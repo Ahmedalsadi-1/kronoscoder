@@ -128,7 +128,16 @@ export class RuntimeSdk {
       },
       body: JSON.stringify(request),
     });
-    if (!response.ok) throw new Error(`Failed to create runtime task: ${response.status}`);
+    if (!response.ok) {
+      let detail = '';
+      try {
+        const payload = await response.json();
+        detail = typeof payload?.error === 'string' ? payload.error : '';
+      } catch {
+        detail = '';
+      }
+      throw new Error(detail || `Failed to create runtime task: ${response.status}`);
+    }
     return response.json();
   };
 

@@ -5,6 +5,7 @@ import { useUIStore } from '@/stores/useUIStore';
 import { runtimeSdk } from '@/lib/runtimeSdk';
 import { useSessionStore } from '@/stores/useSessionStore';
 import { useConfigStore } from '@/stores/useConfigStore';
+import { toast } from '@/components/ui';
 
 export const BrowserSelectionBubble: React.FC = () => {
   const [selection, setSelection] = React.useState<DesktopBrowserSelection | null>(null);
@@ -70,7 +71,7 @@ export const BrowserSelectionBubble: React.FC = () => {
     setShowDesktopChoice(false);
   };
 
-  const handleRunTask = async (mode: 'browseros' | 'e2b' | 'user-desktop', agentName: string | null) => {
+  const handleRunTask = async (mode: 'browseros' | 'desktop-browser' | 'e2b' | 'user-desktop', agentName: string | null) => {
     const sessionID = await ensureSession();
     if (!sessionID) return;
     if (agentName) {
@@ -84,10 +85,16 @@ export const BrowserSelectionBubble: React.FC = () => {
         background: true,
         agentName: agentName ?? undefined,
       });
-      setActiveMainTab('chat');
+      if (mode === 'browseros' || mode === 'desktop-browser') {
+        setActiveMainTab('browser');
+      } else {
+        setActiveMainTab('chat');
+      }
       setShowDesktopChoice(false);
+      toast.success(`${mode} task started`);
     } catch (error) {
-      console.error('Failed to run selection task:', error);
+      const message = error instanceof Error ? error.message : 'Failed to run selection task';
+      toast.error(message);
     }
   };
 
@@ -142,6 +149,15 @@ export const BrowserSelectionBubble: React.FC = () => {
         >
           <RiSearch2Line className="h-3.5 w-3.5" />
           KronosOS Task
+        </button>
+
+        <button
+          onClick={() => void handleRunTask('desktop-browser', browserAgentName)}
+          className="flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          title="Run with desktop interactive browser runtime"
+        >
+          <RiSearch2Line className="h-3.5 w-3.5" />
+          Desktop Browser
         </button>
 
         <button

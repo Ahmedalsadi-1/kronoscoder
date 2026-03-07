@@ -3,7 +3,7 @@ import { runtimeSdk, type RuntimeTask, type RuntimeStatus } from './runtimeSdk';
 
 export type DesktopAgentTaskRequest = {
   prompt: string;
-  mode?: Exclude<DesktopAgentMode, 'off'> | 'user-desktop';
+  mode?: Exclude<DesktopAgentMode, 'off'>;
   background?: boolean;
   sessionID?: string | null;
   providerID?: string | null;
@@ -21,7 +21,7 @@ export type DesktopAgentModeStatus = Omit<RuntimeStatus, 'mode' | 'availableMode
 };
 
 const normalizeAgentMode = (value: unknown): DesktopAgentMode => {
-  if (value === 'e2b' || value === 'openbrowser' || value === 'desktop-browser' || value === 'browseros' || value === 'off') {
+  if (value === 'e2b' || value === 'openbrowser' || value === 'desktop-browser' || value === 'browseros' || value === 'user-desktop' || value === 'off') {
     return value as DesktopAgentMode;
   }
   return 'off';

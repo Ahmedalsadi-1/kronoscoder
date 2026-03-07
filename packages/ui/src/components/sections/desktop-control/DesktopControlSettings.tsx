@@ -183,6 +183,7 @@ export function DesktopControlSettings({ className }: DesktopControlSettingsProp
   const [openfangStatus, setOpenfangStatus] = React.useState<OpenfangStatus | null>(null)
   const [openfangBusyAction, setOpenfangBusyAction] = React.useState<"start" | "stop" | "configure" | null>(null)
   const [quickAssistBusy, setQuickAssistBusy] = React.useState(false)
+  const [quickActionBusy, setQuickActionBusy] = React.useState<"openfang" | "hover" | null>(null)
   const [error, setError] = React.useState<string | null>(null)
 
   const reload = React.useCallback(async () => {
@@ -382,6 +383,31 @@ export function DesktopControlSettings({ className }: DesktopControlSettingsProp
   const userDesktopRouting = knowledge?.routingPolicy?.userDesktop
   const userDesktopOrder = knowledge?.routingPolicy?.userDesktopOrder ?? []
 
+  const runIntegrationQuickAction = React.useCallback(async (action: "openfang" | "hover") => {
+    setQuickActionBusy(action)
+    setError(null)
+    try {
+      if (action === "openfang") {
+        await updateIntegrationToggle({
+          openfangEnabled: true,
+          openfangAutoConfigureMcp: true,
+        })
+        await runOpenfangAction("configure")
+        return
+      }
+
+      await updateIntegrationToggle({
+        desktopHoverAssistEnabled: true,
+        desktopHoverAutoShowOnTaskSend: true,
+        desktopHoverAlwaysOnTop: true,
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to apply quick action")
+    } finally {
+      setQuickActionBusy(null)
+    }
+  }, [runOpenfangAction, updateIntegrationToggle])
+
   return (
     <div className={cn("space-y-6", className)}>
       <div className="flex items-center gap-3">
@@ -566,6 +592,40 @@ export function DesktopControlSettings({ className }: DesktopControlSettingsProp
           >
             <RiPlug2Line className="h-4 w-4" />
             {openfangBusyAction === "configure" ? "Configuring…" : "Configure MCP"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="space-y-3 rounded-xl border border-border/60 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h4 className="font-medium">Integration Quick Actions</h4>
+            <p className="text-xs text-muted-foreground">One-click setup for OpenFang MCP and Pluely-style hover assist.</p>
+          </div>
+          <Badge variant="secondary" className="text-xs">first run</Badge>
+        </div>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <Button
+            variant="outline"
+            className="justify-start gap-2"
+            disabled={quickActionBusy !== null || openfangBusyAction !== null}
+            onClick={() => {
+              void runIntegrationQuickAction("openfang")
+            }}
+          >
+            <RiPlug2Line className="h-4 w-4" />
+            {quickActionBusy === "openfang" ? "Applying…" : "Enable OpenFang + Configure MCP"}
+          </Button>
+          <Button
+            variant="outline"
+            className="justify-start gap-2"
+            disabled={quickActionBusy !== null}
+            onClick={() => {
+              void runIntegrationQuickAction("hover")
+            }}
+          >
+            <RiComputerLine className="h-4 w-4" />
+            {quickActionBusy === "hover" ? "Applying…" : "Enable Hover Assist"}
           </Button>
         </div>
       </div>

@@ -1,76 +1,60 @@
-# Agent Guidelines for KronosCoder & OpenChamber
+# 🛠️ KronosCoder & OpenChamber: Engineering Guidelines
 
-This repository is a monorepo containing KronosCoder (core AI agent logic) and OpenChamber (multi-platform UI runtimes).
+This monorepo integrates **KronosCoder** (the brain) with **OpenChamber** (the body). It is designed for maximum performance, multi-platform consistency, and AI-native workflows.
 
-## Workspace Structure
-- `packages/kronoscode`: Core AI agent logic and CLI.
-- `packages/web`: OpenChamber web application and Express server.
-- `packages/ui`: Shared React/TypeScript component library (Tailwind v4).
-- `packages/desktop`: Tauri-based desktop application.
-- `packages/vscode`: VS Code extension integration.
-- `kronosChamber/`: Primary UI development workspace for OpenChamber.
+## 🏗️ Repository Architecture
 
-## Build & Test Commands
+| Package | Purpose | Core Tech |
+| :--- | :--- | :--- |
+| `packages/kronoscode` | **The Brain**: Core AI logic, tools, and TUI engine. | Bun, Drizzle, node-pty |
+| `kronosChamber/` | **The Body**: Unified UI runtimes (Web, Desktop, VS Code). | React 19, Vite, Tailwind v4 |
+| `packages/ui` | **The DNA**: Shared component library and theme tokens. | Radix UI, HeroUI, Remixicon |
+| `packages/sdk` | **The Nervous System**: Type-safe communication layer. | OpenAPI, TypeScript |
 
-### Root Commands
-- **Install**: `bun install`
-- **Build All**: `bun turbo build`
-- **Type-Check**: `bun turbo typecheck`
-- **Clean**: `bun run clean`
+## 🕹️ Critical Workflows
 
-### KronosCoder (`packages/kronoscode`)
-- **Run Dev**: `bun run dev`
-- **Run Single Test**: `bun test packages/kronoscode/src/path/to/test.ts`
-- **Test All**: `bun test` (Run from within `packages/kronoscode`)
-- **Build SDK**: `./packages/sdk/js/script/build.ts`
+### 1. Environment Initialization
+- **Root Setup**: `bun install`
+- **Full Build**: `bun turbo build`
+- **Verify Integrity**: `bun turbo typecheck && bun run lint`
 
-### OpenChamber (`kronosChamber`)
-- **Dev (Full)**: `bun run dev` (Starts server, web, and UI concurrently)
-- **Desktop Dev**: `bun run desktop:dev`
-- **VS Code Dev**: `bun run vscode:dev`
-- **Lint**: `bun run lint`
-- **Type-Check**: `bun run type-check`
-- **Release Smoke Test**: `bun run release:test`
+### 2. Runtime Development
+- **Core Dev**: `bun run dev` (within `packages/kronoscode`)
+- **UI Full Stack**: `bun run dev` (within `kronosChamber` - starts server + web + UI)
+- **Native Apps**: `bun run desktop:dev` or `bun run vscode:dev`
 
-## Code Style Guidelines
+## 🛠️ Native Capability Primitives (Hardcoded)
 
-### General Principles
-- **Modern Standards**: Use React 19, TypeScript 5+, and Tailwind v4.
-- **Brevity**: Keep functions small and composable. Avoid `try/catch` where possible; handle errors through control flow.
-- **Type Safety**: Avoid `any` and blind type casts. Rely on type inference; only use explicit interfaces for exports.
-- **Variable Naming**: Prefer single-word names (e.g., `journal` vs `journalData`). Inline variables used only once.
-- **Immutability**: Prefer `const` over `let`. Use ternaries and early returns instead of reassignment/else blocks.
-- **Destructuring**: Use dot notation (`obj.prop`) instead of destructuring to preserve context, unless multiple props are used.
+- **Everywhere**: Cross-app UI control and introspection (AppleScript/PowerShell based).
+- **OpenFang**: Security engine for dependency auditing and vulnerability patching.
+- **Screenpipe**: 24/7 visual/audio context capture and recall.
+- **AI Browser**: Dedicated agent-controlled runtime for web interactions.
+- **LSP**: Semantic code intelligence (Go to definition, Find references).
 
-### Imports & Dependencies
-- **Order**: Standard library -> External packages -> Internal workspaces (`@kronoscode-ai/*`) -> Local paths.
-- **Bun APIs**: Prefer Bun native APIs (e.g., `Bun.file()`, `Bun.password`) over Node equivalents when applicable.
-- **New Dependencies**: Do not add new dependencies without explicit instruction.
+## 🎨 Design & UI Mandates
 
-### UI & Theme (OpenChamber)
-- **Theme Tokens**: **MANDATORY**. Do not hardcode colors or use Tailwind color classes (e.g., `text-blue-500`). Use theme tokens (e.g., `text-brand-primary`).
-- **Typography**: Use semantic classes from `packages/ui/src/lib/typography.ts` (e.g., `typography-markdown`, `typography-code`).
-- **Icons**: Use `@remixicon/react` for consistency.
-- **Toasts**: Use the project wrapper from `@/components/ui`; do not import `sonner` directly.
-- **Consistency**: Ensure UI changes work across Web, Desktop, and VS Code runtimes.
+- **Theme Tokens Only**: NEVER hardcode HEX/RGB. Use tokens: `text-brand-primary`, `bg-surface-secondary`.
+- **Typography**: Adhere to `packages/ui/src/lib/typography.ts` semantic classes.
+- **Iconography**: Use `@remixicon/react` exclusively.
+- **Cross-Platform Parity**: Any change to the Web UI must be validated for Desktop and VS Code runtimes.
 
-### Schema (Drizzle)
-- Use `snake_case` for database field names to avoid manual column mapping.
-```ts
-const sessions = sqliteTable("session", {
-  id: text().primaryKey(),
-  project_id: text().notNull(), // Good: matches DB column
-})
-```
+## 📜 Development Standards
 
-## Testing Guidelines
-- **No Root Tests**: NEVER run `bun test` from the repo root; it is guarded to fail.
-- **Targeted Testing**: Run tests from the specific package directory.
-- **Avoid Mocks**: Test actual implementations whenever possible.
-- **Reproduction**: Before fixing a bug, create a failing test case to verify the fix.
+### Logic & Performance
+- **Bun Native**: Use `Bun.file()` and `Bun.password` over Node equivalents.
+- **Error Handling**: Use control flow and early returns. Minimize nested `try/catch`.
+- **Type Safety**: No `any`. No blind casts. Let inference work; use interfaces for exports.
 
-## Critical Mandates
-- **Tight Diffs**: Avoid drive-by refactors. Keep changes strictly focused on the task.
-- **No Secrets**: Never commit `.env` files, API keys, or log sensitive information.
-- **Verification**: Always run `type-check` and `lint` before finalizing a PR.
-- **Branching**: The default branch is `dev`. Use `origin/dev` as the base for diffs.
+### Database (Drizzle)
+- Use `snake_case` for schema fields to ensure native SQLite column alignment.
+- **No Manual Mappings**: Keep column names and property names identical.
+
+### Git & Testing
+- **Branching**: All work targets `origin/dev`.
+- **Targeted Testing**: Run tests from the specific package folder. **Root `bun test` is disabled.**
+- **Reproduction First**: Every bug fix requires a failing test case before implementation.
+
+## ⚠️ Security & Guardrails
+- **No Secrets**: Zero tolerance for `.env` or API keys in commits.
+- **Drive-by Refactors**: PROHIBITED. Keep PRs surgical and task-focused.
+- **Verification**: `type-check` is mandatory before every commit.

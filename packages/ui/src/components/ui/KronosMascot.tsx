@@ -32,15 +32,15 @@ interface KronosMascotProps {
 }
 
 const KronosMascot: React.FC<KronosMascotProps> = ({
-  src = typeof MascotFrames.MASCOT_DEFAULT === 'string' ? MascotFrames.MASCOT_DEFAULT : '/branding/source/gemini-default.png',
+  src = typeof MascotFrames.MASCOT_DEFAULT === 'string' ? MascotFrames.MASCOT_DEFAULT : '/branding/kronoscat-default.png',
   frameIndex: initialFrameIndex,
   rotating = false,
   rotationInterval = 200,
   className,
   style,
 }) => {
-  const collageA = typeof MascotFrames.MASCOT_COLLAGE_A === 'string' ? MascotFrames.MASCOT_COLLAGE_A : '/branding/source/gemini-pack-a.png';
-  const collageB = typeof MascotFrames.MASCOT_COLLAGE_B === 'string' ? MascotFrames.MASCOT_COLLAGE_B : '/branding/source/gemini-pack-b.png';
+  const collageA = typeof MascotFrames.MASCOT_COLLAGE_A === 'string' ? MascotFrames.MASCOT_COLLAGE_A : '/branding/kronoscat-pack-a.png';
+  const collageB = typeof MascotFrames.MASCOT_COLLAGE_B === 'string' ? MascotFrames.MASCOT_COLLAGE_B : '/branding/kronoscat-pack-b.png';
   const isCollage = src === collageA || src === collageB;
   const [currentFrameIndex, setCurrentFrameIndex] = useState(initialFrameIndex ?? 0);
 

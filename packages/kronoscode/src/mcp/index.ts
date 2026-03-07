@@ -23,6 +23,12 @@ import { BusEvent } from "../bus/bus-event"
 import { Bus } from "@/bus"
 import { TuiEvent } from "@/cli/cmd/tui/event"
 import open from "open"
+import {
+  assertMcpPolicyAllowed,
+  isMcpPolicyAllowed,
+  mcpPolicyErrorMessage,
+  normalizeMcpPolicyName,
+} from "./policy"
 
 export namespace MCP {
   const log = Log.create({ service: "mcp" })
@@ -160,6 +166,17 @@ export namespace MCP {
     return typeof entry === "object" && entry !== null && "type" in entry
   }
 
+  const resolveConfiguredMcp = (config: NonNullable<Config.Info["mcp"]> | undefined, requestedName: string) => {
+    const normalized = normalizeMcpPolicyName(requestedName)
+    if (!normalized || !config) return null
+    for (const [rawName, rawEntry] of Object.entries(config)) {
+      if (!isMcpConfigured(rawEntry)) continue
+      if (normalizeMcpPolicyName(rawName) !== normalized) continue
+      return { name: normalized, rawName, entry: rawEntry }
+    }
+    return null
+  }
+
   const state = Instance.state(
     async () => {
       const cfg = await Config.get()
@@ -168,9 +185,38 @@ export namespace MCP {
       const status: Record<string, Status> = {}
 
       await Promise.all(
-        Object.entries(config).map(async ([key, mcp]) => {
+        Object.entries(config).map(async ([rawKey, mcp]) => {
           if (!isMcpConfigured(mcp)) {
-            log.error("Ignoring MCP config entry without type", { key })
+            log.error("Ignoring MCP config entry without type", { key: rawKey })
+            return
+          }
+
+          const key = normalizeMcpPolicyName(rawKey)
+          if (!isMcpPolicyAllowed(rawKey)) {
+            status[rawKey] = {
+              status: "failed",
+              error: mcpPolicyErrorMessage(rawKey),
+            }
+            log.warn("Ignoring MCP config entry blocked by policy", {
+              key: rawKey,
+            })
+            return
+          }
+
+          if (!key) {
+            status[rawKey] = {
+              status: "failed",
+              error: mcpPolicyErrorMessage(rawKey),
+            }
+            return
+          }
+
+          if (rawKey !== key) {
+            log.info("normalizing MCP alias", { from: rawKey, to: key })
+          }
+
+          if (status[key]) {
+            log.warn("Ignoring duplicate MCP config after normalization", { key, rawKey })
             return
           }
 
@@ -255,33 +301,34 @@ export namespace MCP {
   }
 
   export async function add(name: string, mcp: Config.Mcp) {
+    const normalizedName = assertMcpPolicyAllowed(name)
     const s = await state()
-    const result = await create(name, mcp)
+    const result = await create(normalizedName, mcp)
     if (!result) {
       const status = {
         status: "failed" as const,
         error: "unknown error",
       }
-      s.status[name] = status
+      s.status[normalizedName] = status
       return {
         status,
       }
     }
     if (!result.mcpClient) {
-      s.status[name] = result.status
+      s.status[normalizedName] = result.status
       return {
         status: s.status,
       }
     }
     // Close existing client if present to prevent memory leaks
-    const existingClient = s.clients[name]
+    const existingClient = s.clients[normalizedName]
     if (existingClient) {
       await existingClient.close().catch((error) => {
-        log.error("Failed to close existing MCP client", { name, error })
+        log.error("Failed to close existing MCP client", { name: normalizedName, error })
       })
     }
-    s.clients[name] = result.mcpClient
-    s.status[name] = result.status
+    s.clients[normalizedName] = result.mcpClient
+    s.status[normalizedName] = result.status
 
     return {
       status: s.status,
@@ -499,9 +546,23 @@ export namespace MCP {
     const config = cfg.mcp ?? {}
     const result: Record<string, Status> = {}
 
-    // Include all configured MCPs from config, not just connected ones
-    for (const [key, mcp] of Object.entries(config)) {
+    for (const [rawKey, mcp] of Object.entries(config)) {
       if (!isMcpConfigured(mcp)) continue
+      if (!isMcpPolicyAllowed(rawKey)) {
+        result[rawKey] = {
+          status: "failed",
+          error: mcpPolicyErrorMessage(rawKey),
+        }
+        continue
+      }
+      const key = normalizeMcpPolicyName(rawKey)
+      if (!key) {
+        result[rawKey] = {
+          status: "failed",
+          error: mcpPolicyErrorMessage(rawKey),
+        }
+        continue
+      }
       result[key] = s.status[key] ?? { status: "disabled" }
     }
 
@@ -513,24 +574,27 @@ export namespace MCP {
   }
 
   export async function connect(name: string) {
+    const normalizedName = assertMcpPolicyAllowed(name)
     const cfg = await Config.get()
     const config = cfg.mcp ?? {}
-    const mcp = config[name]
-    if (!mcp) {
+    const resolved = resolveConfiguredMcp(config, normalizedName)
+    if (!resolved) {
       log.error("MCP config not found", { name })
       return
     }
+
+    const mcp = resolved.entry
 
     if (!isMcpConfigured(mcp)) {
       log.error("Ignoring MCP connect request for config without type", { name })
       return
     }
 
-    const result = await create(name, { ...mcp, enabled: true })
+    const result = await create(normalizedName, { ...mcp, enabled: true })
 
     if (!result) {
       const s = await state()
-      s.status[name] = {
+      s.status[normalizedName] = {
         status: "failed",
         error: "Unknown error during connection",
       }
@@ -538,29 +602,30 @@ export namespace MCP {
     }
 
     const s = await state()
-    s.status[name] = result.status
+    s.status[normalizedName] = result.status
     if (result.mcpClient) {
       // Close existing client if present to prevent memory leaks
-      const existingClient = s.clients[name]
+      const existingClient = s.clients[normalizedName]
       if (existingClient) {
         await existingClient.close().catch((error) => {
-          log.error("Failed to close existing MCP client", { name, error })
+          log.error("Failed to close existing MCP client", { name: normalizedName, error })
         })
       }
-      s.clients[name] = result.mcpClient
+      s.clients[normalizedName] = result.mcpClient
     }
   }
 
   export async function disconnect(name: string) {
+    const normalizedName = assertMcpPolicyAllowed(name)
     const s = await state()
-    const client = s.clients[name]
+    const client = s.clients[normalizedName]
     if (client) {
       await client.close().catch((error) => {
-        log.error("Failed to close MCP client", { name, error })
+        log.error("Failed to close MCP client", { name: normalizedName, error })
       })
-      delete s.clients[name]
+      delete s.clients[normalizedName]
     }
-    s.status[name] = { status: "disabled" }
+    s.status[normalizedName] = { status: "disabled" }
   }
 
   export async function tools() {
@@ -572,7 +637,7 @@ export namespace MCP {
     const defaultTimeout = cfg.experimental?.mcp_timeout
 
     const connectedClients = Object.entries(clientsSnapshot).filter(
-      ([clientName]) => s.status[clientName]?.status === "connected",
+      ([clientName]) => isMcpPolicyAllowed(clientName) && s.status[clientName]?.status === "connected",
     )
 
     const toolsResults = await Promise.all(
@@ -593,8 +658,8 @@ export namespace MCP {
 
     for (const { clientName, client, toolsResult } of toolsResults) {
       if (!toolsResult) continue
-      const mcpConfig = config[clientName]
-      const entry = isMcpConfigured(mcpConfig) ? mcpConfig : undefined
+      const resolved = resolveConfiguredMcp(config, clientName)
+      const entry = resolved ? resolved.entry : undefined
       const timeout = entry?.timeout ?? defaultTimeout
       for (const mcpTool of toolsResult.tools) {
         const sanitizedClientName = clientName.replace(/[^a-zA-Z0-9_-]/g, "_")
@@ -613,6 +678,9 @@ export namespace MCP {
       (
         await Promise.all(
           Object.entries(clientsSnapshot).map(async ([clientName, client]) => {
+            if (!isMcpPolicyAllowed(clientName)) {
+              return []
+            }
             if (s.status[clientName]?.status !== "connected") {
               return []
             }
@@ -634,6 +702,9 @@ export namespace MCP {
       (
         await Promise.all(
           Object.entries(clientsSnapshot).map(async ([clientName, client]) => {
+            if (!isMcpPolicyAllowed(clientName)) {
+              return []
+            }
             if (s.status[clientName]?.status !== "connected") {
               return []
             }
@@ -648,12 +719,13 @@ export namespace MCP {
   }
 
   export async function getPrompt(clientName: string, name: string, args?: Record<string, string>) {
+    const normalizedClientName = assertMcpPolicyAllowed(clientName)
     const clientsSnapshot = await clients()
-    const client = clientsSnapshot[clientName]
+    const client = clientsSnapshot[normalizedClientName]
 
     if (!client) {
       log.warn("client not found for prompt", {
-        clientName,
+        clientName: normalizedClientName,
       })
       return undefined
     }
@@ -676,12 +748,13 @@ export namespace MCP {
   }
 
   export async function readResource(clientName: string, resourceUri: string) {
+    const normalizedClientName = assertMcpPolicyAllowed(clientName)
     const clientsSnapshot = await clients()
-    const client = clientsSnapshot[clientName]
+    const client = clientsSnapshot[normalizedClientName]
 
     if (!client) {
       log.warn("client not found for prompt", {
-        clientName: clientName,
+        clientName: normalizedClientName,
       })
       return undefined
     }
@@ -692,7 +765,7 @@ export namespace MCP {
       })
       .catch((e) => {
         log.error("failed to get prompt from MCP server", {
-          clientName: clientName,
+          clientName: normalizedClientName,
           resourceUri: resourceUri,
           error: e.message,
         })
@@ -707,11 +780,13 @@ export namespace MCP {
    * Returns the authorization URL that should be opened in a browser.
    */
   export async function startAuth(mcpName: string): Promise<{ authorizationUrl: string }> {
+    const normalizedName = assertMcpPolicyAllowed(mcpName)
     const cfg = await Config.get()
-    const mcpConfig = cfg.mcp?.[mcpName]
+    const resolved = resolveConfiguredMcp(cfg.mcp, normalizedName)
+    const mcpConfig = resolved?.entry
 
     if (!mcpConfig) {
-      throw new Error(`MCP server not found: ${mcpName}`)
+      throw new Error(`MCP server not found: ${normalizedName}`)
     }
 
     if (!isMcpConfigured(mcpConfig)) {
@@ -734,14 +809,14 @@ export namespace MCP {
     const oauthState = Array.from(crypto.getRandomValues(new Uint8Array(32)))
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("")
-    await McpAuth.updateOAuthState(mcpName, oauthState)
+    await McpAuth.updateOAuthState(normalizedName, oauthState)
 
     // Create a new auth provider for this flow
     // OAuth config is optional - if not provided, we'll use auto-discovery
     const oauthConfig = typeof mcpConfig.oauth === "object" ? mcpConfig.oauth : undefined
     let capturedUrl: URL | undefined
     const authProvider = new McpOAuthProvider(
-      mcpName,
+      normalizedName,
       mcpConfig.url,
       {
         clientId: oauthConfig?.clientId,
@@ -772,7 +847,7 @@ export namespace MCP {
     } catch (error) {
       if (error instanceof UnauthorizedError && capturedUrl) {
         // Store transport for finishAuth
-        pendingOAuthTransports.set(mcpName, transport)
+        pendingOAuthTransports.set(normalizedName, transport)
         return { authorizationUrl: capturedUrl.toString() }
       }
       throw error
@@ -784,23 +859,24 @@ export namespace MCP {
    * Opens the browser and waits for callback.
    */
   export async function authenticate(mcpName: string): Promise<Status> {
-    const { authorizationUrl } = await startAuth(mcpName)
+    const normalizedName = assertMcpPolicyAllowed(mcpName)
+    const { authorizationUrl } = await startAuth(normalizedName)
 
     if (!authorizationUrl) {
       // Already authenticated
       const s = await state()
-      return s.status[mcpName] ?? { status: "connected" }
+      return s.status[normalizedName] ?? { status: "connected" }
     }
 
     // Get the state that was already generated and stored in startAuth()
-    const oauthState = await McpAuth.getOAuthState(mcpName)
+    const oauthState = await McpAuth.getOAuthState(normalizedName)
     if (!oauthState) {
       throw new Error("OAuth state not found - this should not happen")
     }
 
     // The SDK has already added the state parameter to the authorization URL
     // We just need to open the browser
-    log.info("opening browser for oauth", { mcpName, url: authorizationUrl, state: oauthState })
+    log.info("opening browser for oauth", { mcpName: normalizedName, url: authorizationUrl, state: oauthState })
 
     // Register the callback BEFORE opening the browser to avoid race condition
     // when the IdP has an active SSO session and redirects immediately
@@ -829,34 +905,35 @@ export namespace MCP {
     } catch (error) {
       // Browser opening failed (e.g., in remote/headless sessions like SSH, devcontainers)
       // Emit event so CLI can display the URL for manual opening
-      log.warn("failed to open browser, user must open URL manually", { mcpName, error })
-      Bus.publish(BrowserOpenFailed, { mcpName, url: authorizationUrl })
+      log.warn("failed to open browser, user must open URL manually", { mcpName: normalizedName, error })
+      Bus.publish(BrowserOpenFailed, { mcpName: normalizedName, url: authorizationUrl })
     }
 
     // Wait for callback using the already-registered promise
     const code = await callbackPromise
 
     // Validate and clear the state
-    const storedState = await McpAuth.getOAuthState(mcpName)
+    const storedState = await McpAuth.getOAuthState(normalizedName)
     if (storedState !== oauthState) {
-      await McpAuth.clearOAuthState(mcpName)
+      await McpAuth.clearOAuthState(normalizedName)
       throw new Error("OAuth state mismatch - potential CSRF attack")
     }
 
-    await McpAuth.clearOAuthState(mcpName)
+    await McpAuth.clearOAuthState(normalizedName)
 
     // Finish auth
-    return finishAuth(mcpName, code)
+    return finishAuth(normalizedName, code)
   }
 
   /**
    * Complete OAuth authentication with the authorization code.
    */
   export async function finishAuth(mcpName: string, authorizationCode: string): Promise<Status> {
-    const transport = pendingOAuthTransports.get(mcpName)
+    const normalizedName = assertMcpPolicyAllowed(mcpName)
+    const transport = pendingOAuthTransports.get(normalizedName)
 
     if (!transport) {
-      throw new Error(`No pending OAuth flow for MCP server: ${mcpName}`)
+      throw new Error(`No pending OAuth flow for MCP server: ${normalizedName}`)
     }
 
     try {
@@ -864,14 +941,14 @@ export namespace MCP {
       await transport.finishAuth(authorizationCode)
 
       // Clear the code verifier after successful auth
-      await McpAuth.clearCodeVerifier(mcpName)
+      await McpAuth.clearCodeVerifier(normalizedName)
 
       // Now try to reconnect
       const cfg = await Config.get()
-      const mcpConfig = cfg.mcp?.[mcpName]
+      const mcpConfig = resolveConfiguredMcp(cfg.mcp, normalizedName)?.entry
 
       if (!mcpConfig) {
-        throw new Error(`MCP server not found: ${mcpName}`)
+        throw new Error(`MCP server not found: ${normalizedName}`)
       }
 
       if (!isMcpConfigured(mcpConfig)) {
@@ -879,13 +956,13 @@ export namespace MCP {
       }
 
       // Re-add the MCP server to establish connection
-      pendingOAuthTransports.delete(mcpName)
-      const result = await add(mcpName, mcpConfig)
+      pendingOAuthTransports.delete(normalizedName)
+      const result = await add(normalizedName, mcpConfig)
 
       const statusRecord = result.status as Record<string, Status>
-      return statusRecord[mcpName] ?? { status: "failed", error: "Unknown error after auth" }
+      return statusRecord[normalizedName] ?? { status: "failed", error: "Unknown error after auth" }
     } catch (error) {
-      log.error("failed to finish oauth", { mcpName, error })
+      log.error("failed to finish oauth", { mcpName: normalizedName, error })
       return {
         status: "failed",
         error: error instanceof Error ? error.message : String(error),
@@ -897,19 +974,21 @@ export namespace MCP {
    * Remove OAuth credentials for an MCP server.
    */
   export async function removeAuth(mcpName: string): Promise<void> {
-    await McpAuth.remove(mcpName)
-    McpOAuthCallback.cancelPending(mcpName)
-    pendingOAuthTransports.delete(mcpName)
-    await McpAuth.clearOAuthState(mcpName)
-    log.info("removed oauth credentials", { mcpName })
+    const normalizedName = assertMcpPolicyAllowed(mcpName)
+    await McpAuth.remove(normalizedName)
+    McpOAuthCallback.cancelPending(normalizedName)
+    pendingOAuthTransports.delete(normalizedName)
+    await McpAuth.clearOAuthState(normalizedName)
+    log.info("removed oauth credentials", { mcpName: normalizedName })
   }
 
   /**
    * Check if an MCP server supports OAuth (remote servers support OAuth by default unless explicitly disabled).
    */
   export async function supportsOAuth(mcpName: string): Promise<boolean> {
+    const normalizedName = assertMcpPolicyAllowed(mcpName)
     const cfg = await Config.get()
-    const mcpConfig = cfg.mcp?.[mcpName]
+    const mcpConfig = resolveConfiguredMcp(cfg.mcp, normalizedName)?.entry
     if (!mcpConfig) return false
     if (!isMcpConfigured(mcpConfig)) return false
     return mcpConfig.type === "remote" && mcpConfig.oauth !== false
@@ -919,7 +998,8 @@ export namespace MCP {
    * Check if an MCP server has stored OAuth tokens.
    */
   export async function hasStoredTokens(mcpName: string): Promise<boolean> {
-    const entry = await McpAuth.get(mcpName)
+    const normalizedName = assertMcpPolicyAllowed(mcpName)
+    const entry = await McpAuth.get(normalizedName)
     return !!entry?.tokens
   }
 
@@ -929,9 +1009,10 @@ export namespace MCP {
    * Get the authentication status for an MCP server.
    */
   export async function getAuthStatus(mcpName: string): Promise<AuthStatus> {
-    const hasTokens = await hasStoredTokens(mcpName)
+    const normalizedName = assertMcpPolicyAllowed(mcpName)
+    const hasTokens = await hasStoredTokens(normalizedName)
     if (!hasTokens) return "not_authenticated"
-    const expired = await McpAuth.isTokenExpired(mcpName)
+    const expired = await McpAuth.isTokenExpired(normalizedName)
     return expired ? "expired" : "authenticated"
   }
 }

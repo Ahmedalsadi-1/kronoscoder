@@ -41,6 +41,11 @@ const persistToLocalStorage = (settings: DesktopSettings) => {
   } else {
     localStorage.removeItem('agentModeByProject');
   }
+  if (settings.modeAgentMap && typeof settings.modeAgentMap === 'object') {
+    localStorage.setItem('modeAgentMap', JSON.stringify(settings.modeAgentMap));
+  } else {
+    localStorage.removeItem('modeAgentMap');
+  }
   if (typeof settings.browserOpenAtStartup === 'boolean') {
     localStorage.setItem('browserOpenAtStartup', settings.browserOpenAtStartup ? 'true' : 'false');
   }
@@ -463,20 +468,37 @@ const sanitizeWebSettings = (payload: unknown): DesktopSettings | null => {
       candidate.agentMode === 'e2b' ||
       candidate.agentMode === 'openbrowser' ||
       candidate.agentMode === 'desktop-browser' ||
-      candidate.agentMode === 'browseros'
+      candidate.agentMode === 'browseros' ||
+      candidate.agentMode === 'user-desktop'
     )
   ) {
     result.agentMode = candidate.agentMode;
   }
   if (candidate.agentModeByProject && typeof candidate.agentModeByProject === 'object') {
-    const nextMap: Record<string, 'e2b' | 'openbrowser' | 'desktop-browser' | 'browseros'> = {};
+    const nextMap: Record<string, 'e2b' | 'openbrowser' | 'desktop-browser' | 'browseros' | 'user-desktop'> = {};
     for (const [key, value] of Object.entries(candidate.agentModeByProject as Record<string, unknown>)) {
       if (typeof key !== 'string' || key.trim().length === 0) continue;
-      if (value === 'e2b' || value === 'openbrowser' || value === 'desktop-browser' || value === 'browseros') {
+      if (value === 'e2b' || value === 'openbrowser' || value === 'desktop-browser' || value === 'browseros' || value === 'user-desktop') {
         nextMap[key.trim()] = value;
       }
     }
     result.agentModeByProject = nextMap;
+  }
+  if (candidate.modeAgentMap && typeof candidate.modeAgentMap === 'object' && !Array.isArray(candidate.modeAgentMap)) {
+    const nextMap: NonNullable<DesktopSettings['modeAgentMap']> = {};
+    const allowedModes = new Set(['off', 'browseros', 'desktop-browser', 'user-desktop', 'e2b']);
+    for (const [rawMode, rawAgent] of Object.entries(candidate.modeAgentMap as Record<string, unknown>)) {
+      const mode = typeof rawMode === 'string' ? rawMode.trim().toLowerCase() : '';
+      if (!allowedModes.has(mode)) continue;
+      if (rawAgent === null) {
+        nextMap[mode as keyof typeof nextMap] = null;
+        continue;
+      }
+      if (typeof rawAgent !== 'string') continue;
+      const agentName = rawAgent.trim();
+      nextMap[mode as keyof typeof nextMap] = agentName.length > 0 ? agentName : null;
+    }
+    result.modeAgentMap = nextMap;
   }
   if (typeof candidate.browserOpenAtStartup === 'boolean') {
     result.browserOpenAtStartup = candidate.browserOpenAtStartup;

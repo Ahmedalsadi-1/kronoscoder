@@ -46,6 +46,9 @@ import { ProjectHealthTool } from "./health"
 import { PredictiveSkillLoaderTool } from "./predictive_skills"
 import { ApplyPatchTool } from "./apply_patch"
 import { DynamicToolCreator } from "./dynamic"
+import { MCP } from "../mcp"
+import { EverywhereTool } from "./everywhere"
+import { OpenFangTool } from "./openfang"
 import { Glob } from "../util/glob"
 import { AIBrowserTools } from "./ai_browser"
 import {
@@ -143,6 +146,8 @@ export namespace ToolRegistry {
       CodeSearchTool,
       SkillTool,
       SkillUpdateTool,
+      EverywhereTool,
+      OpenFangTool,
       DynamicToolCreator,
       SnapshotSaveTool,
       SnapshotRestoreTool,
@@ -164,17 +169,23 @@ export namespace ToolRegistry {
       ProjectHealthTool,
       PredictiveSkillLoaderTool,
       ApplyPatchTool,
-      ...(screenpipeReady ? [ScreenpipeSearchTool, ScreenpipeRecallTool, ScreenpipeContextTool, ScreenpipeDigestTool] : []),
+      ...(screenpipeReady
+        ? [ScreenpipeSearchTool, ScreenpipeRecallTool, ScreenpipeContextTool, ScreenpipeDigestTool]
+        : []),
       ...(Flag.KRONOSCODE_ENABLE_AI_BROWSER ? AIBrowserTools : []),
       ...(Flag.KRONOSCODE_EXPERIMENTAL_LSP_TOOL ? [LspTool] : []),
       ...(config.experimental?.batch_tool === true ? [BatchTool] : []),
-      ...(Flag.KRONOSCODE_EXPERIMENTAL_PLAN_MODE && Flag.KRONOSCODE_CLIENT === "cli" ? [PlanExitTool, PlanEnterTool] : []),
+      ...(Flag.KRONOSCODE_EXPERIMENTAL_PLAN_MODE && Flag.KRONOSCODE_CLIENT === "cli"
+        ? [PlanExitTool, PlanEnterTool]
+        : []),
       ...custom,
     ]
   }
 
   export async function ids() {
-    return all().then((x) => x.map((t) => t.id))
+    const tools = await all()
+    const mcp = await MCP.tools().catch(() => ({}))
+    return tools.map((t) => t.id).concat(Object.keys(mcp))
   }
 
   export async function tools(

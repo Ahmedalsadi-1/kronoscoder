@@ -29,7 +29,7 @@ export type SkillCatalogConfig = {
   gitIdentityId?: string;
 };
 
-export type DesktopAgentMode = 'off' | 'e2b' | 'openbrowser' | 'desktop-browser' | 'browseros';
+export type DesktopAgentMode = 'off' | 'e2b' | 'openbrowser' | 'desktop-browser' | 'browseros' | 'user-desktop';
 
 export type DesktopBrowserPage = {
   id: string;
@@ -82,6 +82,7 @@ export type DesktopSettings = {
   desktopHoverAlwaysOnTop?: boolean;
   agentMode?: DesktopAgentMode;
   agentModeByProject?: Record<string, Exclude<DesktopAgentMode, 'off'>>;
+  modeAgentMap?: Partial<Record<'off' | 'browseros' | 'desktop-browser' | 'user-desktop' | 'e2b', string | null>>;
   browserOpenAtStartup?: boolean;
   desktopControlAutoCompact?: boolean;
   projects?: ProjectEntry[];

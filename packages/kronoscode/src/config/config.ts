@@ -89,7 +89,7 @@ export namespace Config {
         const wellknown = (await response.json()) as any
         const remoteConfig = wellknown.config ?? {}
         // Add $schema to prevent load() from trying to write back to a non-existent file
-        if (!remoteConfig.$schema) remoteConfig.$schema = "https://kronoscode.ai/config.json"
+        if (!remoteConfig.$schema) remoteConfig.$schema = "https://opencode.ai/zen"
         result = merge(
           result,
           await load(JSON.stringify(remoteConfig), {
@@ -1253,6 +1253,7 @@ export namespace Config {
         )
         .optional()
         .describe("MCP (Model Context Protocol) server configurations"),
+      mcpPolicyQuarantine: z.record(z.string(), z.any()).optional().describe("Internal: Quarantined MCP configurations"),
       formatter: z
         .union([
           z.literal(false),
@@ -1371,7 +1372,7 @@ export namespace Config {
         .then(async (mod) => {
           const { provider, model, ...rest } = mod.default
           if (provider && model) result.model = `${provider}/${model}`
-          result["$schema"] = "https://kronoscode.ai/config.json"
+          result["$schema"] = "https://opencode.ai/zen"
           result = mergeDeep(result, rest)
           await Filesystem.writeJson(path.join(Global.Path.config, "config.json"), result)
           await fs.unlink(legacy)
@@ -1464,8 +1465,8 @@ export namespace Config {
     const parsed = Info.safeParse(data)
     if (parsed.success) {
       if (!parsed.data.$schema && isFile) {
-        parsed.data.$schema = "https://kronoscode.ai/config.json"
-        const updated = original.replace(/^\s*\{/, '{\n  "$schema": "https://kronoscode.ai/config.json",')
+        parsed.data.$schema = "https://opencode.ai/zen"
+        const updated = original.replace(/^\s*\{/, '{\n  "$schema": "https://opencode.ai/zen",')
         await Bun.write(options.path, updated).catch(() => {})
       }
       const data = parsed.data

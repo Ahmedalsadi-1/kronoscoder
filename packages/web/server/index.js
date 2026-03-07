@@ -38,6 +38,13 @@ import {
   pruneRebindTimestamps,
   readTerminalInputWsControlFrame,
 } from './lib/terminal/index.js';
+import {
+  buildMcpPolicyMetadata,
+  MCP_POLICY_ALLOWED,
+  MCP_POLICY_ALLOWED_SET,
+  normalizeMcpPolicyName,
+  disallowedMcpPolicyMessage,
+} from './lib/opencode/mcp-policy.js';
 import webPush from 'web-push';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -53,7 +60,7 @@ const MODELS_METADATA_CACHE_TTL = 5 * 60 * 1000;
 const CLIENT_RELOAD_DELAY_MS = 800;
 const OPEN_CODE_READY_GRACE_MS = 12000;
 const LONG_REQUEST_TIMEOUT_MS = 4 * 60 * 1000;
-const AGENT_MODE_ALLOWED_VALUES = new Set(['off', 'browseros', 'e2b', 'openbrowser', 'desktop-browser']);
+const AGENT_MODE_ALLOWED_VALUES = new Set(['off', 'browseros', 'e2b', 'openbrowser', 'desktop-browser', 'user-desktop']);
 const RUNTIME_MODE_ALLOWED_VALUES = new Set(['off', 'browseros', 'e2b', 'openbrowser', 'desktop-browser', 'user-desktop']);
 const DEFAULT_AGENT_MODE = 'off';
 const AGENT_MODE_TASK_TTL_MS = 30 * 60 * 1000;
@@ -89,17 +96,13 @@ const BROWSEROS_MCP_ENV_KEYS = ['BROWSEROS_SERVER_PORT', 'BROWSEROS_CDP_PORT', '
 const BROWSEROS_DEFAULT_SERVER_PORT = 9239;
 const E2B_REQUIRED_ENV_KEYS = ['E2B_API_KEY'];
 const E2B_AUTH_MODE_ALLOWED_VALUES = new Set(['hybrid', 'byok', 'managed']);
-const DESKTOP_CONTROL_MCP_ALLOWLIST = Object.freeze([
-  BROWSEROS_MCP_NAME,
-  COMPUTER_USE_MCP_NAME,
-  AUTOMATION_MCP_NAME,
-  APPLE_MCP_NAME,
-]);
+const DESKTOP_CONTROL_MCP_ALLOWLIST = Object.freeze([...MCP_POLICY_ALLOWED]);
 const DESKTOP_CONTROL_MCP_ALLOWLIST_SET = new Set(DESKTOP_CONTROL_MCP_ALLOWLIST);
 const DESKTOP_CONTROL_DEFAULT_POLICY = Object.freeze({
   browsingMode: 'browseros',
   backgroundModes: ['e2b'],
 });
+const INTERACTIVE_BROWSER_MODES = new Set(['browseros', 'desktop-browser']);
 const USER_DESKTOP_PROVIDER_ORDER = Object.freeze([COMPUTER_USE_MCP_NAME, AUTOMATION_MCP_NAME, 'ts-tools']);
 const RUNTIME_CONTRACT_VERSION = (() => {
   const fromEnv = typeof process.env.KRONOSCHAMBER_RUNTIME_CONTRACT_VERSION === 'string'
@@ -160,16 +163,31 @@ const summarizeDesktopMcpPolicy = (statusMap) => {
   }
 
   return {
-    mode: 'priority-allowlist',
-    allowlisted: DESKTOP_CONTROL_MCP_ALLOWLIST,
+    ...buildMcpPolicyMetadata(),
     observed,
     allowedConnected,
     blockedConnected,
     message:
       blockedConnected.length > 0
-        ? `Desktop routing uses prioritized MCPs (${DESKTOP_CONTROL_MCP_ALLOWLIST.join(', ')}). Non-allowlisted MCPs stay available but are ignored for desktop routing.`
-        : `Desktop routing is currently using only prioritized MCPs (${DESKTOP_CONTROL_MCP_ALLOWLIST.join(', ')}).`,
+        ? `MCP policy is hard-enforced. Connected disallowed MCPs are blocked: ${blockedConnected.join(', ')}.`
+        : `MCP policy is hard-enforced and only allowlisted MCPs are active.`,
   };
+};
+
+const normalizeEnforcedMcpName = (value) => {
+  const normalized = normalizeMcpPolicyName(value);
+  if (!normalized || !MCP_POLICY_ALLOWED_SET.has(normalized)) {
+    return null;
+  }
+  return normalized;
+};
+
+const assertEnforcedMcpName = (value) => {
+  const normalized = normalizeEnforcedMcpName(value);
+  if (!normalized) {
+    throw new Error(disallowedMcpPolicyMessage(value));
+  }
+  return normalized;
 };
 
 const toErrorMessage = (error, fallback) => {
@@ -478,14 +496,16 @@ const resolveAgentModeConnectorConfig = (mode) => {
 
 const buildAgentModeConnectorStatus = (mode) => {
   if (mode === 'desktop-browser') {
+    const runtimeAvailable = Boolean(openCodePort && isKronosCodeReady && !isRestartingKronosCode);
     return {
       mode,
-      provider: 'desktop',
-      available: true,
+      provider: 'kronoscode',
+      available: runtimeAvailable,
       apiConfigured: false,
       command: null,
       commandAvailable: false,
-      endpoint: null,
+      endpoint: buildKronosCodeUrl('/experimental/browser/state', ''),
+      error: runtimeAvailable ? null : (lastKronosCodeError || 'KronosCode browser runtime is unavailable.'),
     };
   }
 
@@ -1079,6 +1099,86 @@ const runUserDesktopMcpTask = async (task) => {
       provider: preferredProvider,
       mode: 'user-desktop',
       logs: [`Submitted user-desktop full-control task to session ${sessionID} via ${preferredProvider}.`],
+    },
+    rawBody: truncateText(rawBody, 4000),
+  };
+};
+
+const buildInteractiveBrowserTaskPrompt = (taskMode, prompt) => {
+  const cleanedPrompt = typeof prompt === 'string' ? prompt.trim() : '';
+  const modeLabel = taskMode === 'browseros' ? 'BrowserOS' : 'Desktop Browser';
+  const runtimeHint =
+    taskMode === 'browseros'
+      ? 'Use the BrowserOS connector and keep navigation interactive for follow-up actions.'
+      : 'Use the built-in interactive desktop browser runtime and keep context in the active browser session.';
+  return [
+    `[Interactive Browser Task | ${modeLabel}]`,
+    cleanedPrompt,
+    '',
+    runtimeHint,
+  ].join('\n');
+};
+
+const runInteractiveBrowserTask = async (task) => {
+  const sessionID = await ensureRuntimeTaskSessionID(task);
+  const mode = task.mode === 'browseros' ? 'browseros' : 'desktop-browser';
+  const body = {
+    parts: [
+      {
+        type: 'text',
+        text: buildInteractiveBrowserTaskPrompt(mode, task.prompt),
+      },
+    ],
+    ...(task.agentName ? { agent: task.agentName } : {}),
+    ...(
+      task.providerID && task.modelID
+        ? {
+            model: {
+              providerID: task.providerID,
+              modelID: task.modelID,
+            },
+          }
+        : {}
+    ),
+  };
+
+  const response = await fetch(buildKronosCodeUrl(`/session/${sessionID}/prompt_async`, ''), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json, text/plain;q=0.9',
+      ...getKronosCodeAuthHeaders(),
+    },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(30_000),
+  });
+
+  const rawBody = await response.text().catch(() => '');
+  if (!response.ok) {
+    let parsed = null;
+    if (rawBody) {
+      try {
+        parsed = JSON.parse(rawBody);
+      } catch {
+        parsed = null;
+      }
+    }
+    const message =
+      parsed && typeof parsed === 'object' && typeof parsed.error === 'string'
+        ? parsed.error
+        : rawBody || `HTTP ${response.status}`;
+    throw new Error(`Failed to submit ${mode} task: ${truncateText(message, 500)}`);
+  }
+
+  return {
+    type: 'kronoscode-browser-session',
+    status: response.status,
+    result: {
+      accepted: true,
+      mode,
+      runtimeSessionID: sessionID,
+      liveUrl: `/browser?sessionID=${encodeURIComponent(sessionID)}`,
+      logs: [`Submitted ${mode} interactive browser task to session ${sessionID}.`],
     },
     rawBody: truncateText(rawBody, 4000),
   };
@@ -2429,11 +2529,27 @@ const sanitizeSettingsUpdate = (payload) => {
       const key = typeof rawKey === 'string' ? rawKey.trim() : '';
       if (!key) continue;
       const value = normalizeAgentModeSetting(rawValue);
-      if (value === 'e2b' || value === 'openbrowser' || value === 'desktop-browser' || value === 'browseros') {
+      if (value === 'e2b' || value === 'openbrowser' || value === 'desktop-browser' || value === 'browseros' || value === 'user-desktop') {
         map[key] = value;
       }
     }
     result.agentModeByProject = map;
+  }
+  if (candidate.modeAgentMap && typeof candidate.modeAgentMap === 'object' && !Array.isArray(candidate.modeAgentMap)) {
+    const next = {};
+    const allowedModes = new Set(['off', 'browseros', 'desktop-browser', 'e2b', 'user-desktop']);
+    for (const [rawMode, rawAgent] of Object.entries(candidate.modeAgentMap)) {
+      const mode = typeof rawMode === 'string' ? rawMode.trim().toLowerCase() : '';
+      if (!allowedModes.has(mode)) continue;
+      if (rawAgent === null) {
+        next[mode] = null;
+        continue;
+      }
+      if (typeof rawAgent !== 'string') continue;
+      const normalizedAgent = rawAgent.trim();
+      next[mode] = normalizedAgent.length > 0 ? normalizedAgent : null;
+    }
+    result.modeAgentMap = next;
   }
   if (typeof candidate.browserOpenAtStartup === 'boolean') {
     result.browserOpenAtStartup = candidate.browserOpenAtStartup;
@@ -2893,6 +3009,10 @@ const formatSettingsResponse = (settings) => {
       typeof settings.desktopHoverAlwaysOnTop === 'boolean'
         ? settings.desktopHoverAlwaysOnTop
         : true,
+    modeAgentMap:
+      sanitized.modeAgentMap && typeof sanitized.modeAgentMap === 'object' && !Array.isArray(sanitized.modeAgentMap)
+        ? sanitized.modeAgentMap
+        : {},
     approvedDirectories: approved,
     securityScopedBookmarks: bookmarks,
     pinnedDirectories: normalizeStringArray(settings.pinnedDirectories),
@@ -8164,6 +8284,19 @@ async function main(options = {}) {
       };
     }
 
+    if (INTERACTIVE_BROWSER_MODES.has(task.mode)) {
+      const result = await runInteractiveBrowserTask(task);
+      return {
+        connector: {
+          mode: task.mode,
+          kind: 'kronoscode',
+          provider: task.mode,
+          endpoint: buildKronosCodeUrl('/session/:sessionID/prompt_async', ''),
+        },
+        result,
+      };
+    }
+
     const connector = resolveAgentModeConnectorConfig(task.mode);
     const payload = buildAgentModeTaskPayload(task);
 
@@ -8250,13 +8383,23 @@ async function main(options = {}) {
 
       res.json({
         mode: persistedMode,
-        availableModes: ['off', 'browseros', 'desktop-browser', 'e2b'],
+        availableModes: ['off', 'browseros', 'desktop-browser', 'e2b', 'user-desktop'],
         kronoscodeRunning: Boolean(openCodePort && isKronosCodeReady && !isRestartingKronosCode),
         kronoscodeSecureConnection: isKronosCodeConnectionSecure(),
         connectors: {
           browseros: buildAgentModeConnectorStatus('browseros'),
+          'desktop-browser': buildAgentModeConnectorStatus('desktop-browser'),
           e2b: buildAgentModeConnectorStatus('e2b'),
           openbrowser: buildAgentModeConnectorStatus('openbrowser'),
+          'user-desktop': {
+            mode: 'user-desktop',
+            provider: 'kronoscode',
+            available: true,
+            apiConfigured: true,
+            command: null,
+            commandAvailable: true,
+            endpoint: buildKronosCodeUrl('/session/:sessionID/prompt_async', ''),
+          },
         },
         providers,
         tasks: {
@@ -8277,7 +8420,7 @@ async function main(options = {}) {
     try {
       const rawMode = typeof req.body?.mode === 'string' ? req.body.mode.trim().toLowerCase() : '';
       if (!AGENT_MODE_ALLOWED_VALUES.has(rawMode)) {
-        return res.status(400).json({ error: 'Invalid mode. Use off, browseros, e2b, or desktop-browser.' });
+        return res.status(400).json({ error: 'Invalid mode. Use off, browseros, e2b, desktop-browser, or user-desktop.' });
       }
       const mode = normalizeAgentModeSetting(rawMode);
 
@@ -8287,6 +8430,7 @@ async function main(options = {}) {
         mode,
         connectors: {
           browseros: buildAgentModeConnectorStatus('browseros'),
+          'desktop-browser': buildAgentModeConnectorStatus('desktop-browser'),
           e2b: buildAgentModeConnectorStatus('e2b'),
           openbrowser: { ...buildAgentModeConnectorStatus('openbrowser'), deprecated: true },
         },
@@ -8313,7 +8457,7 @@ async function main(options = {}) {
         const rawOverride = req.body.mode.trim().toLowerCase();
         if (!AGENT_MODE_ALLOWED_VALUES.has(rawOverride)) {
           return res.status(400).json({
-            error: 'Invalid mode override. Use browseros, e2b, or desktop-browser.',
+            error: 'Invalid mode override. Use browseros, e2b, desktop-browser, or user-desktop.',
           });
         }
       }
@@ -8323,13 +8467,7 @@ async function main(options = {}) {
 
       if (!isSupportedAgentMode(requestedMode) || requestedMode === 'off') {
         return res.status(400).json({
-          error: 'Desktop agent mode is off. Set mode to browseros, e2b, or desktop-browser first.',
-          mode: persistedMode,
-        });
-      }
-      if (requestedMode === 'desktop-browser' || requestedMode === 'browseros') {
-        return res.status(400).json({
-          error: `${requestedMode} mode is interactive. Use /api/runtime/browser/action for interactive control or /api/runtime/task with e2b for background tasks.`,
+          error: 'Desktop agent mode is off. Set mode to browseros, desktop-browser, e2b, or user-desktop first.',
           mode: persistedMode,
         });
       }
@@ -8434,7 +8572,8 @@ async function main(options = {}) {
     return 'off';
   };
 
-  const isRuntimeTaskMode = (value) => value === 'e2b' || value === 'user-desktop';
+  const isRuntimeTaskMode = (value) =>
+    value === 'e2b' || value === 'user-desktop' || value === 'desktop-browser' || value === 'browseros';
 
   app.get('/api/runtime/status', async (_req, res) => {
     try {
@@ -8606,28 +8745,50 @@ async function main(options = {}) {
       const requestedMode = normalizeRuntimeMode(normalizeOptionalString(req.body?.mode) || persistedMode);
       let resolvedMode = requestedMode;
       let routing = null;
-
-      if (requestedMode === 'desktop-browser') {
-        return res.status(400).json({
-          error: 'desktop-browser runtime does not support background task execution. Use /api/runtime/browser/action.',
-        });
-      }
-
-      if (requestedMode === 'browseros') {
-        return res.status(400).json({
-          error: 'browseros runtime is interactive. Use /api/runtime/browser/action for interactive control.',
-        });
-      }
+      let resolvedDirectory = null;
 
       if (!isRuntimeTaskMode(requestedMode)) {
         return res.status(400).json({
-          error: 'Runtime mode is off, deprecated, or interactive-only. Set mode to e2b or user-desktop for background tasks.',
+          error: 'Runtime mode is off or deprecated. Set mode to browseros, desktop-browser, e2b, or user-desktop.',
           mode: persistedMode,
         });
       }
 
-      if (requestedMode === 'user-desktop') {
+      if (requestedMode !== 'user-desktop') {
+        const connectorStatus = buildAgentModeConnectorStatus(requestedMode);
+        if (!connectorStatus.available) {
+          return res.status(400).json({
+            error: `${requestedMode} connector is unavailable. Configure this runtime and retry, or switch mode to e2b for background tasks.`,
+            mode: persistedMode,
+            connector: connectorStatus,
+          });
+        }
+      }
+
+      if (requestedMode === 'browseros') {
         const { directory, error } = await resolveOptionalProjectDirectory(req);
+        if (error) {
+          return res.status(400).json({ error });
+        }
+        resolvedDirectory = directory;
+        const browserosStatus = await resolveBrowserosMcpStatus(directory);
+        const browserRuntimeReady = Boolean(browserosStatus.connected || browserosStatus.healthy || browserosStatus.running);
+        if (!browserRuntimeReady) {
+          return res.status(400).json({
+            error: 'browseros runtime is unavailable. Start/connect browseros, or switch mode to e2b for background tasks.',
+            mode: persistedMode,
+            connector: {
+              ...buildAgentModeConnectorStatus('browseros'),
+              status: browserosStatus,
+            },
+          });
+        }
+      }
+
+      if (requestedMode === 'user-desktop') {
+        const { directory, error } = resolvedDirectory
+          ? { directory: resolvedDirectory, error: null }
+          : await resolveOptionalProjectDirectory(req);
         if (error) {
           return res.status(400).json({ error });
         }
@@ -9208,6 +9369,15 @@ async function main(options = {}) {
     }
   });
 
+  app.get('/api/config/mcp/policy', async (_req, res) => {
+    try {
+      res.json(buildMcpPolicyMetadata());
+    } catch (error) {
+      console.error('[API:GET /api/config/mcp/policy] Failed:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to load MCP policy' });
+    }
+  });
+
   app.get('/api/config/hands/templates', async (_req, res) => {
     try {
       const templates = await loadOpenfangHandTemplates();
@@ -9220,7 +9390,7 @@ async function main(options = {}) {
 
   app.get('/api/config/mcp/:name', async (req, res) => {
     try {
-      const name = req.params.name;
+      const name = assertEnforcedMcpName(req.params.name);
       const { directory, error } = await resolveOptionalProjectDirectory(req);
       if (error) {
         return res.status(400).json({ error });
@@ -9232,13 +9402,15 @@ async function main(options = {}) {
       res.json(config);
     } catch (error) {
       console.error('[API:GET /api/config/mcp/:name] Failed:', error);
-      res.status(500).json({ error: error.message || 'Failed to get MCP config' });
+      const message = error instanceof Error ? error.message : 'Failed to get MCP config';
+      const status = typeof message === 'string' && message.includes('blocked by policy') ? 400 : 500;
+      res.status(status).json({ error: message });
     }
   });
 
   app.post('/api/config/mcp/:name', async (req, res) => {
     try {
-      const name = req.params.name;
+      const name = assertEnforcedMcpName(req.params.name);
       const { scope, ...config } = req.body || {};
       const { directory, error } = await resolveOptionalProjectDirectory(req);
       if (error) {
@@ -9257,13 +9429,15 @@ async function main(options = {}) {
       });
     } catch (error) {
       console.error('[API:POST /api/config/mcp/:name] Failed:', error);
-      res.status(500).json({ error: error.message || 'Failed to create MCP server' });
+      const message = error instanceof Error ? error.message : 'Failed to create MCP server';
+      const status = typeof message === 'string' && message.includes('blocked by policy') ? 400 : 500;
+      res.status(status).json({ error: message });
     }
   });
 
   app.patch('/api/config/mcp/:name', async (req, res) => {
     try {
-      const name = req.params.name;
+      const name = assertEnforcedMcpName(req.params.name);
       const updates = req.body;
       const { directory, error } = await resolveOptionalProjectDirectory(req);
       if (error) {
@@ -9282,13 +9456,15 @@ async function main(options = {}) {
       });
     } catch (error) {
       console.error('[API:PATCH /api/config/mcp/:name] Failed:', error);
-      res.status(500).json({ error: error.message || 'Failed to update MCP server' });
+      const message = error instanceof Error ? error.message : 'Failed to update MCP server';
+      const status = typeof message === 'string' && message.includes('blocked by policy') ? 400 : 500;
+      res.status(status).json({ error: message });
     }
   });
 
   app.delete('/api/config/mcp/:name', async (req, res) => {
     try {
-      const name = req.params.name;
+      const name = assertEnforcedMcpName(req.params.name);
       const { directory, error } = await resolveOptionalProjectDirectory(req);
       if (error) {
         return res.status(400).json({ error });
@@ -9306,12 +9482,14 @@ async function main(options = {}) {
       });
     } catch (error) {
       console.error('[API:DELETE /api/config/mcp/:name] Failed:', error);
-      res.status(500).json({ error: error.message || 'Failed to delete MCP server' });
+      const message = error instanceof Error ? error.message : 'Failed to delete MCP server';
+      const status = typeof message === 'string' && message.includes('blocked by policy') ? 400 : 500;
+      res.status(status).json({ error: message });
     }
   });
 
   const resolveMcpConnectionStatus = async (name, directory, statusMap) => {
-    const allowlisted = DESKTOP_CONTROL_MCP_ALLOWLIST_SET.has(name);
+    const allowlisted = DESKTOP_CONTROL_MCP_ALLOWLIST_SET.has(normalizeMcpPolicyName(name));
     try {
       const config = getMcpConfig(name, directory);
       const map = statusMap && typeof statusMap === 'object' ? statusMap : await fetchKronosCodeMcpStatusMap();

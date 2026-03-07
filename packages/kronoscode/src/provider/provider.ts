@@ -361,8 +361,8 @@ export namespace Provider {
         autoload: false,
         options: {
           headers: {
-            "HTTP-Referer": "https://kronoscode.ai/",
-            "X-Title": "kronoscode",
+            "HTTP-Referer": "https://opencode.ai/",
+            "X-Title": "OpenCode",
           },
         },
       }
@@ -372,8 +372,8 @@ export namespace Provider {
         autoload: false,
         options: {
           headers: {
-            "http-referer": "https://kronoscode.ai/",
-            "x-title": "kronoscode",
+            "http-referer": "https://opencode.ai/",
+            "x-title": "OpenCode",
           },
         },
       }
@@ -457,9 +457,10 @@ export namespace Provider {
       return {
         autoload: false,
         options: {
+          baseURL: "https://opencode.ai/zen/v1",
           headers: {
-            "HTTP-Referer": "https://kronoscode.ai/",
-            "X-Title": "kronoscode",
+            "HTTP-Referer": "https://opencode.ai/",
+            "X-Title": "OpenCode Zen",
           },
         },
       }
@@ -572,7 +573,7 @@ export namespace Provider {
         autoload: false,
         options: {
           headers: {
-            "X-Cerebras-3rd-Party-Integration": "kronoscode",
+            "X-Cerebras-3rd-Party-Integration": "OpenCode",
           },
         },
       }
@@ -582,8 +583,8 @@ export namespace Provider {
         autoload: false,
         options: {
           headers: {
-            "HTTP-Referer": "https://kronoscode.ai/",
-            "X-Title": "kronoscode",
+            "HTTP-Referer": "https://opencode.ai/",
+            "X-Title": "OpenCode",
           },
         },
       }

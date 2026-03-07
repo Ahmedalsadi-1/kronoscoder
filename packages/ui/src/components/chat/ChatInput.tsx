@@ -45,6 +45,7 @@ import {
     isVSCodeRuntime,
     setDesktopWindowAlwaysOnTop,
     type DesktopAgentMode,
+    type DesktopSettings,
 } from '@/lib/desktop';
 import { isIMECompositionEvent } from '@/lib/ime';
 import { StopIcon } from '@/components/icons/StopIcon';
@@ -81,7 +82,20 @@ type AutocompleteOverlayPosition = {
     maxHeight: number;
 };
 
-const AGENT_MODE_ORDER: DesktopAgentMode[] = ['off', 'browseros', 'desktop-browser', 'e2b'];
+const MODE_BUTTON_ORDER: Array<'browseros' | 'desktop-browser' | 'user-desktop' | 'e2b' | 'off'> = [
+    'browseros',
+    'desktop-browser',
+    'user-desktop',
+    'e2b',
+    'off',
+];
+const modeButtonLabel = (mode: 'browseros' | 'desktop-browser' | 'user-desktop' | 'e2b' | 'off') => {
+    if (mode === 'browseros') return 'BrowserOS';
+    if (mode === 'desktop-browser') return 'Desktop Browser';
+    if (mode === 'user-desktop') return 'Desktop Control';
+    if (mode === 'e2b') return 'E2B';
+    return 'Off';
+};
 const BROWSER_INTENT_PATTERN =
     /\b(browser|website|web site|webpage|web page|navigate|visit|open url|url|screenshot|scrape|crawl)\b/i;
 const BROWSER_AGENT_PATTERN = /\b(browser|web|playwright)\b/i;
@@ -90,6 +104,7 @@ const parseDesktopAgentMode = (value: string | null | undefined): DesktopAgentMo
     const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
     if (!normalized) return null;
     if (normalized === 'off') return 'off';
+    if (normalized === 'user-desktop' || normalized === 'userdesktop' || normalized === 'full' || normalized === 'desktop-control' || normalized === 'desktopcontrol') return 'user-desktop';
     if (normalized === 'browseros' || normalized === 'browser-os' || normalized === 'kronosos' || normalized === 'kronos-os') return 'browseros';
     if (normalized === 'desktop-browser' || normalized === 'desktopbrowser' || normalized === 'browser') return 'desktop-browser';
     if (normalized === 'e2b') return 'e2b';
@@ -100,7 +115,7 @@ const parseDesktopAgentMode = (value: string | null | undefined): DesktopAgentMo
 const parseDesktopTaskMode = (value: string | null | undefined): Exclude<DesktopAgentMode, 'off'> | 'user-desktop' | null => {
     const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
     if (!normalized) return null;
-    if (normalized === 'user-desktop' || normalized === 'userdesktop' || normalized === 'full') return 'user-desktop';
+    if (normalized === 'user-desktop' || normalized === 'userdesktop' || normalized === 'full' || normalized === 'desktop-control' || normalized === 'desktopcontrol') return 'user-desktop';
     if (normalized === 'browseros' || normalized === 'browser-os' || normalized === 'kronosos' || normalized === 'kronos-os') return 'browseros';
     if (normalized === 'desktop-browser' || normalized === 'desktopbrowser' || normalized === 'browser') return 'desktop-browser';
     if (normalized === 'e2b') return 'e2b';
@@ -139,7 +154,7 @@ const parseDesktopHoverSettings = (value: unknown): DesktopHoverSettings => {
 };
 
 const labelForDesktopAgentMode = (mode: DesktopAgentMode | 'user-desktop'): string => {
-  if (mode === 'user-desktop') return 'User Desktop';
+  if (mode === 'user-desktop') return 'Desktop Control';
   if (mode === 'browseros') return 'KronosOS Browser';
   if (mode === 'desktop-browser') return 'Desktop Browser';
   if (mode === 'e2b') return 'E2B';
@@ -165,11 +180,40 @@ const sanitizeAgentModeByProjectMap = (value: unknown): Record<string, Exclude<D
             output[key] = 'e2b';
             continue;
         }
-        if (rawValue === 'e2b' || rawValue === 'desktop-browser' || rawValue === 'browseros') {
+        if (rawValue === 'e2b' || rawValue === 'desktop-browser' || rawValue === 'browseros' || rawValue === 'user-desktop') {
             output[key] = rawValue;
         }
     }
     return output;
+};
+
+type ModeAgentMap = NonNullable<DesktopSettings['modeAgentMap']>;
+const defaultModeAgentMap: ModeAgentMap = {
+    off: null,
+    browseros: null,
+    'desktop-browser': null,
+    'user-desktop': null,
+    e2b: null,
+};
+
+const sanitizeModeAgentMap = (value: unknown): ModeAgentMap => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return defaultModeAgentMap;
+    }
+    const record = value as Record<string, unknown>;
+    const result: ModeAgentMap = { ...defaultModeAgentMap };
+    for (const [rawMode, rawAgent] of Object.entries(record)) {
+        const mode = rawMode.trim().toLowerCase();
+        if (!(mode in defaultModeAgentMap)) continue;
+        if (rawAgent === null) {
+            result[mode as keyof ModeAgentMap] = null;
+            continue;
+        }
+        if (typeof rawAgent !== 'string') continue;
+        const agentName = rawAgent.trim();
+        result[mode as keyof ModeAgentMap] = agentName.length > 0 ? agentName : null;
+    }
+    return result;
 };
 
 // Per-session draft key — preserves in-progress messages across project switches
@@ -284,6 +328,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenSettings, scrollToBo
     const [desktopHoverSettings, setDesktopHoverSettings] = React.useState<DesktopHoverSettings>(defaultDesktopHoverSettings);
     const [agentModeByProject, setAgentModeByProject] = React.useState<Record<string, Exclude<DesktopAgentMode, 'off'>>>({});
     const agentModeByProjectRef = React.useRef<Record<string, Exclude<DesktopAgentMode, 'off'>>>({});
+    const [modeAgentMap, setModeAgentMap] = React.useState<ModeAgentMap>(defaultModeAgentMap);
+    const modeAgentMapRef = React.useRef<ModeAgentMap>(defaultModeAgentMap);
     const lastAutoAppliedModeRef = React.useRef<string | null>(null);
     const isDesktopExpanded = isExpandedInput && !isMobile;
     const [autocompleteOverlayPosition, setAutocompleteOverlayPosition] = React.useState<AutocompleteOverlayPosition | null>(null);
@@ -778,7 +824,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenSettings, scrollToBo
 
                 const requestedMode = parseDesktopAgentMode(commandArgs[0]);
                 if (!requestedMode) {
-                    toast.error('Usage: /agentmode off|kronosos|browseros|desktop-browser|e2b');
+                    toast.error('Usage: /agentmode off|kronosos|browseros|desktop-browser|user-desktop|e2b');
                     return;
                 }
 
@@ -813,21 +859,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenSettings, scrollToBo
                 const defaultModeForTask = agentMode === 'off' ? null : agentMode;
                 let modeForTask: Exclude<DesktopAgentMode, 'off'> | 'user-desktop' | null = modeOverride ?? defaultModeForTask;
                 if (!modeForTask) {
-                    toast.error('Set a desktop mode first: /agentmode kronosos|browseros|desktop-browser|e2b (or use /desktoptask user-desktop ...)');
+                    toast.error('Set a desktop mode first: /agentmode kronosos|browseros|desktop-browser|user-desktop|e2b');
                     return;
                 }
-
-                if (!modeOverride && (modeForTask === 'desktop-browser' || modeForTask === 'browseros')) {
-                    toast.info('Choose task type: /desktoptask user-desktop <prompt> for full control, or /desktoptask e2b <prompt> for background.');
+                if (modeForTask === 'openbrowser') {
+                    toast.error('openbrowser mode is deprecated. Use browseros, desktop-browser, user-desktop, or e2b.');
                     return;
-                }
-
-                if (modeForTask === 'desktop-browser' || modeForTask === 'browseros') {
-                    modeForTask = 'e2b';
-                    toast.info('Interactive browser mode override detected. Running /desktoptask in E2B background mode.');
                 }
                 if (!prompt) {
-                    toast.error('Usage: /desktoptask [user-desktop|e2b] <task prompt>');
+                    toast.error('Usage: /desktoptask [browseros|desktop-browser|user-desktop|e2b] <task prompt>');
                     return;
                 }
 
@@ -849,7 +889,20 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenSettings, scrollToBo
                         updatedAt: typeof result.updatedAt === 'number' ? result.updatedAt : Date.now(),
                     });
 
-                    if (desktopHoverSettings.enabled && desktopHoverSettings.autoShowOnTaskSend) {
+                    if (modeForTask === 'browseros' || modeForTask === 'desktop-browser') {
+                        const taskDirectory = normalizeProjectModeDirectoryKey(effectiveDirectory) || null;
+                        setActiveMainTab('browser');
+                        setBrowserChatLayoutMode('split', {
+                            directory: taskDirectory,
+                            makeDefault: !taskDirectory,
+                        });
+                        if (taskDirectory) {
+                            openContextRuntime(taskDirectory, null);
+                        }
+                    }
+
+                    const isInteractiveBrowserMode = modeForTask === 'browseros' || modeForTask === 'desktop-browser';
+                    if (!isInteractiveBrowserMode && desktopHoverSettings.enabled && desktopHoverSettings.autoShowOnTaskSend) {
                         activateDesktopHover(result.taskID, desktopHoverSettings.alwaysOnTop);
                         setActiveMainTab('chat');
                         setExpandedInput(false);
@@ -969,6 +1022,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenSettings, scrollToBo
         agentModeByProjectRef.current = agentModeByProject;
     }, [agentModeByProject]);
 
+    React.useEffect(() => {
+        modeAgentMapRef.current = modeAgentMap;
+    }, [modeAgentMap]);
+
     const loadAgentModeStatus = React.useCallback(async () => {
         try {
             const status = await getDesktopAgentModeStatus();
@@ -989,6 +1046,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenSettings, scrollToBo
             }
             const payload = (await response.json().catch(() => null)) as null | {
                 agentModeByProject?: unknown;
+                modeAgentMap?: unknown;
                 desktopHoverAssistEnabled?: unknown;
                 desktopHoverAutoShowOnTaskSend?: unknown;
                 desktopHoverAlwaysOnTop?: unknown;
@@ -997,6 +1055,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenSettings, scrollToBo
                 return;
             }
             setAgentModeByProject(sanitizeAgentModeByProjectMap(payload.agentModeByProject));
+            setModeAgentMap(sanitizeModeAgentMap(payload.modeAgentMap));
             setDesktopHoverSettings(parseDesktopHoverSettings(payload));
         } catch {
             // ignore
@@ -1020,18 +1079,71 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenSettings, scrollToBo
         void updateDesktopSettings({ agentModeByProject: next }).catch(() => {});
     }, [projectModeDirectoryKey]);
 
+    const resolveAutoMappedAgent = React.useCallback(
+        (mode: DesktopAgentMode, sourceMap: ModeAgentMap): string | null => {
+            const knownAgents = new Set(primaryAgents.map((agent) => agent.name));
+            const explicit = sourceMap[mode as keyof ModeAgentMap];
+            if (typeof explicit === 'string' && explicit.length > 0 && knownAgents.has(explicit)) {
+                return explicit;
+            }
+
+            const pickByPattern = (pattern: RegExp): string | null => {
+                const found = primaryAgents.find((agent) => pattern.test(agent.name));
+                return found ? found.name : null;
+            };
+
+            if (mode === 'browseros' || mode === 'desktop-browser') {
+                return pickByPattern(/browser|web|playwright/i) ?? currentAgentName;
+            }
+            if (mode === 'user-desktop') {
+                return pickByPattern(/desktop|computer|automation|operator/i) ?? currentAgentName;
+            }
+            if (mode === 'e2b') {
+                return pickByPattern(/e2b|background|worker|sandbox/i) ?? currentAgentName;
+            }
+            return null;
+        },
+        [currentAgentName, primaryAgents],
+    );
+
+    const persistModeAgentPreference = React.useCallback((mode: DesktopAgentMode, agentName: string | null) => {
+        const safeMode = mode === 'browseros' || mode === 'desktop-browser' || mode === 'user-desktop' || mode === 'e2b' || mode === 'off'
+            ? mode
+            : null;
+        if (!safeMode) return;
+        const nextMap: ModeAgentMap = {
+            ...modeAgentMapRef.current,
+            [safeMode]: agentName && agentName.trim().length > 0 ? agentName.trim() : null,
+        };
+        setModeAgentMap(nextMap);
+        void updateDesktopSettings({ modeAgentMap: nextMap }).catch(() => {});
+    }, []);
+
     const applyAgentMode = React.useCallback(async (
         nextMode: DesktopAgentMode,
-        options?: { showToast?: boolean; persistPreference?: boolean }
+        options?: { showToast?: boolean; persistPreference?: boolean; autoAssignAgent?: boolean }
     ) => {
         const showToast = options?.showToast !== false;
         const persistPreference = options?.persistPreference !== false;
+        const autoAssignAgent = options?.autoAssignAgent !== false;
         setAgentModeLoading(true);
         try {
             const updated = await updateDesktopAgentMode(nextMode);
             setAgentMode(updated.mode);
             if (persistPreference) {
                 persistAgentModePreference(updated.mode);
+            }
+            if (autoAssignAgent && updated.mode !== 'off') {
+                const targetAgent = resolveAutoMappedAgent(updated.mode, modeAgentMapRef.current);
+                if (targetAgent && targetAgent !== currentAgentName) {
+                    setAgent(targetAgent);
+                    if (currentSessionId) {
+                        saveSessionAgentSelection(currentSessionId, targetAgent);
+                    }
+                }
+                if (targetAgent) {
+                    persistModeAgentPreference(updated.mode, targetAgent);
+                }
             }
             if (showToast) {
                 toast.success(`Desktop agent mode: ${labelForDesktopAgentMode(updated.mode)}`);
@@ -1044,7 +1156,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenSettings, scrollToBo
         } finally {
             setAgentModeLoading(false);
         }
-    }, [persistAgentModePreference]);
+    }, [currentAgentName, currentSessionId, persistAgentModePreference, persistModeAgentPreference, resolveAutoMappedAgent, saveSessionAgentSelection, setAgent]);
 
     React.useEffect(() => {
         void loadAgentModeStatus();
@@ -1079,7 +1191,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenSettings, scrollToBo
 
     React.useEffect(() => {
         const onSettingsSynced = (event: Event) => {
-            const detail = (event as CustomEvent<{ agentMode?: unknown; agentModeByProject?: unknown }>).detail;
+            const detail = (event as CustomEvent<{ agentMode?: unknown; agentModeByProject?: unknown; modeAgentMap?: unknown }>).detail;
             if (!detail || typeof detail !== 'object') return;
             const nextMode =
                 typeof detail.agentMode === 'string'
@@ -1090,6 +1202,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenSettings, scrollToBo
             }
             if (Object.prototype.hasOwnProperty.call(detail, 'agentModeByProject')) {
                 setAgentModeByProject(sanitizeAgentModeByProjectMap(detail.agentModeByProject));
+            }
+            if (Object.prototype.hasOwnProperty.call(detail, 'modeAgentMap')) {
+                setModeAgentMap(sanitizeModeAgentMap(detail.modeAgentMap));
             }
         };
 
@@ -2525,44 +2640,42 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onOpenSettings, scrollToBo
     );
 
     const desktopAgentModeControl = isDesktopShell() && !isMobile ? (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <button
-                    type="button"
-                    className={cn(
-                        'inline-flex items-center rounded-md border border-border/70 bg-transparent',
-                        'text-xs font-medium text-muted-foreground',
-                        'hover:bg-[var(--interactive-hover)]/40 hover:text-foreground',
-                        'focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/40',
-                        isVSCode ? 'h-5 px-1.5 text-[10px]' : 'h-6 px-2',
-                        agentModeLoading && 'opacity-60'
-                    )}
-                    disabled={agentModeLoading}
-                    title={`Desktop apps mode: ${labelForDesktopAgentMode(agentMode)}`}
-                    aria-label={`Desktop apps mode: ${labelForDesktopAgentMode(agentMode)}`}
-                >
-                    <span className="truncate">Apps</span>
-                </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                {AGENT_MODE_ORDER.map((mode) => {
-                    const active = mode === agentMode;
-                    return (
-                        <DropdownMenuItem
-                            key={mode}
-                            onSelect={() => {
-                                if (!agentModeLoading && mode !== agentMode) {
-                                    void applyAgentMode(mode);
-                                }
-                            }}
-                        >
-                            {active ? '✓ ' : ''}
-                            {labelForDesktopAgentMode(mode)}
-                        </DropdownMenuItem>
-                    );
-                })}
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <div
+            className={cn(
+                'inline-flex items-center rounded-md border border-border/70 bg-transparent p-0.5',
+                agentModeLoading && 'opacity-60'
+            )}
+            role="group"
+            aria-label="Desktop mode selector"
+            title={`Desktop apps mode: ${labelForDesktopAgentMode(agentMode)}`}
+        >
+            {MODE_BUTTON_ORDER.map((mode) => {
+                const active = mode === agentMode;
+                return (
+                    <button
+                        key={mode}
+                        type="button"
+                        disabled={agentModeLoading}
+                        onClick={() => {
+                            if (!agentModeLoading && mode !== agentMode) {
+                                void applyAgentMode(mode, { autoAssignAgent: true });
+                            }
+                        }}
+                        className={cn(
+                            'inline-flex items-center rounded px-1.5 text-[10px] font-medium transition-colors',
+                            isVSCode ? 'h-5' : 'h-6 text-xs',
+                            active
+                                ? 'bg-primary/15 text-primary'
+                                : 'text-muted-foreground hover:bg-[var(--interactive-hover)]/40 hover:text-foreground'
+                        )}
+                        aria-pressed={active}
+                        aria-label={`Set mode: ${modeButtonLabel(mode)}`}
+                    >
+                        {modeButtonLabel(mode)}
+                    </button>
+                );
+            })}
+        </div>
     ) : null;
 
     const desktopPrimaryAgentControl = isDesktopShell() && !isMobile && primaryAgents.length > 0 ? (

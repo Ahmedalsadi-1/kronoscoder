@@ -15,6 +15,12 @@ import { Global } from "../../global"
 import { modify, applyEdits } from "jsonc-parser"
 import { Filesystem } from "../../util/filesystem"
 import { Bus } from "../../bus"
+import {
+  assertMcpPolicyAllowed,
+  isMcpPolicyAllowed,
+  mcpPolicyErrorMessage,
+  normalizeMcpPolicyName,
+} from "../../mcp/policy"
 
 function getAuthStatusIcon(status: MCP.AuthStatus): string {
   switch (status) {
@@ -76,6 +82,17 @@ const normalizeMcpName = (value: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9_-]+/g, "-")
     .replace(/^-+|-+$/g, "")
+
+const resolveConfiguredMcpEntry = (config: NonNullable<Config.Info["mcp"]> | undefined, requestedName: string) => {
+  const normalized = normalizeMcpPolicyName(requestedName)
+  if (!normalized || !config) return null
+  for (const [rawName, rawEntry] of Object.entries(config)) {
+    if (!isMcpConfigured(rawEntry)) continue
+    if (normalizeMcpPolicyName(rawName) !== normalized) continue
+    return { name: normalized, rawName, entry: rawEntry }
+  }
+  return null
+}
 
 const parseScopeArg = (value: unknown): "user" | "project" | undefined => {
   if (value === "user" || value === "project") return value
@@ -217,14 +234,35 @@ export const McpListCommand = cmd({
         const mcpServers = config.mcp ?? {}
         const statuses = await MCP.status()
 
-        const servers = Object.entries(mcpServers).filter((entry): entry is [string, McpConfigured] =>
+        const configuredServers = Object.entries(mcpServers).filter((entry): entry is [string, McpConfigured] =>
           isMcpConfigured(entry[1]),
         )
+        const serversByName = new Map<string, McpConfigured>()
+        let blockedCount = 0
+        for (const [rawName, serverConfig] of configuredServers) {
+          if (!isMcpPolicyAllowed(rawName)) {
+            blockedCount += 1
+            continue
+          }
+          const normalizedName = normalizeMcpPolicyName(rawName)
+          if (!normalizedName || serversByName.has(normalizedName)) {
+            continue
+          }
+          serversByName.set(normalizedName, serverConfig)
+        }
+        const servers = Array.from(serversByName.entries())
 
         if (servers.length === 0) {
-          prompts.log.warn("No MCP servers configured")
+          prompts.log.warn("No allowlisted MCP servers configured")
+          if (blockedCount > 0) {
+            prompts.log.info(`${blockedCount} blocked MCP server(s) were excluded by policy.`)
+          }
           prompts.outro("Add servers with: kronoscode mcp add")
           return
+        }
+
+        if (blockedCount > 0) {
+          prompts.log.warn(`${blockedCount} configured MCP server(s) are blocked by policy and hidden from active runtime.`)
         }
 
         for (const [name, serverConfig] of servers) {
@@ -295,7 +333,8 @@ export const McpAuthCommand = cmd({
 
         // Get OAuth-capable servers (remote servers with oauth not explicitly disabled)
         const oauthServers = Object.entries(mcpServers).filter(
-          (entry): entry is [string, McpRemote] => isMcpRemote(entry[1]) && entry[1].oauth !== false,
+          (entry): entry is [string, McpRemote] =>
+            isMcpRemote(entry[1]) && entry[1].oauth !== false && isMcpPolicyAllowed(entry[0]),
         )
 
         if (oauthServers.length === 0) {
@@ -313,10 +352,20 @@ export const McpAuthCommand = cmd({
         }
 
         let serverName = args.name
+        if (serverName) {
+          try {
+            serverName = assertMcpPolicyAllowed(serverName)
+          } catch (error) {
+            prompts.log.error(error instanceof Error ? error.message : mcpPolicyErrorMessage(serverName))
+            prompts.outro("Done")
+            return
+          }
+        }
         if (!serverName) {
           // Build options with auth status
           const options = await Promise.all(
-            oauthServers.map(async ([name, cfg]) => {
+            oauthServers.map(async ([rawName, cfg]) => {
+              const name = normalizeMcpPolicyName(rawName)
               const authStatus = await MCP.getAuthStatus(name)
               const icon = getAuthStatusIcon(authStatus)
               const statusText = getAuthStatusText(authStatus)
@@ -337,12 +386,14 @@ export const McpAuthCommand = cmd({
           serverName = selected
         }
 
-        const serverConfig = mcpServers[serverName]
-        if (!serverConfig) {
+        const serverEntry = resolveConfiguredMcpEntry(mcpServers, serverName)
+        if (!serverEntry) {
           prompts.log.error(`MCP server not found: ${serverName}`)
           prompts.outro("Done")
           return
         }
+        serverName = serverEntry.name
+        const serverConfig = serverEntry.entry
 
         if (!isMcpRemote(serverConfig) || serverConfig.oauth === false) {
           prompts.log.error(`MCP server ${serverName} is not an OAuth-capable remote server`)
@@ -432,7 +483,8 @@ export const McpAuthListCommand = cmd({
 
         // Get OAuth-capable servers
         const oauthServers = Object.entries(mcpServers).filter(
-          (entry): entry is [string, McpRemote] => isMcpRemote(entry[1]) && entry[1].oauth !== false,
+          (entry): entry is [string, McpRemote] =>
+            isMcpRemote(entry[1]) && entry[1].oauth !== false && isMcpPolicyAllowed(entry[0]),
         )
 
         if (oauthServers.length === 0) {
@@ -441,7 +493,8 @@ export const McpAuthListCommand = cmd({
           return
         }
 
-        for (const [name, serverConfig] of oauthServers) {
+        for (const [rawName, serverConfig] of oauthServers) {
+          const name = normalizeMcpPolicyName(rawName)
           const authStatus = await MCP.getAuthStatus(name)
           const icon = getAuthStatusIcon(authStatus)
           const statusText = getAuthStatusText(authStatus)
@@ -471,22 +524,35 @@ export const McpLogoutCommand = cmd({
         UI.empty()
         prompts.intro("MCP OAuth Logout")
 
-        const authPath = path.join(Global.Path.data, "mcp-auth.json")
         const credentials = await McpAuth.all()
-        const serverNames = Object.keys(credentials)
+        const credentialsByName = Object.fromEntries(
+          Object.entries(credentials)
+            .map(([rawName, entry]) => [normalizeMcpPolicyName(rawName), entry] as const)
+            .filter(([name]) => name.length > 0 && isMcpPolicyAllowed(name)),
+        ) as Record<string, (typeof credentials)[string]>
+        const serverNames = Object.keys(credentialsByName)
 
         if (serverNames.length === 0) {
-          prompts.log.warn("No MCP OAuth credentials stored")
+          prompts.log.warn("No allowlisted MCP OAuth credentials stored")
           prompts.outro("Done")
           return
         }
 
         let serverName = args.name
+        if (serverName) {
+          try {
+            serverName = assertMcpPolicyAllowed(serverName)
+          } catch (error) {
+            prompts.log.error(error instanceof Error ? error.message : mcpPolicyErrorMessage(serverName))
+            prompts.outro("Done")
+            return
+          }
+        }
         if (!serverName) {
           const selected = await prompts.select({
             message: "Select MCP server to logout",
             options: serverNames.map((name) => {
-              const entry = credentials[name]
+              const entry = credentialsByName[name]
               const hasTokens = !!entry.tokens
               const hasClient = !!entry.clientInfo
               let hint = ""
@@ -504,7 +570,7 @@ export const McpLogoutCommand = cmd({
           serverName = selected
         }
 
-        if (!credentials[serverName]) {
+        if (!credentialsByName[serverName]) {
           prompts.log.error(`No credentials found for: ${serverName}`)
           prompts.outro("Done")
           return
@@ -611,15 +677,23 @@ export const McpAddCommand = cmd({
             return
           }
 
-          const resolvedName = normalizeMcpName(typeof args.name === "string" ? args.name : preset.id)
-          if (!resolvedName) {
+          const candidateName = normalizeMcpName(typeof args.name === "string" ? args.name : preset.id)
+          if (!candidateName) {
             prompts.log.error("Preset server name resolved to an empty value. Use --name with a valid identifier.")
+            prompts.outro("Done")
+            return
+          }
+          let resolvedName: string
+          try {
+            resolvedName = assertMcpPolicyAllowed(candidateName)
+          } catch (error) {
+            prompts.log.error(error instanceof Error ? error.message : mcpPolicyErrorMessage(candidateName))
             prompts.outro("Done")
             return
           }
 
           const config = await Config.get()
-          if (config.mcp?.[resolvedName]) {
+          if (resolveConfiguredMcpEntry(config.mcp, resolvedName)) {
             prompts.log.error(`MCP server "${resolvedName}" already exists`)
             prompts.log.info("Use --name <server-name> to install the preset under a different id.")
             prompts.outro("Done")
@@ -643,11 +717,33 @@ export const McpAddCommand = cmd({
 
         const configPath = await resolveConfigPathByScope(projectConfigPath, globalConfigPath, project.vcs, requestedScope)
 
-        const name = await prompts.text({
+        const enteredName = await prompts.text({
           message: "Enter MCP server name",
           validate: (x) => (x && x.length > 0 ? undefined : "Required"),
         })
-        if (prompts.isCancel(name)) throw new UI.CancelledError()
+        if (prompts.isCancel(enteredName)) throw new UI.CancelledError()
+
+        const normalizedName = normalizeMcpName(enteredName)
+        if (!normalizedName) {
+          prompts.log.error("MCP server name must contain letters, numbers, hyphens, or underscores.")
+          prompts.outro("Done")
+          return
+        }
+        let name: string
+        try {
+          name = assertMcpPolicyAllowed(normalizedName)
+        } catch (error) {
+          prompts.log.error(error instanceof Error ? error.message : mcpPolicyErrorMessage(normalizedName))
+          prompts.outro("Done")
+          return
+        }
+
+        const existingConfig = await Config.get()
+        if (resolveConfiguredMcpEntry(existingConfig.mcp, name)) {
+          prompts.log.error(`MCP server "${name}" already exists`)
+          prompts.outro("Done")
+          return
+        }
 
         const type = await prompts.select({
           message: "Select MCP server type",
@@ -785,14 +881,22 @@ export const McpDebugCommand = cmd({
 
         const config = await Config.get()
         const mcpServers = config.mcp ?? {}
-        const serverName = args.name
+        let serverName: string
+        try {
+          serverName = assertMcpPolicyAllowed(args.name)
+        } catch (error) {
+          prompts.log.error(error instanceof Error ? error.message : mcpPolicyErrorMessage(args.name))
+          prompts.outro("Done")
+          return
+        }
 
-        const serverConfig = mcpServers[serverName]
-        if (!serverConfig) {
+        const serverEntry = resolveConfiguredMcpEntry(mcpServers, serverName)
+        if (!serverEntry) {
           prompts.log.error(`MCP server not found: ${serverName}`)
           prompts.outro("Done")
           return
         }
+        const serverConfig = serverEntry.entry
 
         if (!isMcpRemote(serverConfig)) {
           prompts.log.error(`MCP server ${serverName} is not a remote server`)

@@ -265,23 +265,32 @@ export const useDirectoryStore = create<DirectoryStore>()(
           console.log('[DirectoryStore] setDirectory called with path:', resolvedPath);
         }
 
-        kronoscodeClient.setDirectory(resolvedPath);
-        invalidateFileSearchCache();
+        // Validate directory existence before switching
+        kronoscodeClient.probeDirectory(resolvedPath).then((exists) => {
+          if (!exists && resolvedPath !== homeDir && homeDir) {
+            console.warn(`[DirectoryStore] Directory not found: ${resolvedPath}. Falling back to home: ${homeDir}`);
+            get().setDirectory(homeDir);
+            return;
+          }
 
-        set((state) => {
-          const newHistory = [...state.directoryHistory.slice(0, state.historyIndex + 1), resolvedPath];
+          kronoscodeClient.setDirectory(resolvedPath);
+          invalidateFileSearchCache();
 
-          safeStorage.setItem('lastDirectory', resolvedPath);
-          void updateDesktopSettings({ lastDirectory: resolvedPath });
+          set((state) => {
+            const newHistory = [...state.directoryHistory.slice(0, state.historyIndex + 1), resolvedPath];
 
-          return {
-            currentDirectory: resolvedPath,
-            directoryHistory: newHistory,
-            historyIndex: newHistory.length - 1,
-            hasPersistedDirectory: true,
-            isHomeReady: true,
-            isSwitchingDirectory: false,
-          };
+            safeStorage.setItem('lastDirectory', resolvedPath);
+            void updateDesktopSettings({ lastDirectory: resolvedPath });
+
+            return {
+              currentDirectory: resolvedPath,
+              directoryHistory: newHistory,
+              historyIndex: newHistory.length - 1,
+              hasPersistedDirectory: true,
+              isHomeReady: true,
+              isSwitchingDirectory: false,
+            };
+          });
         });
       },
 
