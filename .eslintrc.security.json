@@ -1,0 +1,37 @@
+{
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["**/desktop/index"],
+            "message": "Do not import legacy desktop/index.ts from server routes. Use desktop/broker.ts instead."
+          },
+          {
+            "group": ["**/marketplace/index"],
+            "message": "Do not import legacy marketplace/index.ts from server routes. Use marketplace/installer.ts or marketplace/runtime.ts instead."
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["packages/kronoscode/src/server/routes/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/desktop/index"],
+                "message": "Server routes must not import desktop/index.ts - use desktop/broker.ts"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

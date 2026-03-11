@@ -1,0 +1,266 @@
+$ node ./packages/desktop/scripts/desktop-dev.mjs
+[desktop] skipping web UI build (OPENCHAMBER_DESKTOP_SKIP_WEB_BUILD=1)
+[desktop] skipping tauri resources sync (OPENCHAMBER_DESKTOP_SKIP_RESOURCE_SYNC=1)
+[desktop] skipping sidecar rebuild (OPENCHAMBER_DESKTOP_SKIP_SIDECAR_BUILD=1)
+[desktop] sidecar ready: /Users/albsheralsadi/kronosfinal/kronoscoder/kronosChamber/packages/desktop/src-tauri/sidecars/openchamber-server-aarch64-apple-darwin
+[desktop] web assets ready: /Users/albsheralsadi/kronosfinal/kronoscoder/kronosChamber/packages/web/dist
+$ tauri dev --features devtools --config ./src-tauri/tauri.dev.conf.json
+     Running BeforeDevCommand (`node ./scripts/dev-web-server.mjs`)
+[desktop] ensuring sidecar + web-dist...
+[desktop] skipping web UI build (OPENCHAMBER_DESKTOP_SKIP_WEB_BUILD=1)
+[desktop] skipping tauri resources sync (OPENCHAMBER_DESKTOP_SKIP_RESOURCE_SYNC=1)
+[desktop] skipping sidecar rebuild (OPENCHAMBER_DESKTOP_SKIP_SIDECAR_BUILD=1)
+[desktop] sidecar ready: /Users/albsheralsadi/kronosfinal/kronoscoder/kronosChamber/packages/desktop/src-tauri/sidecars/openchamber-server-aarch64-apple-darwin
+[desktop] web assets ready: /Users/albsheralsadi/kronosfinal/kronoscoder/kronosChamber/packages/web/dist
+[desktop] starting API server on http://127.0.0.1:3001 ...
+[desktop] OPENCHAMBER_DESKTOP_DISABLE_VITE=1 -> skipping Vite HMR; desktop will use local API UI.
+        Warn Waiting for your frontend dev server to start on http://127.0.0.1:3001/...
+Starting KronosChamber on port 3001
+macOS Say TTS available with 188 voices
+[zen] Stored model "minimax-m2.5-free" verified as available
+Starting OpenCode on allocated port 50248...
+Configured settings.opencodeBinary is not executable: /Users/albsheralsadi/kronosfinal/kronoscoder/packages/opencode/bin/opencode
+Resolved opencode CLI: /opt/homebrew/bin/opencode
+Rotated secure password for managed local OpenCode instance
+Detected OpenCode port: 50248
+Setting up proxy to OpenCode on port 50248
+Serving static files from /Users/albsheralsadi/kronosfinal/kronoscoder/kronosChamber/packages/web/dist
+KronosChamber server running on port 3001
+Health check: http://localhost:3001/health
+Web interface: http://localhost:3001
+[PushWatcher] connected
+     Running DevCommand (`cargo  run --no-default-features --features devtools --color always --`)
+        Info Watching /Users/albsheralsadi/kronosfinal/kronoscoder/kronosChamber/packages/desktop/src-tauri for changes...
+[1m[33mwarning[0m[1m: unused variable: `window`[0m
+    [1m[94m--> [0msrc/main.rs:2631:5
+     [1m[94m|[0m
+[1m[94m2631[0m [1m[94m|[0m     window: tauri::Window,
+     [1m[94m|[0m     [1m[33m^^^^^^[0m [1m[33mhelp: if this is intentional, prefix it with an underscore: `_window`[0m
+     [1m[94m|[0m
+     [1m[94m= [0m[1mnote[0m: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `openchamber-desktop` (bin "openchamber-desktop") generated 1 warning (run `cargo fix --bin "openchamber-desktop" -p openchamber-desktop` to apply 1 suggestion)
+[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 1.52s
+[1m[92m     Running[0m `target/debug/openchamber-desktop`
+[2026-03-08][15:36:09][openchamber_desktop][INFO] [supervisor] starting sidecar health monitoring
+[2026-03-08][15:36:19][openchamber_desktop][WARN] [desktop] Vite dev server not ready, using local API UI at http://127.0.0.1:3001
+2026-03-08T15:36:19.251Z - GET /api/global/event
+[sse] connect scope=global reason=new-stream path=/global/event
+[sse] lifecycle action=connect reason=new-stream scope=global
+2026-03-08T15:36:19.644Z - GET /
+2026-03-08T15:36:19.684Z - GET /assets/index-CKUgsLVh.js
+2026-03-08T15:36:19.685Z - GET /assets/index-Bn1oeZY8.css
+2026-03-08T15:36:19.700Z - GET /assets/vendor-shiki-BPTbv4OJ.js
+2026-03-08T15:36:19.893Z - GET /assets/vendor-zustand-Bq5Y8ucy.js
+2026-03-08T15:36:19.894Z - GET /assets/vendor-opencode-sdk-DpzwjFzN.js
+2026-03-08T15:36:19.895Z - GET /assets/vendor-radix-CnvLsdva.js
+2026-03-08T15:36:19.896Z - GET /assets/vendor-react-C58-c4KM.js
+2026-03-08T15:36:19.897Z - GET /assets/vendor-syntax-CGZMq0z6.js
+2026-03-08T15:36:19.898Z - GET /assets/vendor-cytoscape-B5fChwB3.js
+2026-03-08T15:36:19.898Z - GET /assets/mermaid-3ZIDBTTL-BwOxjOQd.css
+2026-03-08T15:36:19.898Z - GET /assets/workbox-window.prod.es5-BIl4cyR9.js
+2026-03-08T15:36:19.899Z - GET /assets/vendor-ghostty-web-M-rMj1tG.js
+2026-03-08T15:36:19.900Z - GET /assets/vendor-markdown-C1vIFQ7e.js
+2026-03-08T15:36:19.901Z - GET /assets/vendor-mermaid-BEVBKmIu.js
+2026-03-08T15:36:19.901Z - GET /assets/vendor-codemirror-nJDRBYII.js
+2026-03-08T15:36:19.905Z - GET /assets/mermaid-3ZIDBTTL-CKHSYdMu.js
+2026-03-08T15:36:19.909Z - GET /branding/source/gemini-default.png
+2026-03-08T15:36:19.909Z - GET /assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2
+2026-03-08T15:36:20.404Z - GET /api/config/settings
+2026-03-08T15:36:20.405Z - GET /api/fs/home
+2026-03-08T15:36:20.417Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "homeDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "homeDirectory": "/Users/albsheralsadi"
+}
+2026-03-08T15:36:20.418Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 2
+[persistSettings] Validating 2 projects...
+[validateProjectEntries] Starting validation for 2 projects
+[validateProjectEntries] Validation complete: 2/2 projects valid
+[persistSettings] After validation: 2 projects remain
+[persistSettings] Successfully saved 2 projects to disk
+[persistSettings] Called with changes: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[API:PUT /api/config/settings] Success, returning 2 projects
+[persistSettings] Current projects count: 2
+[persistSettings] Validating 2 projects...
+[validateProjectEntries] Starting validation for 2 projects
+[validateProjectEntries] Validation complete: 2/2 projects valid
+[persistSettings] After validation: 2 projects remain
+[persistSettings] Successfully saved 2 projects to disk
+[API:PUT /api/config/settings] Success, returning 2 projects
+2026-03-08T15:36:20.428Z - GET /auth/session
+2026-03-08T15:36:20.428Z - GET /api/config/themes
+2026-03-08T15:36:20.429Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "themeId": "flexoki-dark",
+  "themeVariant": "dark",
+  "useSystemTheme": true,
+  "lightThemeId": "flexoki-light",
+  "darkThemeId": "flexoki-dark"
+}
+[persistSettings] Called with changes: {
+  "themeId": "flexoki-dark",
+  "themeVariant": "dark",
+  "useSystemTheme": true,
+  "lightThemeId": "flexoki-light",
+  "darkThemeId": "flexoki-dark"
+}
+[persistSettings] Current projects count: 2
+[persistSettings] Validating 2 projects...
+[validateProjectEntries] Starting validation for 2 projects
+[validateProjectEntries] Validation complete: 2/2 projects valid
+[persistSettings] After validation: 2 projects remain
+[persistSettings] Successfully saved 2 projects to disk
+[API:PUT /api/config/settings] Success, returning 2 projects
+2026-03-08T15:36:20.465Z - GET /branding/kronos/main-logo.png
+2026-03-08T15:36:20.465Z - GET /branding/kronos/coursel-2.png
+2026-03-08T15:36:20.465Z - GET /branding/kronos/coursel-1.png
+2026-03-08T15:36:20.494Z - GET /assets/ibm-plex-mono-latin-600-normal-BgSNZQsw.woff2
+2026-03-08T15:36:20.494Z - GET /assets/ibm-plex-mono-latin-500-normal-DSY6xOcd.woff2
+2026-03-08T15:36:20.499Z - GET /api/git/check
+2026-03-08T15:36:20.501Z - GET /api/git/check
+2026-03-08T15:36:20.501Z - GET /api/git/check
+2026-03-08T15:36:20.501Z - GET /api/config/settings
+2026-03-08T15:36:20.510Z - GET /api/git/check
+2026-03-08T15:36:20.510Z - GET /api/git/check
+2026-03-08T15:36:20.510Z - GET /api/fs/list
+2026-03-08T15:36:20.511Z - POST /api/fs/exec
+2026-03-08T15:36:20.512Z - POST /api/fs/exec
+2026-03-08T15:36:20.512Z - GET /api/fs/list
+2026-03-08T15:36:20.525Z - GET /api/git/check
+2026-03-08T15:36:20.526Z - GET /api/tts/status
+2026-03-08T15:36:20.533Z - GET /assets/webviewWindow-DiC2lM8R.js
+2026-03-08T15:36:20.536Z - GET /assets/window-wR7PPk8S.js
+2026-03-08T15:36:20.537Z - GET /assets/image-DNK7xb7J.js
+2026-03-08T15:36:20.539Z - GET /api/config/settings
+2026-03-08T15:36:20.540Z - GET /api/runtime/status
+2026-03-08T15:36:20.540Z - GET /assets/core-DhEqZVGG.js
+2026-03-08T15:36:20.540Z - GET /api/tts/say/status
+2026-03-08T15:36:20.543Z - POST /api/terminal/create
+Using bun-pty for terminal sessions
+Created terminal session: pu8p5nfuzfcsyou6n463to in /Users/albsheralsadi
+2026-03-08T15:36:20.583Z - GET /api/config/settings
+2026-03-08T15:36:20.584Z - GET /api/git/check
+2026-03-08T15:36:20.585Z - GET /api/github/auth/status
+2026-03-08T15:36:20.595Z - GET /assets/pierre-light-dckrK0oj.js
+2026-03-08T15:36:20.596Z - GET /api/sessions/snapshot
+2026-03-08T15:36:20.596Z - GET /assets/pierre-dark-BXuwtOqb.js
+2026-03-08T15:36:20.597Z - GET /api/session/status
+API → OpenCode: GET /session/status
+2026-03-08T15:36:20.601Z - GET /api/session/status
+API → OpenCode: GET /session/status
+2026-03-08T15:36:20.602Z - GET /api/config/settings
+2026-03-08T15:36:20.602Z - GET /assets/ibm-plex-sans-latin-500-normal-6ng42L7E.woff2
+2026-03-08T15:36:20.605Z - GET /assets/ibm-plex-sans-latin-400-normal-CDDApCn2.woff2
+2026-03-08T15:36:20.609Z - GET /assets/ibm-plex-sans-latin-600-normal-CuJfVYMP.woff2
+2026-03-08T15:36:20.612Z - POST /api/terminal/create
+Created terminal session: 3rj45xi6ze4klmbhodr7od in /Users/albsheralsadi
+2026-03-08T15:36:20.674Z - GET /api/permission
+API → OpenCode: GET /permission
+2026-03-08T15:36:20.674Z - GET /api/question
+API → OpenCode: GET /question
+2026-03-08T15:36:20.675Z - GET /api/question
+API → OpenCode: GET /question
+2026-03-08T15:36:20.676Z - GET /api/question
+API → OpenCode: GET /question
+2026-03-08T15:36:20.677Z - GET /api/path
+API → OpenCode: GET /path
+2026-03-08T15:36:20.680Z - GET /api/git/status
+2026-03-08T15:36:20.684Z - GET /api/path
+API → OpenCode: GET /path
+2026-03-08T15:36:20.685Z - GET /api/git/status
+2026-03-08T15:36:20.685Z - GET /api/git/status
+2026-03-08T15:36:20.687Z - GET /api/git/status
+2026-03-08T15:36:21.174Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "notificationTemplates": {
+    "completion": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    },
+    "error": {
+      "message": "{last_message}",
+      "title": "Tool error"
+    },
+    "question": {
+      "message": "{last_message}",
+      "title": "Input needed"
+    },
+    "subtask": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    }
+  }
+}
+[persistSettings] Called with changes: {
+  "notificationTemplates": {
+    "completion": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    },
+    "error": {
+      "message": "{last_message}",
+      "title": "Tool error"
+    },
+    "question": {
+      "message": "{last_message}",
+      "title": "Input needed"
+    },
+    "subtask": {
+      "message": "{model_name} completed the task",
+      "title": "{agent_name} is ready"
+    }
+  }
+}
+2026-03-08T15:36:21.175Z - DELETE /api/terminal/pu8p5nfuzfcsyou6n463to
+Terminal session pu8p5nfuzfcsyou6n463to exited with code 0, signal SIGTERM
+Closed terminal session: pu8p5nfuzfcsyou6n463to
+[persistSettings] Current projects count: 2
+[persistSettings] Validating 2 projects...
+[validateProjectEntries] Starting validation for 2 projects
+[validateProjectEntries] Validation complete: 2/2 projects valid
+[persistSettings] After validation: 2 projects remain
+2026-03-08T15:36:21.178Z - GET /api/git/status
+[persistSettings] Successfully saved 2 projects to disk
+[API:PUT /api/config/settings] Success, returning 2 projects
+2026-03-08T15:36:21.183Z - GET /api/git/check
+2026-03-08T15:36:21.185Z - GET /api/git/check
+2026-03-08T15:36:21.194Z - GET /assets/worker-suRQxAtO.js
+2026-03-08T15:36:21.197Z - PUT /api/config/settings
+[API:PUT /api/config/settings] Received request
+[API:PUT /api/config/settings] Request body: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Called with changes: {
+  "lastDirectory": "/Users/albsheralsadi"
+}
+[persistSettings] Current projects count: 2
+[persistSettings] Validating 2 projects...
+[validateProjectEntries] Starting validation for 2 projects
+[validateProjectEntries] Validation complete: 2/2 projects valid
+[persistSettings] After validation: 2 projects remain
+[persistSettings] Successfully saved 2 projects to disk
+[API:PUT /api/config/settings] Success, returning 2 projects
+2026-03-08T15:36:21.213Z - POST /api/terminal/3rj45xi6ze4klmbhodr7od/resize
+2026-03-08T15:36:21.218Z - GET /api/terminal/3rj45xi6ze4klmbhodr7od/stream
+Terminal connected: session=3rj45xi6ze4klmbhodr7od client=dbke4d runtime=bun pty=bun-pty
+Starting graceful shutdown...
+Stopping OpenCode process...
+error: script "tauri" was terminated by signal SIGTERM (Polite quit request)
+Client dbke4d disconnected from terminal session 3rj45xi6ze4klmbhodr7od
+Client dbke4d disconnected from terminal session 3rj45xi6ze4klmbhodr7od
+[sse] close scope=global reason=client-disconnect durationMs=22583
+Server close timeout reached, forcing shutdown
+Graceful shutdown complete

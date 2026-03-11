@@ -49,14 +49,20 @@ export const DesktopHoverAssistSurface: React.FC<DesktopHoverAssistSurfaceProps>
           exit={{ opacity: 0, y: 12, scale: 0.96 }}
           transition={{ duration: 0.16 }}
           className={cn(
-            'fixed bottom-4 right-4 z-[80] w-[min(86vw,420px)] rounded-xl border border-border/70 bg-card/95 p-3 shadow-lg backdrop-blur',
+            'fixed bottom-5 left-1/2 z-[80] w-[min(92vw,560px)] -translate-x-1/2 overflow-hidden rounded-[28px] border border-border/60 bg-background/78 p-4 shadow-2xl backdrop-blur-xl',
             'text-foreground',
           )}
         >
-          <div className="flex items-start justify-between gap-2">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-90"
+            style={{ background: 'radial-gradient(120% 140% at 50% 0%, var(--status-info-background) 0%, transparent 58%)' }}
+          />
+
+          <div className="relative flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <div className="typography-ui-label font-medium">Desktop Hover Assist</div>
-              <div className="typography-meta text-muted-foreground">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Desktop follow</div>
+              <div className="mt-1 typography-ui-label font-medium">Desktop Hover Assist</div>
+              <div className="typography-meta mt-1 text-muted-foreground">
                 Task {shortTaskID(task?.taskID ?? null)} • {status}
               </div>
             </div>
@@ -65,7 +71,7 @@ export const DesktopHoverAssistSurface: React.FC<DesktopHoverAssistSurfaceProps>
                 type="button"
                 onClick={onTogglePinned}
                 className={cn(
-                  'inline-flex h-7 w-7 items-center justify-center rounded-md border border-border/70 text-muted-foreground hover:bg-interactive-hover/50 hover:text-foreground',
+                  'inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 bg-background/70 text-muted-foreground hover:bg-interactive-hover/50 hover:text-foreground',
                   pinned && 'text-foreground border-interactive-selection/70 bg-interactive-selection/20',
                 )}
                 title={pinned ? 'Unpin hover assist' : 'Pin hover assist'}
@@ -76,7 +82,7 @@ export const DesktopHoverAssistSurface: React.FC<DesktopHoverAssistSurfaceProps>
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border/70 text-muted-foreground hover:bg-interactive-hover/50 hover:text-foreground"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 bg-background/70 text-muted-foreground hover:bg-interactive-hover/50 hover:text-foreground"
                 title="Close hover assist"
                 aria-label="Close hover assist"
               >
@@ -85,21 +91,21 @@ export const DesktopHoverAssistSurface: React.FC<DesktopHoverAssistSurfaceProps>
             </div>
           </div>
 
-          <div className="mt-2 rounded-md border border-border/60 bg-muted/40 px-2 py-1.5 font-mono text-[11px] text-foreground/90" title={cwd}>
+          <div className="relative mt-3 rounded-2xl border border-border/60 bg-background/55 px-3 py-2 font-mono text-[11px] text-foreground/90" title={cwd}>
             {cwd}
           </div>
 
-          <div className="mt-2 flex items-center justify-between gap-2">
+          <div className="relative mt-3 flex items-center justify-between gap-2">
             <div className="typography-meta text-muted-foreground">
               Mode: <span className="text-foreground">{task?.mode ?? snapshot?.work_type ?? 'idle'}</span>
             </div>
             <button
               type="button"
               onClick={onOpenRuntime}
-              className="inline-flex items-center gap-1 rounded-md border border-border/70 px-2 py-1 text-xs text-foreground hover:bg-interactive-hover/50"
+              className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-xs text-foreground hover:bg-interactive-hover/50"
             >
               <RiExpandDiagonalLine className="h-3.5 w-3.5" />
-              Open Runtime
+              Follow live
             </button>
           </div>
         </motion.aside>

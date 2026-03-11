@@ -15,7 +15,10 @@ export const EverywhereTool = Tool.define("everywhere", {
   parameters: z.object({
     action: z.enum(["list_apps", "inspect_ui", "control_app", "get_window_info"]),
     targetApp: z.string().optional().describe("The name or bundle ID of the target application."),
-    command: z.string().optional().describe("The specific command or script to execute (e.g., AppleScript, PowerShell)."),
+    command: z
+      .string()
+      .optional()
+      .describe("The specific command or script to execute (e.g., AppleScript, PowerShell)."),
     element: z.string().optional().describe("The UI element to interact with (e.g., button name, menu item)."),
   }),
   async execute(args, ctx) {
@@ -30,7 +33,9 @@ export const EverywhereTool = Tool.define("everywhere", {
         // macOS implementation using AppleScript
         switch (args.action) {
           case "list_apps":
-            const { stdout: apps } = await execAsync(`osascript -e 'tell application "System Events" to get name of every process whose background only is false'`)
+            const { stdout: apps } = await execAsync(
+              `osascript -e 'tell application "System Events" to get name of every process whose background only is false'`,
+            )
             output = `Running Applications:\n${apps.split(", ").join("\n")}`
             title = "List Running Apps"
             break
@@ -50,15 +55,19 @@ export const EverywhereTool = Tool.define("everywhere", {
             break
           case "control_app":
             if (!args.targetApp || !args.command) throw new Error("targetApp and command are required for control_app")
-            const { stdout: controlResult } = await execAsync(`osascript -e 'tell application "${args.targetApp}" to ${args.command}'`)
+            const { stdout: controlResult } = await execAsync(
+              `osascript -e 'tell application "${args.targetApp}" to ${args.command}'`,
+            )
             output = controlResult || "Command executed successfully."
             title = `Control App: ${args.targetApp}`
             break
           case "get_window_info":
-             const { stdout: windowInfo } = await execAsync(`osascript -e 'tell application "System Events" to get window info of every process whose background only is false'`)
-             output = windowInfo
-             title = "Get Window Info"
-             break
+            const { stdout: windowInfo } = await execAsync(
+              `osascript -e 'tell application "System Events" to get name of processes whose background only is false'`,
+            )
+            output = windowInfo
+            title = "Get Window Info"
+            break
         }
       } else if (process.platform === "win32") {
         // Windows implementation using PowerShell (Simplified placeholder)

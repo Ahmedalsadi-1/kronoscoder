@@ -1,0 +1,3 @@
+Warning: KRONOSCODE_SERVER_PASSWORD is not set; server is unsecured.
+[91m[1mError: [0mConfiguration is invalid at /Users/albsheralsadi/.config/kronoscode/kronoscode.json
+↳ Unrecognized key: "mcpPolicyQuarantine" 

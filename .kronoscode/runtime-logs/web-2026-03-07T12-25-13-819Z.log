@@ -1,0 +1,19 @@
+$ bun server/index.js --port ${KRONOSCHAMBER_PORT:-3001}
+Starting KronosChamber on port 3001
+macOS Say TTS available with 188 voices
+[zen] Stored model "minimax-m2.5-free" verified as available
+KRONOSCODE_EXTERNAL_ONLY is enabled; attaching to external KronosCode on port 4096
+Detected KronosCode port: 4096
+Setting up proxy to KronosCode on port 4096
+Serving static files from /Users/albsheralsadi/kronosfinal/kronoscoder/packages/web/dist
+KronosChamber server running on port 3001
+Health check: http://localhost:3001/health
+Web interface: http://localhost:3001
+[PushWatcher] connected
+2026-03-07T12:25:17.834Z - GET /api/runtime/status
+2026-03-07T12:25:19.462Z - GET /api/runtime/status
+Starting graceful shutdown...
+Skipping KronosCode shutdown (external server)
+HTTP server closed
+Graceful shutdown complete
+Server close timeout reached, forcing shutdown

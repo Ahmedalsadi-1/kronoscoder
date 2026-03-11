@@ -1,0 +1,5 @@
+$ bun run --cwd packages/kronoscode --conditions=browser src/index.ts
+error: Cannot find module '@/storage' from '/Users/albsheralsadi/kronosfinal/kronoscoder/packages/kronoscode/src/marketplace/registry.ts'
+
+Bun v1.3.9 (macOS arm64)
+error: script "dev" exited with code 1

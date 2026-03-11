@@ -238,6 +238,14 @@ export const ChatContainer: React.FC = () => {
         }
     }, [currentSessionId, latestTask, setRuntimeWidgetExpanded, openContextRuntime]);
 
+    const handleOpenAgentFollow = React.useCallback(() => {
+        if (!currentSessionId) {
+            return;
+        }
+        setRuntimeWidgetExpanded(true);
+        openContextRuntime(currentSessionId, latestTask?.taskID ?? null);
+    }, [currentSessionId, latestTask?.taskID, openContextRuntime, setRuntimeWidgetExpanded]);
+
     const handleDismissRuntimeWidget = React.useCallback(() => {
         dismissRuntimeWidget(Date.now());
     }, [dismissRuntimeWidget]);
@@ -601,7 +609,7 @@ export const ChatContainer: React.FC = () => {
                     className="flex flex-col h-full bg-background gap-0"
                     style={isMobile ? { paddingBottom: 'var(--oc-keyboard-inset, 0px)' } : undefined}
                 >
-                    <AgentPOVStrip snapshot={agentWorkSnapshot} />
+                    <AgentPOVStrip snapshot={agentWorkSnapshot} onOpenFollow={handleOpenAgentFollow} />
                     <div className="flex-1 overflow-y-auto p-4 bg-background">
                         <div className="chat-message-column space-y-4">
                             {[1, 2, 3].map((i) => (
@@ -627,7 +635,7 @@ export const ChatContainer: React.FC = () => {
                 className="relative flex flex-col h-full bg-background transform-gpu"
                 style={isMobile ? { paddingBottom: 'var(--oc-keyboard-inset, 0px)' } : undefined}
             >
-                <AgentPOVStrip snapshot={agentWorkSnapshot} />
+                <AgentPOVStrip snapshot={agentWorkSnapshot} onOpenFollow={handleOpenAgentFollow} />
                 {!isDesktopExpandedInput ? (
                 <div className="flex-1 flex items-center justify-center">
                     <ChatEmptyState />
@@ -652,7 +660,7 @@ export const ChatContainer: React.FC = () => {
             className="relative flex flex-col h-full bg-background"
             style={isMobile ? { paddingBottom: 'var(--oc-keyboard-inset, 0px)' } : undefined}
         >
-            <AgentPOVStrip snapshot={agentWorkSnapshot} />
+            <AgentPOVStrip snapshot={agentWorkSnapshot} onOpenFollow={handleOpenAgentFollow} />
             <div
                 className={cn(
                     'relative min-h-0',

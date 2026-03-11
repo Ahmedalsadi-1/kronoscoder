@@ -15,6 +15,7 @@
     "apply:config": "node scripts/apply-kronos-config.mjs",
     "eval:agent-stack": "node scripts/eval-agent-stack.mjs",
     "build": "bun turbo build",
+    "lint": "bun run --cwd packages/kronoscode lint",
     "typecheck": "bun turbo typecheck",
     "rebrand:guard": "node scripts/rebrand-guard.mjs",
     "prepare": "husky",

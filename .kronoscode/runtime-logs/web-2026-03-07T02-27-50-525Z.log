@@ -1,0 +1,34 @@
+$ bun server/index.js --port ${KRONOSCHAMBER_PORT:-3001}
+Starting KronosChamber on port 3001
+macOS Say TTS available with 188 voices
+[zen] No model configured, setting default to "minimax-m2.5-free"
+[persistSettings] Called with changes: {
+  "zenModel": "minimax-m2.5-free"
+}
+[persistSettings] Current projects count: 1
+[persistSettings] Validating 1 projects...
+[validateProjectEntries] Starting validation for 1 projects
+[validateProjectEntries] Validation complete: 1/1 projects valid
+[persistSettings] After validation: 1 projects remain
+[persistSettings] Successfully saved 1 projects to disk
+KRONOSCODE_EXTERNAL_ONLY is enabled; attaching to external KronosCode on port 4096
+Detected KronosCode port: 4096
+Setting up proxy to KronosCode on port 4096
+Serving static files from /Users/albsheralsadi/kronosfinal/kronoscoder/packages/web/dist
+KronosChamber server running on port 3001
+Health check: http://localhost:3001/health
+Web interface: http://localhost:3001
+[PushWatcher] connected
+2026-03-07T02:27:55.552Z - GET /api/runtime/status
+2026-03-07T02:27:58.552Z - GET /api/runtime/status
+Created config backup: /Users/albsheralsadi/.config/kronoscode/kronoscode.json.kronoschamber.backup
+Successfully wrote config file: /Users/albsheralsadi/.config/kronoscode/kronoscode.json
+2026-03-07T02:28:02.127Z - GET /api/runtime/status
+2026-03-07T02:28:06.707Z - GET /api/runtime/status
+2026-03-07T02:28:08.339Z - GET /api/runtime/status
+2026-03-07T02:28:09.983Z - GET /api/runtime/status
+Starting graceful shutdown...
+Skipping KronosCode shutdown (external server)
+HTTP server closed
+Graceful shutdown complete
+Server close timeout reached, forcing shutdown

@@ -1,4 +1,7 @@
-export const MCP_POLICY_ALLOWED = [
+// DEFAULT ALLOWED MCP SERVERS - Can be extended via environment variable
+// Set MCP_ALLOWED_SERVERS env var to comma-separated list of allowed MCP names
+// Use "*" to allow ALL MCP servers
+const DEFAULT_ALLOWED = [
   "apple_mcp",
   "automation-mcp",
   "browseros",
@@ -7,11 +10,30 @@ export const MCP_POLICY_ALLOWED = [
   "openfang",
 ] as const
 
-export type AllowedMcpName = (typeof MCP_POLICY_ALLOWED)[number]
+// Get allowed MCPs from environment variable or use defaults
+// MCP_ALLOWED_SERVERS="*" means allow all
+// MCP_ALLOWED_SERVERS="github,jira,slack" means allow only those + defaults
+const getAllowedFromEnv = (): readonly string[] => {
+  const envVar = process.env.MCP_ALLOWED_SERVERS
+  // Backward compatible default: if not configured, allow all servers.
+  // Restriction only applies when MCP_ALLOWED_SERVERS is explicitly set.
+  if (!envVar) return ["*"] as const
+  if (envVar === "*") return ["*"] as const
+  // Merge env list with defaults
+  const envList = envVar
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+  return [...new Set([...DEFAULT_ALLOWED, ...envList])] as readonly string[]
+}
+
+export const MCP_POLICY_ALLOWED = getAllowedFromEnv()
+
+export type AllowedMcpName = string
 
 export const MCP_POLICY_ALLOWED_SET = new Set<string>(MCP_POLICY_ALLOWED)
 
-const MCP_POLICY_ALIASES: Record<string, AllowedMcpName> = {
+const MCP_POLICY_ALIASES: Record<string, string> = {
   "apple-mcp": "apple_mcp",
   apple_mcp: "apple_mcp",
   "automation-mcp": "automation-mcp",
@@ -38,17 +60,22 @@ export const normalizeMcpPolicyName = (value: string): string => {
 
 export const isMcpPolicyAllowed = (value: string): boolean => {
   const normalized = normalizeMcpPolicyName(value)
-  return normalized.length > 0 && MCP_POLICY_ALLOWED_SET.has(normalized)
+  if (!normalized) return false
+  if (MCP_POLICY_ALLOWED_SET.has("*")) return true
+  return MCP_POLICY_ALLOWED_SET.has(normalized)
 }
 
 export const mcpPolicyErrorMessage = (value: string): string => {
   const attempted = typeof value === "string" && value.trim().length > 0 ? value.trim() : "<empty>"
-  return `MCP server "${attempted}" is blocked by policy. Allowed MCP servers: ${MCP_POLICY_ALLOWED.join(", ")}.`
+  const allowedList = MCP_POLICY_ALLOWED_SET.has("*") ? "ALL (using wildcard)" : MCP_POLICY_ALLOWED.join(", ")
+  return `MCP server "${attempted}" is blocked by policy. Allowed MCP servers: ${allowedList}.`
 }
 
 export const assertMcpPolicyAllowed = (value: string): AllowedMcpName => {
   const normalized = normalizeMcpPolicyName(value)
-  if (!normalized || !MCP_POLICY_ALLOWED_SET.has(normalized)) {
+  if (!normalized) throw new Error(mcpPolicyErrorMessage(value))
+  if (MCP_POLICY_ALLOWED_SET.has("*")) return normalized as AllowedMcpName
+  if (!MCP_POLICY_ALLOWED_SET.has(normalized)) {
     throw new Error(mcpPolicyErrorMessage(value))
   }
   return normalized as AllowedMcpName
