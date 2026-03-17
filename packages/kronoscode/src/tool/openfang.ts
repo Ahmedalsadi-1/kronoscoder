@@ -29,10 +29,23 @@ export const OpenFangTool = Tool.define("openfang", {
     try {
       switch (args.action) {
         case "scan_dependencies":
-          // Implementation for dependency scanning (e.g., npm audit, bun audit)
+          // Try multiple audit commands - npm audit or pnpm audit (bun audit doesn't exist)
           title = "Dependency Audit"
-          const { stdout: auditOut } = await execAsync(`bun audit --cwd ${targetPath}`)
-          output = auditOut || "No vulnerabilities found in dependencies."
+          let auditOutput = ""
+          try {
+            // Try npm audit first
+            const { stdout: npmOut } = await execAsync(`npm audit --cwd ${targetPath}`)
+            auditOutput = npmOut
+          } catch (npmError) {
+            try {
+              // Fall back to pnpm audit
+              const { stdout: pnpmOut } = await execAsync(`pnpm audit --dir ${targetPath}`)
+              auditOutput = pnpmOut
+            } catch (pnpmError) {
+              auditOutput = "No audit tool available. Install npm or pnpm to scan dependencies."
+            }
+          }
+          output = auditOutput || "No vulnerabilities found in dependencies."
           break
         case "audit_code":
           // Static code analysis placeholder (e.g., using eslint-security-plugin or similar)

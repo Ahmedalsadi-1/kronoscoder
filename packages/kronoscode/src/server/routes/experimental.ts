@@ -13,6 +13,7 @@ import { errors } from "../error"
 import { lazy } from "../../util/lazy"
 import { BrowserRuntime } from "@/browser/runtime"
 import { Flag } from "@/flag/flag"
+import { CapabilityBroker } from "@/session/capability-broker"
 
 const CANONICAL_BROWSER_ACTIONS = [
   "newPage",
@@ -468,6 +469,10 @@ export const ExperimentalRoutes = lazy(() =>
                           id: z.string(),
                           description: z.string(),
                           parameters: z.any(),
+                          connector: z.string().optional(),
+                          risk_level: z.enum(["low", "medium", "high"]).optional(),
+                          interactive: z.boolean().optional(),
+                          fallback: z.array(z.string()).optional(),
                         })
                         .meta({ ref: "ToolListItem" }),
                     )
@@ -493,10 +498,114 @@ export const ExperimentalRoutes = lazy(() =>
           tools.map((t) => ({
             id: t.id,
             description: t.description,
+            connector: (t as any).connector,
+            risk_level: (t as any).risk_level,
+            interactive: (t as any).interactive,
+            fallback: (t as any).fallback,
             // Handle both Zod schemas and plain JSON schemas
             parameters: (t.parameters as any)?._def ? zodToJsonSchema(t.parameters as any) : t.parameters,
           })),
         )
+      },
+    )
+    .get(
+      "/tool/capabilities",
+      describeRoute({
+        summary: "List tool capability manifest",
+        description:
+          "Return a lightweight capability manifest for tools (connector, risk level, interactivity, and fallbacks).",
+        operationId: "tool.capabilities",
+        responses: {
+          200: {
+            description: "Tool capabilities",
+            content: {
+              "application/json": {
+                schema: resolver(
+                  z.array(
+                    z.object({
+                      id: z.string(),
+                      connector: z.string(),
+                      risk_level: z.enum(["low", "medium", "high"]),
+                      interactive: z.boolean(),
+                      fallback: z.array(z.string()),
+                    }),
+                  ),
+                ),
+              },
+            },
+          },
+          ...errors(400),
+        },
+      }),
+      async (c) => {
+        return c.json(await ToolRegistry.capabilities())
+      },
+    )
+    .get(
+      "/tool/scorecard",
+      describeRoute({
+        summary: "List capability scorecard",
+        description:
+          "Return capability scorecard entries for built-in and MCP-backed surfaces with promotion and health metadata.",
+        operationId: "tool.scorecard",
+        responses: {
+          200: {
+            description: "Capability scorecard",
+            content: {
+              "application/json": {
+                schema: resolver(
+                  z.array(
+                    z.object({
+                      id: z.string(),
+                      source: z.enum(["builtin", "mcp"]),
+                      connector: z.string(),
+                      required_auth_env: z.array(z.string()),
+                      risk_level: z.enum(["low", "medium", "high"]),
+                      health_status: z.enum(["healthy", "degraded", "unavailable"]),
+                      verification_strategy: z.string(),
+                      promotion_status: z.enum(["builtin", "builtin-adjacent", "mcp-approved", "mcp-hidden"]),
+                      interactive: z.boolean(),
+                      fallback: z.array(z.string()),
+                    }),
+                  ),
+                ),
+              },
+            },
+          },
+          ...errors(400),
+        },
+      }),
+      async (c) => {
+        return c.json(await ToolRegistry.capabilityScorecard())
+      },
+    )
+    .get(
+      "/routing/trace",
+      describeRoute({
+        summary: "Get routing trace",
+        description: "Return session routing decisions from the capability broker.",
+        operationId: "routing.trace",
+        responses: {
+          200: {
+            description: "Routing trace",
+            content: {
+              "application/json": {
+                schema: resolver(z.record(z.string(), z.array(z.any()))),
+              },
+            },
+          },
+          ...errors(400),
+        },
+      }),
+      validator(
+        "query",
+        z.object({
+          sessionID: z.string().optional(),
+        }),
+      ),
+      async (c) => {
+        const { sessionID } = c.req.valid("query")
+        return c.json(await CapabilityBroker.trace(sessionID))
       },
     )
     .post(

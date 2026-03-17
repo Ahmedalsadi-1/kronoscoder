@@ -13,6 +13,7 @@ import PROMPT_CODEX from "./prompt/codex_header.txt"
 import PROMPT_TRINITY from "./prompt/trinity.txt"
 import type { Provider } from "@/provider/provider"
 import { SkillSuggestion } from "@/skill/suggestion"
+import type { CapabilityBroker } from "./capability-broker"
 
 export namespace SystemPrompt {
   export function instructions() {
@@ -29,20 +30,31 @@ export namespace SystemPrompt {
     return [PROMPT_ANTHROPIC_WITHOUT_TODO]
   }
 
-  export async function environment(model: Provider.Model) {
+  export async function environment(
+    model: Provider.Model,
+    routing?: {
+      decision: CapabilityBroker.Decision
+      suppressedTools: string[]
+    },
+  ) {
     const project = Instance.project
     const suggestions = await SkillSuggestion.suggest()
     const cfg = await Config.get()
     const persona = cfg.agent?.persona || "default"
     const desktopPolicy =
-      "  Browser-first policy: use browser_* or kronoschamber_browser_* tools for interactive browsing, reserve e2b for background desktop tasks, and use user-desktop routing for full-control actions."
+      "  Desktop mode: BrowserOS (KronosChamber built-in browser) is the default and primary browser path. Use built-in browser_* tools first for all interactive browser work."
     const e2bEnvHint =
-      "  If E2B auth is missing, surface these env keys: E2B_API_KEY, KRONOSCHAMBER_E2B_AUTH_MODE, KRONOSCHAMBER_E2B_ENTITLEMENT_URL, KRONOSCHAMBER_E2B_TOKEN_ISSUER_URL."
+      "  E2B sandbox: use e2b_* only for explicit background desktop tasks or when user asks for E2B; otherwise stay on BrowserOS/browser tools. If E2B credentials are missing, report actionable remediation."
     const kronosCapabilityPolicy = [
-      "  First-level capability policy: treat KronosChamber MCP configuration flows and skill installation as the primary setup path before ad-hoc custom integrations.",
-      "  MCP policy: prioritize browseros, computer-use-mcp, automation-mcp, and apple_mcp for desktop routing, but never hard-block user-added MCP servers.",
-      "  Extension policy: if users add new MCP servers, keep them available, explain routing impact, and only apply preference ordering for desktop-control decisions.",
-      "  Skill policy: prefer skill discovery/installation and existing skill workflows first when capability is missing; only propose manual implementation when no viable skill exists.",
+      "  Tool priority: Use built-in tools FIRST (they're optimized and always available). Use skills SECOND. Use MCP as fallback when built-in + skills don't cover the use case.",
+      "  Built-in tools include: bash, read, write, edit, glob, grep, task, spawn, webfetch, websearch, codesearch, lsp, browser_*, screenpipe_*, e2b_* (including e2b_desktop_*), anything_*, pluely_*, jaaz_*, voice_box_*, everywhere, openfang, skill, todo, and more.",
+      "  Routing eligibility is staged: stage1 built-ins only; stage2 built-in-adjacent and skills; stage3 approved MCP fallback.",
+      "  Connector-native tools (screenpipe_*, pluely_*, jaaz_*) must be treated as availability-gated: check status/health first and report exact missing dependency when unavailable.",
+      "  Capability source-of-truth: trust host/runtime capability context for live connector health and workspace availability; do not infer availability from registry presence alone.",
+      "  Connector selection contract: pick the healthiest connector that satisfies requested capability, then report connector name + explicit fallback reason in the response when degraded or rerouted.",
+      "  Workspace routing: align recommendations with active workspace (chat/business/browser/creative/desktop-control) and provide explicit fallback when a workspace is unavailable.",
+      "  Skill policy: Use skill tool to load specialized capabilities when task requires specific expertise.",
+      "  MCP policy: Use MCP servers only when built-in tools and skills don't provide the needed capability.",
     ]
     const layeredPromptPolicy = [
       "  Prompt stack contract: router -> planner -> executor -> critic -> summarizer.",
@@ -53,12 +65,34 @@ export namespace SystemPrompt {
       "  Summarizer: return concise user-facing outcome + next action without exposing internal chain-of-thought.",
       "  Tool budgets: default max 1 broad search + 3 focused reads before coding; after edits, always run at least one verification command.",
       "  Stop conditions: stop when acceptance checks pass or when blocked by missing external credentials/environment.",
-      "  User-desktop routing policy: computer-use-mcp -> automation-mcp -> local TS fallback; always report chosen provider and fallback reason.",
+      "  User-desktop routing policy: browser tasks -> browseros first; native macOS tasks -> ghost-os first; remote/background desktop tasks -> e2b first when requested/required; approved MCP only as fallback.",
     ]
 
-    const skillsList = suggestions.length > 0
-      ? `  Suggested skills for this project: ${suggestions.map(s => s.name).join(", ")} (You can load these using the \`skill\` tool)`
-      : ""
+    const skillsList =
+      suggestions.length > 0
+        ? `  Suggested skills for this project: ${suggestions.map((s) => s.name).join(", ")} (You can load these using the \`skill\` tool)`
+        : ""
+
+    const routingBlock = routing
+      ? [
+          `<routing>`,
+          `  taskClass: ${routing.decision.taskClass}`,
+          `  stage: ${routing.decision.stage}`,
+          `  selectedRuntimeMode: ${routing.decision.selectedRuntimeMode}`,
+          `  selectedAgent: ${routing.decision.selectedAgent}`,
+          `  eligibleFamilies: ${routing.decision.eligibleFamilies.join(", ") || "none"}`,
+          `  suppressedFamilies: ${routing.decision.suppressedFamilies.join(", ") || "none"}`,
+          `  selectedMcpServers: ${routing.decision.selectedMcpServers.join(", ") || "none"}`,
+          `  requiredMcpMissing: ${routing.decision.requiredMcpMissing.join(", ") || "none"}`,
+          `  enforcementMode: ${routing.decision.enforcement.mode}`,
+          `  enforcementReason: ${routing.decision.enforcement.reason ?? "none"}`,
+          `  fallbackReason: ${routing.decision.fallbackReason ?? "none"}`,
+          `  routeValid: ${routing.decision.critic.routeValid ? "true" : "false"}`,
+          `  routeIssues: ${routing.decision.critic.issues.join(", ") || "none"}`,
+          `  suppressedTools: ${routing.suppressedTools.join(", ") || "none"}`,
+          `</routing>`,
+        ]
+      : []
 
     return [
       [
@@ -76,6 +110,7 @@ export namespace SystemPrompt {
         ...kronosCapabilityPolicy,
         ...layeredPromptPolicy,
         `</env>`,
+        ...routingBlock,
         `<capabilities>`,
         PROMPT_CAPABILITIES,
         `</capabilities>`,

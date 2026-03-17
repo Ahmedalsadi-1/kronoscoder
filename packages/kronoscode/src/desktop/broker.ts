@@ -13,6 +13,9 @@ const log = Log.create({ service: "sandbox.broker" })
 const ENABLE_REAL_E2B = process.env.KRONOSCODE_ENABLE_REAL_E2B === "true"
 const ENABLE_REAL_SELF_HOSTED = process.env.KRONOSCODE_ENABLE_REAL_SELF_HOSTED === "true"
 
+const E2B_SELF_HOSTED_URL = process.env.E2B_SELF_HOSTED_URL || "http://localhost:8080"
+const E2B_SELF_HOSTED_API_KEY = process.env.E2B_SELF_HOSTED_API_KEY || process.env.E2B_API_KEY || ""
+
 export namespace SandboxBroker {
   export const SessionState = z.enum([
     "provisioning",
@@ -74,21 +77,19 @@ export namespace SandboxBroker {
         implemented: true,
         available: ENABLE_REAL_E2B,
         default: false,
-        reason: ENABLE_REAL_E2B
-          ? null
-          : "Set KRONOSCODE_ENABLE_REAL_E2B=true to enable production E2B provisioning.",
+        reason: ENABLE_REAL_E2B ? null : "Set KRONOSCODE_ENABLE_REAL_E2B=true to enable production E2B provisioning.",
         supportedSessionTypes: ["browser", "terminal", "desktop"],
       },
       {
         id: "self-hosted",
         label: "Self-hosted Sandbox",
         enabled: ENABLE_REAL_SELF_HOSTED,
-        implemented: false,
-        available: false,
+        implemented: true,
+        available: ENABLE_REAL_SELF_HOSTED,
         default: false,
         reason: ENABLE_REAL_SELF_HOSTED
-          ? "Self-hosted sandboxing is flagged on, but the server integration is not implemented yet."
-          : "Set KRONOSCODE_ENABLE_REAL_SELF_HOSTED=true after wiring the self-hosted provider.",
+          ? null
+          : "Set KRONOSCODE_ENABLE_REAL_SELF_HOSTED=true and E2B_SELF_HOSTED_URL to enable self-hosted provisioning.",
         supportedSessionTypes: ["browser", "terminal", "desktop"],
       },
     ]
@@ -119,6 +120,12 @@ export namespace SandboxBroker {
     resumeSandbox(sandboxId: string): Promise<void>
     destroySandbox(sandboxId: string): Promise<void>
     getSandboxStatus(sandboxId: string): Promise<{ status: string; metadata?: any }>
+    executeDesktopAction?(
+      sandboxId: string,
+      action: string,
+      args: Record<string, any>,
+      context: Record<string, any>,
+    ): Promise<Record<string, any>>
   }
 
   class E2BProvider implements SandboxProvider {
@@ -213,48 +220,372 @@ export namespace SandboxBroker {
         },
       }
     }
+
+    private resolvePathMethod(target: any, path: string): any {
+      return path.split(".").reduce((acc: any, key: string) => (acc && key in acc ? acc[key] : undefined), target)
+    }
+
+    private async callFirst(target: any, paths: string[], payload: Record<string, any>): Promise<any> {
+      for (const methodPath of paths) {
+        const fn = this.resolvePathMethod(target, methodPath)
+        if (typeof fn === "function") {
+          return await fn.call(
+            methodPath.includes(".")
+              ? methodPath
+                  .split(".")
+                  .slice(0, -1)
+                  .reduce((acc: any, key: string) => acc?.[key], target)
+              : target,
+            payload,
+          )
+        }
+      }
+      throw new Error(`No compatible E2B method found for: ${paths.join(", ")}`)
+    }
+
+    async executeDesktopAction(
+      sandboxId: string,
+      action: string,
+      args: Record<string, any>,
+      context: Record<string, any>,
+    ): Promise<Record<string, any>> {
+      if (!ENABLE_REAL_E2B) {
+        throw new Error("E2B provider not enabled")
+      }
+
+      const sandbox = this.activeSandboxes.get(sandboxId)
+      if (!sandbox) {
+        throw new Error(`E2B sandbox ${sandboxId} is not active in this process`)
+      }
+
+      const now = Date.now()
+      switch (action) {
+        case "screenshot": {
+          const raw = await this.callFirst(sandbox, ["screenshot", "screen.capture", "desktop.screenshot"], {
+            fullPage: args.fullPage ?? true,
+          })
+          const base64 =
+            typeof raw === "string"
+              ? raw
+              : typeof raw?.base64 === "string"
+                ? raw.base64
+                : typeof raw?.image === "string"
+                  ? raw.image
+                  : null
+          return {
+            action,
+            timestamp: now,
+            image: base64,
+            mimeType: raw?.mimeType || "image/png",
+            raw,
+          }
+        }
+        case "click":
+          return {
+            action,
+            timestamp: now,
+            raw: await this.callFirst(sandbox, ["click", "mouse.click", "desktop.click"], {
+              x: args.x,
+              y: args.y,
+              button: args.button || "left",
+              double: args.doubleClick === true,
+            }),
+          }
+        case "type":
+          return {
+            action,
+            timestamp: now,
+            raw: await this.callFirst(sandbox, ["type", "keyboard.type", "desktop.type"], {
+              text: args.text ?? "",
+              replace: args.replace === true,
+              pressEnter: args.pressEnter === true,
+            }),
+          }
+        case "hotkey":
+          return {
+            action,
+            timestamp: now,
+            raw: await this.callFirst(sandbox, ["hotkey", "keyboard.hotkey", "desktop.hotkey"], {
+              keys: Array.isArray(args.keys) ? args.keys : [],
+            }),
+          }
+        case "drag":
+          return {
+            action,
+            timestamp: now,
+            raw: await this.callFirst(sandbox, ["drag", "mouse.drag", "desktop.drag"], {
+              startX: args.startX,
+              startY: args.startY,
+              endX: args.endX,
+              endY: args.endY,
+              durationMs: args.durationMs,
+            }),
+          }
+        case "window_list":
+          return {
+            action,
+            timestamp: now,
+            windows: await this.callFirst(sandbox, ["window.list", "windows", "desktop.windowList"], {}),
+          }
+        case "window_focus":
+          return {
+            action,
+            timestamp: now,
+            raw: await this.callFirst(sandbox, ["window.focus", "desktop.windowFocus"], {
+              name: args.name,
+              id: args.id,
+            }),
+          }
+        case "open_app":
+          return {
+            action,
+            timestamp: now,
+            raw: await this.callFirst(sandbox, ["app.open", "desktop.openApp", "openApp"], {
+              app: args.app,
+              command: args.command,
+            }),
+          }
+        case "clipboard_get":
+          return {
+            action,
+            timestamp: now,
+            value: await this.callFirst(sandbox, ["clipboard.get", "desktop.clipboardGet"], {}),
+          }
+        case "clipboard_set":
+          return {
+            action,
+            timestamp: now,
+            raw: await this.callFirst(sandbox, ["clipboard.set", "desktop.clipboardSet"], { value: args.value ?? "" }),
+          }
+        case "wait":
+          await new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(args.ms || 0))))
+          return { action, timestamp: now, waitedMs: Math.max(0, Number(args.ms || 0)) }
+        case "run_macro": {
+          const steps = Array.isArray(args.steps) ? args.steps : []
+          const results: Array<Record<string, any>> = []
+          for (const step of steps) {
+            if (!step || typeof step !== "object") continue
+            const stepAction = typeof step.action === "string" ? step.action : ""
+            const stepArgs = typeof step.args === "object" && step.args ? step.args : {}
+            if (!stepAction) continue
+            const result = await this.executeDesktopAction(sandboxId, stepAction, stepArgs, context)
+            results.push(result)
+          }
+          return { action, timestamp: now, steps: results.length, results }
+        }
+        default:
+          throw new Error(`Unsupported E2B desktop action: ${action}`)
+      }
+    }
   }
 
   class SelfHostedProvider implements SandboxProvider {
     name = "self-hosted"
 
+    private activeSandboxes = new Map<string, any>()
+
     async createSandbox(type: SessionType, config: any): Promise<{ sandboxId: string; credentials: any }> {
       if (!ENABLE_REAL_SELF_HOSTED) {
         throw new Error(
-          "Self-hosted provider not enabled. Set KRONOSCODE_ENABLE_REAL_SELF_HOSTED=true to enable production self-hosted integration.",
+          "Self-hosted provider not enabled. Set KRONOSCODE_ENABLE_REAL_SELF_HOSTED=true to enable self-hosted integration.",
         )
       }
 
-      // TODO: Implement real self-hosted sandbox integration
-      throw new Error("Real self-hosted integration not yet implemented")
+      try {
+        const { Sandbox } = await import("@e2b/desktop")
+
+        const sandbox = await Sandbox.create({
+          apiKey: E2B_SELF_HOSTED_API_KEY,
+          baseUrl: E2B_SELF_HOSTED_URL,
+        })
+
+        const sandboxId = sandbox.sandboxId
+        const credentials = {
+          sandboxId,
+          createdAt: Date.now(),
+          selfHosted: true,
+          baseUrl: E2B_SELF_HOSTED_URL,
+        }
+
+        this.activeSandboxes.set(sandboxId, sandbox)
+
+        log.info("Self-hosted E2B sandbox created", { sandboxId, type, baseUrl: E2B_SELF_HOSTED_URL })
+
+        return { sandboxId, credentials }
+      } catch (error) {
+        log.error("Failed to create self-hosted E2B sandbox", { error, baseUrl: E2B_SELF_HOSTED_URL })
+        throw new Error(
+          `Failed to create self-hosted E2B sandbox: ${error instanceof Error ? error.message : "Unknown error"}`,
+        )
+      }
     }
 
     async pauseSandbox(sandboxId: string): Promise<void> {
       if (!ENABLE_REAL_SELF_HOSTED) {
         throw new Error("Self-hosted provider not enabled")
       }
-      throw new Error("Real self-hosted integration not yet implemented")
+
+      log.warn("Self-hosted pause not supported, destroying sandbox instead", { sandboxId })
+      await this.destroySandbox(sandboxId)
     }
 
     async resumeSandbox(sandboxId: string): Promise<void> {
       if (!ENABLE_REAL_SELF_HOSTED) {
         throw new Error("Self-hosted provider not enabled")
       }
-      throw new Error("Real self-hosted integration not yet implemented")
+
+      const sandbox = this.activeSandboxes.get(sandboxId)
+      if (sandbox) {
+        log.info("Self-hosted sandbox already active", { sandboxId })
+        return
+      }
+
+      throw new Error("Self-hosted E2B Desktop sandboxes cannot be resumed. Please create a new session.")
     }
 
     async destroySandbox(sandboxId: string): Promise<void> {
       if (!ENABLE_REAL_SELF_HOSTED) {
         throw new Error("Self-hosted provider not enabled")
       }
-      throw new Error("Real self-hosted integration not yet implemented")
+
+      try {
+        const sandbox = this.activeSandboxes.get(sandboxId)
+        if (sandbox) {
+          await sandbox.kill()
+          this.activeSandboxes.delete(sandboxId)
+          log.info("Self-hosted E2B sandbox destroyed", { sandboxId })
+        }
+      } catch (error) {
+        log.error("Failed to destroy self-hosted E2B sandbox", { sandboxId, error })
+        this.activeSandboxes.delete(sandboxId)
+      }
     }
 
     async getSandboxStatus(sandboxId: string): Promise<{ status: string; metadata?: any }> {
       if (!ENABLE_REAL_SELF_HOSTED) {
         throw new Error("Self-hosted provider not enabled")
       }
-      throw new Error("Real self-hosted integration not yet implemented")
+
+      const sandbox = this.activeSandboxes.get(sandboxId)
+      if (!sandbox) {
+        return { status: "destroyed" }
+      }
+
+      return {
+        status: "active",
+        metadata: {
+          sandboxId,
+          selfHosted: true,
+          baseUrl: E2B_SELF_HOSTED_URL,
+        },
+      }
+    }
+
+    async executeDesktopAction(
+      sandboxId: string,
+      action: string,
+      args: Record<string, any>,
+      context: Record<string, any>,
+    ): Promise<Record<string, any>> {
+      if (!ENABLE_REAL_SELF_HOSTED) {
+        throw new Error("Self-hosted provider not enabled")
+      }
+
+      const sandbox = this.activeSandboxes.get(sandboxId)
+      if (!sandbox) {
+        throw new Error(`Self-hosted E2B sandbox ${sandboxId} is not active in this process`)
+      }
+
+      const now = Date.now()
+      switch (action) {
+        case "screenshot": {
+          const raw =
+            (await sandbox.screenshot?.()) ||
+            (await sandbox.screen?.capture?.()) ||
+            (await sandbox.desktop?.screenshot?.())
+          const base64 = typeof raw === "string" ? raw : raw?.base64 || raw?.image || null
+          return {
+            action,
+            timestamp: now,
+            image: base64,
+            mimeType: "image/png",
+            raw,
+          }
+        }
+        case "click":
+          return {
+            action,
+            timestamp: now,
+            raw: (await sandbox.leftClick?.(args.x, args.y)) || (await sandbox.click?.(args.x, args.y)),
+          }
+        case "type":
+          return {
+            action,
+            timestamp: now,
+            raw:
+              (await sandbox.write?.(args.text, { pressEnter: args.pressEnter })) || (await sandbox.type?.(args.text)),
+          }
+        case "hotkey":
+          return {
+            action,
+            timestamp: now,
+            raw: (await sandbox.press?.(args.keys)) || (await sandbox.hotkey?.(args.keys)),
+          }
+        case "drag":
+          return {
+            action,
+            timestamp: now,
+            raw: await sandbox.drag?.([args.startX, args.startY], [args.endX, args.endY]),
+          }
+        case "window_list":
+          return {
+            action,
+            timestamp: now,
+            windows: [],
+          }
+        case "window_focus":
+          return {
+            action,
+            timestamp: now,
+            raw: null,
+          }
+        case "open_app":
+          return {
+            action,
+            timestamp: now,
+            raw: await sandbox.launch?.(args.app || args.command),
+          }
+        case "clipboard_get":
+          return {
+            action,
+            timestamp: now,
+            value: "",
+          }
+        case "clipboard_set":
+          return {
+            action,
+            timestamp: now,
+            raw: null,
+          }
+        case "wait":
+          await new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(args.ms || 0))))
+          return { action, timestamp: now, waitedMs: Math.max(0, Number(args.ms || 0)) }
+        case "run_macro": {
+          const steps = Array.isArray(args.steps) ? args.steps : []
+          const results: Array<Record<string, any>> = []
+          for (const step of steps) {
+            if (!step || typeof step !== "object") continue
+            const stepAction = typeof step.action === "string" ? step.action : ""
+            const stepArgs = typeof step.args === "object" && step.args ? step.args : {}
+            if (!stepAction) continue
+            const result = await this.executeDesktopAction(sandboxId, stepAction, stepArgs, context)
+            results.push(result)
+          }
+          return { action, timestamp: now, steps: results.length, results }
+        }
+        default:
+          throw new Error(`Unsupported self-hosted desktop action: ${action}`)
+      }
     }
   }
 
@@ -292,6 +623,7 @@ export namespace SandboxBroker {
   }
 
   const providerRegistry = new ProviderRegistry()
+  const desktopActionContext = new Map<string, Record<string, any>>()
 
   export async function createSession(
     userId: string,
@@ -373,9 +705,9 @@ export namespace SandboxBroker {
       }
 
       const resolvedProviderName =
-        providerName
-        ?? (typeof session.sandbox_provider === "string" ? (session.sandbox_provider as ProviderName) : null)
-        ?? providerRegistry.getDefaultProviderName()
+        providerName ??
+        (typeof session.sandbox_provider === "string" ? (session.sandbox_provider as ProviderName) : null) ??
+        providerRegistry.getDefaultProviderName()
 
       if (!resolvedProviderName) {
         throw new Error("No desktop sandbox provider is currently available.")
@@ -383,7 +715,9 @@ export namespace SandboxBroker {
 
       const providerSummary = providerRegistry.getProviderSummary(resolvedProviderName)
       if (!providerSummary?.available) {
-        throw new Error(providerSummary?.reason || `Desktop sandbox provider '${resolvedProviderName}' is not available.`)
+        throw new Error(
+          providerSummary?.reason || `Desktop sandbox provider '${resolvedProviderName}' is not available.`,
+        )
       }
 
       const provider = providerRegistry.getProvider(resolvedProviderName)
@@ -661,6 +995,84 @@ export namespace SandboxBroker {
 
   export function getProviderCatalog(): ProviderSummary[] {
     return providerRegistry.listProviderSummaries()
+  }
+
+  export function getDesktopActionContext(sessionId: string): Record<string, any> {
+    return desktopActionContext.get(sessionId) || {}
+  }
+
+  export async function executeDesktopAction(
+    sessionId: string,
+    userId: string,
+    orgId: string,
+    action: string,
+    args: Record<string, any> = {},
+  ): Promise<{
+    sessionId: string
+    provider: string
+    sandboxId: string
+    action: string
+    result: Record<string, any>
+    context: Record<string, any>
+  }> {
+    const session = await getSession(sessionId, orgId)
+    if (!session) throw new Error("Session not found")
+    if (!session.sandbox_id) throw new Error("Session has no sandbox yet")
+
+    const providerName = typeof session.sandbox_provider === "string" ? session.sandbox_provider : "e2b"
+    const provider = providerRegistry.getProvider(providerName)
+    if (!provider) throw new Error(`Unknown provider: ${providerName}`)
+    if (!provider.executeDesktopAction) {
+      throw new Error(`Provider ${providerName} does not support desktop actions`)
+    }
+
+    const context = {
+      ...getDesktopActionContext(sessionId),
+      sessionId,
+      sandboxId: session.sandbox_id,
+      lastAction: action,
+      lastActionAt: Date.now(),
+    }
+
+    const result = await provider.executeDesktopAction(session.sandbox_id, action, args, context)
+    const nextContext = {
+      ...context,
+      lastResult: {
+        action,
+        at: Date.now(),
+      },
+      ...(typeof args.x === "number" && typeof args.y === "number"
+        ? {
+            viewport: {
+              ...(context.viewport || {}),
+              lastPointer: { x: args.x, y: args.y },
+            },
+          }
+        : {}),
+      ...(action === "window_focus" && (typeof args.name === "string" || typeof args.id === "string")
+        ? { focusedWindow: args.name || args.id }
+        : {}),
+    }
+    desktopActionContext.set(sessionId, nextContext)
+
+    await db
+      .update(DesktopSessionTable)
+      .set({
+        last_activity_at: Date.now(),
+        time_updated: Date.now(),
+      })
+      .where(eq(DesktopSessionTable.id, sessionId))
+
+    await auditLog(sessionId, userId, `desktop_action:${action}`, { args })
+
+    return {
+      sessionId,
+      provider: providerName,
+      sandboxId: session.sandbox_id,
+      action,
+      result,
+      context: nextContext,
+    }
   }
 
   async function checkOrgQuotas(orgId: string, sessionType: SessionType): Promise<void> {

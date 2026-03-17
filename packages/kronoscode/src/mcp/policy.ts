@@ -6,8 +6,12 @@ const DEFAULT_ALLOWED = [
   "automation-mcp",
   "browseros",
   "computer-use-mcp",
+  "ghost-os",
   "sequential-thinking",
   "openfang",
+  "excalidraw",
+  "atsurae",
+  "personalizationmcp",
 ] as const
 
 // Get allowed MCPs from environment variable or use defaults
@@ -42,11 +46,20 @@ const MCP_POLICY_ALIASES: Record<string, string> = {
   "kronoschamber-browser-mcp": "browseros",
   "computer-use-mcp": "computer-use-mcp",
   computer_use_mcp: "computer-use-mcp",
+  "ghost-os": "ghost-os",
+  ghost_os: "ghost-os",
+  ghostos: "ghost-os",
   "sequential-thinking": "sequential-thinking",
   sequential_thinking: "sequential-thinking",
   sequentialthinking: "sequential-thinking",
   openfang: "openfang",
   "openfang-mcp": "openfang",
+  excalidraw: "excalidraw",
+  "excalidraw-mcp": "excalidraw",
+  atsurae: "atsurae",
+  personalizationmcp: "personalizationmcp",
+  "personalization-mcp": "personalizationmcp",
+  "personalizationmcp-mcp": "personalizationmcp",
 }
 
 export const normalizeMcpPolicyName = (value: string): string => {

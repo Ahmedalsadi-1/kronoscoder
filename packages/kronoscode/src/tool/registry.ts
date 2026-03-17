@@ -58,9 +58,77 @@ import {
   ScreenpipeDigestTool,
   isScreenpipeAvailable,
 } from "./screenpipe"
+import { E2BCreateTool, E2BListTool, E2BProvidersTool, E2BTakeoverTool, E2BReleaseTool, E2BQuotaTool } from "./e2b"
+import {
+  E2BDesktopScreenshotTool,
+  E2BDesktopClickTool,
+  E2BDesktopTypeTool,
+  E2BDesktopHotkeyTool,
+  E2BDesktopDragTool,
+  E2BDesktopWindowListTool,
+  E2BDesktopWindowFocusTool,
+  E2BDesktopOpenAppTool,
+  E2BDesktopClipboardGetTool,
+  E2BDesktopClipboardSetTool,
+  E2BDesktopWaitTool,
+  E2BDesktopRunMacroTool,
+} from "./e2b"
+import {
+  PluelyTool,
+  PluelyVoiceStartTool,
+  PluelyVoiceStopTool,
+  PluelyTranscriptGetTool,
+  PluelyOverlayShowTool,
+  PluelyOverlayHideTool,
+  PluelyContextRecentTool,
+} from "./pluely"
+import {
+  JaazTool,
+  JaazGenerateTool,
+  JaazGenerateBatchTool,
+  JaazProjectListTool,
+  JaazProjectCreateTool,
+  JaazExportTool,
+} from "./jaaz"
+import {
+  AnythingBrowserActionTool,
+  AnythingOpenContextMenuTool,
+  AnythingDoubleClickHandoffTool,
+  AnythingCaptureSelectionTool,
+} from "./anything"
+import {
+  VoiceBoxOpenTool,
+  VoiceBoxListenTool,
+  VoiceBoxInterruptTool,
+  VoiceBoxInjectPromptTool,
+} from "./voice_bus"
+import { isMcpPolicyAllowed } from "@/mcp/policy"
 
 export namespace ToolRegistry {
   const log = Log.create({ service: "tool.registry" })
+
+  type ToolCapability = {
+    id: string
+    connector: string
+    risk_level: "low" | "medium" | "high"
+    interactive: boolean
+    fallback: string[]
+  }
+
+  export type CapabilityPromotion = "builtin" | "builtin-adjacent" | "mcp-approved" | "mcp-hidden"
+  export type CapabilityHealth = "healthy" | "degraded" | "unavailable"
+  export type CapabilityScorecardItem = {
+    id: string
+    source: "builtin" | "mcp"
+    connector: string
+    required_auth_env: string[]
+    risk_level: "low" | "medium" | "high"
+    health_status: CapabilityHealth
+    verification_strategy: string
+    promotion_status: CapabilityPromotion
+    interactive: boolean
+    fallback: string[]
+  }
 
   export const state = Instance.state(async () => {
     const custom = [] as Tool.Info[]
@@ -123,10 +191,91 @@ export namespace ToolRegistry {
     custom.push(tool)
   }
 
+  export async function capabilities(): Promise<ToolCapability[]> {
+    const tools = await all()
+    const defaults: ToolCapability[] = tools.map((tool) => ({
+      id: tool.id,
+      connector:
+        tool.id.startsWith("e2b_")
+          ? "e2b"
+          : tool.id.startsWith("pluely_")
+            ? "pluely"
+            : tool.id.startsWith("jaaz_")
+              ? "jaaz"
+              : tool.id.startsWith("screenpipe_")
+                ? "screenpipe"
+                : tool.id.startsWith("anything_")
+                  ? "anything"
+                  : tool.id.startsWith("voice_box_")
+                    ? "voice_bus"
+                    : tool.id.startsWith("browser_") || tool.id.startsWith("kronoschamber_browser_")
+                      ? "browser"
+                      : "core",
+      risk_level: tool.id.includes("delete") || tool.id.includes("apply_patch") ? "high" : "medium",
+      interactive: !tool.id.startsWith("screenpipe_"),
+      fallback: [],
+    }))
+    return defaults
+  }
+
+  export async function capabilityScorecard(): Promise<CapabilityScorecardItem[]> {
+    const builtins = await capabilities()
+    const mcpStatus = await MCP.status().catch(() => ({}))
+
+    const builtinItems: CapabilityScorecardItem[] = builtins.map((item) => {
+      const auth: string[] = []
+      if (item.connector === "e2b") auth.push("E2B_API_KEY|E2B_ACCESS_TOKEN")
+      if (item.connector === "pluely") auth.push("PLUELY_API_KEY")
+      if (item.connector === "jaaz") auth.push("JAAZ_API_KEY")
+      if (item.id.startsWith("ghost_")) auth.push("macOS desktop runtime")
+
+      const promotion: CapabilityPromotion = item.id.startsWith("ghost_") ? "builtin-adjacent" : "builtin"
+      const health: CapabilityHealth =
+        item.connector === "e2b" && !(process.env.E2B_API_KEY || process.env.E2B_ACCESS_TOKEN) ? "degraded" : "healthy"
+
+      return {
+        id: item.id,
+        source: "builtin",
+        connector: item.connector,
+        required_auth_env: auth,
+        risk_level: item.risk_level,
+        health_status: health,
+        verification_strategy: `tool-contract:${item.connector}`,
+        promotion_status: promotion,
+        interactive: item.interactive,
+        fallback: item.fallback,
+      }
+    })
+
+    const mcpItems: CapabilityScorecardItem[] = Object.entries(mcpStatus).map(([name, status]) => {
+      const promotion: CapabilityPromotion = name === "ghost-os" ? "builtin-adjacent" : isMcpPolicyAllowed(name) ? "mcp-approved" : "mcp-hidden"
+      const health: CapabilityHealth =
+        status.status === "connected"
+          ? "healthy"
+          : status.status === "disabled" || status.status === "needs_auth" || status.status === "needs_client_registration"
+            ? "degraded"
+            : "unavailable"
+
+      return {
+        id: name,
+        source: "mcp",
+        connector: "mcp",
+        required_auth_env: [`mcp:${name}`],
+        risk_level: "medium",
+        health_status: health,
+        verification_strategy: `connector-health:${name}`,
+        promotion_status: promotion,
+        interactive: true,
+        fallback: ["builtin", "skill"],
+      }
+    })
+
+    return [...builtinItems, ...mcpItems]
+  }
+
   async function all(): Promise<Tool.Info[]> {
     const custom = await state().then((x) => x.custom)
     const config = await Config.get()
-    const screenpipeReady = await isScreenpipeAvailable().catch(() => false)
     const question = ["app", "cli", "desktop"].includes(Flag.KRONOSCODE_CLIENT) || Flag.KRONOSCODE_ENABLE_QUESTION_TOOL
 
     return [
@@ -169,12 +318,52 @@ export namespace ToolRegistry {
       ProjectHealthTool,
       PredictiveSkillLoaderTool,
       ApplyPatchTool,
-      ...(screenpipeReady
-        ? [ScreenpipeSearchTool, ScreenpipeRecallTool, ScreenpipeContextTool, ScreenpipeDigestTool]
-        : []),
-      ...(Flag.KRONOSCODE_ENABLE_AI_BROWSER ? AIBrowserTools : []),
-      ...(Flag.KRONOSCODE_EXPERIMENTAL_LSP_TOOL ? [LspTool] : []),
-      ...(config.experimental?.batch_tool === true ? [BatchTool] : []),
+      ScreenpipeSearchTool,
+      ScreenpipeRecallTool,
+      ScreenpipeContextTool,
+      ScreenpipeDigestTool,
+      ...AIBrowserTools,
+      LspTool,
+      BatchTool,
+      E2BCreateTool,
+      E2BListTool,
+      E2BProvidersTool,
+      E2BTakeoverTool,
+      E2BReleaseTool,
+      E2BQuotaTool,
+      E2BDesktopScreenshotTool,
+      E2BDesktopClickTool,
+      E2BDesktopTypeTool,
+      E2BDesktopHotkeyTool,
+      E2BDesktopDragTool,
+      E2BDesktopWindowListTool,
+      E2BDesktopWindowFocusTool,
+      E2BDesktopOpenAppTool,
+      E2BDesktopClipboardGetTool,
+      E2BDesktopClipboardSetTool,
+      E2BDesktopWaitTool,
+      E2BDesktopRunMacroTool,
+      PluelyTool,
+      PluelyVoiceStartTool,
+      PluelyVoiceStopTool,
+      PluelyTranscriptGetTool,
+      PluelyOverlayShowTool,
+      PluelyOverlayHideTool,
+      PluelyContextRecentTool,
+      JaazTool,
+      JaazGenerateTool,
+      JaazGenerateBatchTool,
+      JaazProjectListTool,
+      JaazProjectCreateTool,
+      JaazExportTool,
+      AnythingBrowserActionTool,
+      AnythingOpenContextMenuTool,
+      AnythingDoubleClickHandoffTool,
+      AnythingCaptureSelectionTool,
+      VoiceBoxOpenTool,
+      VoiceBoxListenTool,
+      VoiceBoxInterruptTool,
+      VoiceBoxInjectPromptTool,
       ...(Flag.KRONOSCODE_EXPERIMENTAL_PLAN_MODE && Flag.KRONOSCODE_CLIENT === "cli"
         ? [PlanExitTool, PlanEnterTool]
         : []),
@@ -196,12 +385,13 @@ export namespace ToolRegistry {
     agent?: Agent.Info,
   ) {
     const tools = await all()
+    const capabilityByID = new Map((await capabilities()).map((item) => [item.id, item] as const))
     const result = await Promise.all(
       tools
         .filter((t) => {
-          // Enable websearch/codesearch for zen users OR via enable flag
+          // Enable websearch/codesearch for all users (was gated to kronoscode provider only)
           if (t.id === "codesearch" || t.id === "websearch") {
-            return model.providerID === "kronoscode" || Flag.KRONOSCODE_ENABLE_EXA
+            return true
           }
 
           // use apply tool in same format as codex
@@ -223,6 +413,7 @@ export namespace ToolRegistry {
           return {
             id: t.id,
             ...tool,
+            ...(capabilityByID.get(t.id) || {}),
             description: output.description,
             parameters: output.parameters,
           }

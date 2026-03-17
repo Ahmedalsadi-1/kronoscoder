@@ -45,6 +45,7 @@ import { LLM } from "./llm"
 import { iife } from "@/util/iife"
 import { Shell } from "@/shell/shell"
 import { Truncate } from "@/tool/truncation"
+import { CapabilityBroker } from "./capability-broker"
 
 // @ts-ignore
 globalThis.AI_SDK_LOG_WARNINGS = false
@@ -599,6 +600,28 @@ export namespace SessionPrompt {
       const lastUserMsg = msgs.findLast((m) => m.info.role === "user")
       const bypassAgentCheck = lastUserMsg?.parts.some((p) => p.type === "agent") ?? false
 
+      const toolCapabilities = await ToolRegistry.capabilities()
+      const mcpStatus = await MCP.status().catch(() => ({}))
+      const routingDecision = CapabilityBroker.decide({
+        sessionID,
+        agent,
+        messages: msgs,
+        capabilities: toolCapabilities,
+        mcpStatus,
+      })
+      await CapabilityBroker.record(sessionID, routingDecision)
+      log.info("capability broker decision", {
+        sessionID,
+        stage: routingDecision.stage,
+        taskClass: routingDecision.taskClass,
+        selectedRuntimeMode: routingDecision.selectedRuntimeMode,
+        selectedMcpServers: routingDecision.selectedMcpServers,
+        requiredMcpMissing: routingDecision.requiredMcpMissing,
+        enforcementMode: routingDecision.enforcement.mode,
+        enforcementReason: routingDecision.enforcement.reason,
+        fallbackReason: routingDecision.fallbackReason,
+      })
+
       const tools = await resolveTools({
         agent,
         session,
@@ -607,11 +630,13 @@ export namespace SessionPrompt {
         processor,
         bypassAgentCheck,
         messages: msgs,
+        routingDecision,
+        mcpStatus,
       })
 
       // Inject StructuredOutput tool if JSON schema mode enabled
       if (lastUser.format?.type === "json_schema") {
-        tools["StructuredOutput"] = createStructuredOutputTool({
+        tools.map["StructuredOutput"] = createStructuredOutputTool({
           schema: lastUser.format.schema,
           onSuccess(output) {
             structuredOutput = output
@@ -648,7 +673,13 @@ export namespace SessionPrompt {
       await Plugin.trigger("experimental.chat.messages.transform", {}, { messages: msgs })
 
       // Build system prompt, adding structured output instruction if needed
-      const system = [...(await SystemPrompt.environment(model)), ...(await InstructionPrompt.system())]
+      const system = [
+        ...(await SystemPrompt.environment(model, {
+          decision: routingDecision,
+          suppressedTools: Object.keys(tools.suppressed),
+        })),
+        ...(await InstructionPrompt.system()),
+      ]
       const format = lastUser.format ?? { type: "text" }
       if (format.type === "json_schema") {
         system.push(STRUCTURED_OUTPUT_SYSTEM_PROMPT)
@@ -671,7 +702,7 @@ export namespace SessionPrompt {
               ]
             : []),
         ],
-        tools,
+        tools: tools.map,
         model,
         toolChoice: format.type === "json_schema" ? "required" : undefined,
       })
@@ -739,9 +770,40 @@ export namespace SessionPrompt {
     processor: SessionProcessor.Info
     bypassAgentCheck: boolean
     messages: MessageV2.WithParts[]
+    routingDecision: CapabilityBroker.Decision
+    mcpStatus: Record<string, MCP.Status>
   }) {
     using _ = log.time("resolveTools")
     const tools: Record<string, AITool> = {}
+    const suppressed: Record<string, string> = {}
+    const capabilityAllowlist = (input.agent.capabilities ?? []).map((item) => item.trim().toLowerCase()).filter(Boolean)
+
+    const connectorFromToolID = (id: string): string => {
+      if (id.startsWith("e2b_")) return "e2b"
+      if (id.startsWith("browser_") || id.startsWith("kronoschamber_browser_")) return "browser"
+      if (id.startsWith("screenpipe_")) return "screenpipe"
+      if (id.startsWith("pluely_")) return "pluely"
+      if (id.startsWith("jaaz_")) return "jaaz"
+      if (id.startsWith("anything_")) return "anything"
+      if (id.startsWith("voice_box_")) return "voice_bus"
+      if (id === "skill" || id === "skill_update") return "skill"
+      return "core"
+    }
+
+    const matchesAgentCapabilities = (toolID: string, connector: string) => {
+      if (capabilityAllowlist.length === 0) return true
+      const normalizedID = toolID.toLowerCase()
+      const normalizedConnector = connector.toLowerCase()
+      const quick = new Set([normalizedID, normalizedConnector, `${normalizedConnector}:*`, `${normalizedConnector}_*`, "all"])
+      for (const allow of capabilityAllowlist) {
+        if (quick.has(allow)) return true
+        if (allow.endsWith("*")) {
+          const prefix = allow.slice(0, -1)
+          if (normalizedID.startsWith(prefix) || normalizedConnector.startsWith(prefix)) return true
+        }
+      }
+      return false
+    }
 
     const context = (args: any, options: ToolCallOptions): Tool.Context => ({
       sessionID: input.session.id,
@@ -782,6 +844,32 @@ export namespace SessionPrompt {
       { modelID: input.model.api.id, providerID: input.model.providerID },
       input.agent,
     )) {
+      const connector = ((item as any).connector as string | undefined) ?? connectorFromToolID(item.id)
+      const builtinFamily = item.id === "skill" || item.id === "skill_update" ? "skill" : "builtin"
+      if (!matchesAgentCapabilities(item.id, connector)) {
+        suppressed[item.id] = "suppressed:agent_capability_gate"
+        continue
+      }
+      if (input.routingDecision.stage === "stage1_builtin_only" && builtinFamily === "skill") {
+        suppressed[item.id] = "suppressed:stage1_builtin_only"
+        continue
+      }
+      if (input.routingDecision.selectedRuntimeMode === "code-native" && (connector === "browser" || connector === "e2b")) {
+        suppressed[item.id] = "suppressed:code_native_runtime"
+        continue
+      }
+      if (input.routingDecision.selectedRuntimeMode === "ghost-os" && (connector === "browser" || connector === "e2b")) {
+        suppressed[item.id] = "suppressed:ghost_runtime"
+        continue
+      }
+      if (input.routingDecision.selectedRuntimeMode === "browseros" && connector === "e2b") {
+        suppressed[item.id] = "suppressed:browseros_selected"
+        continue
+      }
+      if (input.routingDecision.selectedRuntimeMode === "e2b" && connector === "browser") {
+        suppressed[item.id] = "suppressed:e2b_selected"
+        continue
+      }
       const schema = ProviderTransform.schema(input.model, z.toJSONSchema(item.parameters))
       tools[item.id] = tool({
         id: item.id as any,
@@ -825,9 +913,40 @@ export namespace SessionPrompt {
       })
     }
 
+    const connectedMcpServers = Object.entries(input.mcpStatus)
+      .filter(([, status]) => status.status === "connected")
+      .map(([name]) => name)
     for (const [key, item] of Object.entries(await MCP.tools())) {
       const execute = item.execute
       if (!execute) continue
+
+      const mappedServer = CapabilityBroker.mapMcpToolToServer(key, connectedMcpServers)
+      if (!matchesAgentCapabilities(key, mappedServer ?? "mcp")) {
+        suppressed[key] = "suppressed:agent_capability_gate"
+        continue
+      }
+      if (input.routingDecision.enforcement.mode === "block" && input.routingDecision.requiredMcpMissing.length > 0) {
+        suppressed[key] = "suppressed:required_mcp_blocked"
+        continue
+      }
+      if (input.routingDecision.stage === "stage1_builtin_only") {
+        suppressed[key] = "suppressed:stage1_builtin_only"
+        continue
+      }
+      if (input.routingDecision.stage === "stage2_builtin_adjacent") {
+        if (!mappedServer || mappedServer !== "ghost-os") {
+          suppressed[key] = "suppressed:stage2_ghost_only"
+          continue
+        }
+      }
+      if (input.routingDecision.stage === "stage3_mcp_fallback") {
+        if (input.routingDecision.selectedMcpServers.length > 0) {
+          if (!mappedServer || !input.routingDecision.selectedMcpServers.includes(mappedServer)) {
+            suppressed[key] = "suppressed:not_selected_mcp_server"
+            continue
+          }
+        }
+      }
 
       const transformed = ProviderTransform.schema(input.model, asSchema(item.inputSchema).jsonSchema)
       item.inputSchema = jsonSchema(transformed)
@@ -918,7 +1037,10 @@ export namespace SessionPrompt {
       tools[key] = item
     }
 
-    return tools
+    return {
+      map: tools,
+      suppressed,
+    }
   }
 
   /** @internal Exported for testing */

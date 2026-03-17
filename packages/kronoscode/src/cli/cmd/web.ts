@@ -5,6 +5,7 @@ import { withNetworkOptions, resolveNetworkOptions } from "../network"
 import { Flag } from "../../flag/flag"
 import open from "open"
 import { networkInterfaces } from "os"
+import { autoStartScreenpipe } from "../../tool/screenpipe_auto_start"
 
 function getNetworkIPs() {
   const nets = networkInterfaces()
@@ -35,6 +36,9 @@ export const WebCommand = cmd({
   handler: async (args) => {
     if (!Flag.KRONOSCODE_SERVER_PASSWORD) {
       UI.println(UI.Style.TEXT_WARNING_BOLD + "!  " + "KRONOSCODE_SERVER_PASSWORD is not set; server is unsecured.")
+    }
+    if (Flag.KRONOSCODE_AUTO_START_SCREENPIPE) {
+      autoStartScreenpipe().catch(() => {})
     }
     const opts = await resolveNetworkOptions(args)
     const server = Server.listen(opts)

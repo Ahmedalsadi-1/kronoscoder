@@ -10,6 +10,7 @@ import { GlobalBus } from "@/bus/global"
 import { createOpencodeClient, type Event } from "@kronoscode-ai/sdk/v2"
 import type { BunWebSocketData } from "hono/bun"
 import { Flag } from "@/flag/flag"
+import { autoStartScreenpipe } from "@/tool/screenpipe_auto_start"
 
 await Log.init({
   print: process.argv.includes("--print-logs"),
@@ -36,6 +37,10 @@ process.on("uncaughtException", (e) => {
 GlobalBus.on("event", (event) => {
   Rpc.emit("global.event", event)
 })
+
+if (Flag.KRONOSCODE_AUTO_START_SCREENPIPE) {
+  autoStartScreenpipe().catch(() => {})
+}
 
 let server: Bun.Server<BunWebSocketData> | undefined
 

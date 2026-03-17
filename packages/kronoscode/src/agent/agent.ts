@@ -13,6 +13,8 @@ import PROMPT_COMPACTION from "./prompt/compaction.txt"
 import PROMPT_EXPLORE from "./prompt/explore.txt"
 import PROMPT_SUMMARY from "./prompt/summary.txt"
 import PROMPT_TITLE from "./prompt/title.txt"
+import PROMPT_CODER from "./prompt/coder.txt"
+import PROMPT_PLAN from "./prompt/plan.txt"
 import { PermissionNext } from "@/permission/next"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@/global"
@@ -86,6 +88,7 @@ export namespace Agent {
       build: {
         name: "build",
         description: "The default agent. Executes tools based on configured permissions.",
+        prompt: PROMPT_CODER,
         options: {},
         permission: PermissionNext.merge(
           defaults,
@@ -100,7 +103,9 @@ export namespace Agent {
       },
       plan: {
         name: "plan",
-        description: "Plan mode. Disallows all edit tools.",
+        description:
+          "Plan mode. Specialized agent for planning and reasoning about coding tasks. Creates actionable plans without executing.",
+        prompt: PROMPT_PLAN,
         options: {},
         permission: PermissionNext.merge(
           defaults,
