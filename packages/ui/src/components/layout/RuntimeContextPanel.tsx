@@ -615,11 +615,11 @@ export const RuntimeContextPanel: React.FC<RuntimeContextPanelProps> = ({ direct
 
   return (
     <div className="flex flex-col h-full bg-background text-foreground">
-      <div className="flex items-center justify-between p-2 border-b">
+      <div className="flex items-center justify-between border-b px-2 py-1.5">
         <Button variant="ghost" size="sm" onClick={() => closeContextPanel(directory)}>
           <RiArrowLeftLine className="h-4 w-4 mr-2" /> Back
         </Button>
-        <span className="text-sm font-medium truncate">
+        <span className="max-w-[52%] truncate rounded-md border border-border/50 bg-card/40 px-2 py-1 text-xs font-medium">
           {currentTask?.agentName || 'Follow agent work'}
         </span>
         <div className="flex items-center gap-1">
@@ -632,11 +632,11 @@ export const RuntimeContextPanel: React.FC<RuntimeContextPanelProps> = ({ direct
       </div>
 
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as RuntimeTab)} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="follow">Follow</TabsTrigger>
-          <TabsTrigger value="live" disabled={!currentTask?.liveUrl}>Live</TabsTrigger>
-          <TabsTrigger value="files">Files</TabsTrigger>
-          <TabsTrigger value="logs">Logs</TabsTrigger>
+        <TabsList className="mx-2 mt-2 grid h-8 w-[calc(100%-1rem)] grid-cols-4 rounded-lg border border-border/50 bg-muted/20 p-0.5">
+          <TabsTrigger value="follow" className="h-6 rounded-md text-[11px] data-[state=active]:bg-card data-[state=active]:shadow-none">Follow</TabsTrigger>
+          <TabsTrigger value="live" disabled={!currentTask?.liveUrl} className="h-6 rounded-md text-[11px] data-[state=active]:bg-card data-[state=active]:shadow-none">Live</TabsTrigger>
+          <TabsTrigger value="files" className="h-6 rounded-md text-[11px] data-[state=active]:bg-card data-[state=active]:shadow-none">Files</TabsTrigger>
+          <TabsTrigger value="logs" className="h-6 rounded-md text-[11px] data-[state=active]:bg-card data-[state=active]:shadow-none">Logs</TabsTrigger>
         </TabsList>
         <Separator />
 
@@ -667,7 +667,7 @@ export const RuntimeContextPanel: React.FC<RuntimeContextPanelProps> = ({ direct
                           className={cn(
                             'w-full rounded-xl border px-3 py-2 text-left transition-colors',
                             isSelected
-                              ? 'border-primary/40 bg-primary/10'
+                              ? 'border-primary/25 bg-primary/5'
                               : 'border-border/60 bg-background/70 hover:border-primary/25 hover:bg-background',
                           )}
                         >

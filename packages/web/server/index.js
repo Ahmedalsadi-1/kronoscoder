@@ -62,7 +62,7 @@ const OPEN_CODE_READY_GRACE_MS = 12000;
 const LONG_REQUEST_TIMEOUT_MS = 4 * 60 * 1000;
 const AGENT_MODE_ALLOWED_VALUES = new Set(['off', 'browseros', 'e2b', 'openbrowser', 'desktop-browser', 'user-desktop']);
 const RUNTIME_MODE_ALLOWED_VALUES = new Set(['off', 'browseros', 'e2b', 'openbrowser', 'desktop-browser', 'user-desktop']);
-const DEFAULT_AGENT_MODE = 'off';
+const DEFAULT_AGENT_MODE = 'browseros';
 const AGENT_MODE_TASK_TTL_MS = 30 * 60 * 1000;
 const AGENT_MODE_TASK_TIMEOUT_MS = (() => {
   const raw = Number(process.env.KRONOSCHAMBER_AGENT_MODE_TIMEOUT_MS);
@@ -90,10 +90,17 @@ const FILE_SEARCH_EXCLUDED_DIRS = new Set([
 const COMPUTER_USE_MCP_NAME = 'computer-use-mcp';
 const AUTOMATION_MCP_NAME = 'automation-mcp';
 const BROWSEROS_MCP_NAME = 'browseros';
+const GHOST_OS_MCP_NAME = 'ghost-os';
 const APPLE_MCP_NAME = 'apple_mcp';
-const BROWSEROS_SETUP_SCRIPT_PATH = path.resolve(__dirname, '../../../scripts/setup-browseros-agent.mjs');
+const BROWSEROS_CHAMBER_SETUP_SCRIPT_PATH = path.resolve(__dirname, '../../../scripts/setup-browseros-chamber.mjs');
 const BROWSEROS_MCP_ENV_KEYS = ['BROWSEROS_SERVER_PORT', 'BROWSEROS_CDP_PORT', 'BROWSEROS_EXTENSION_PORT', 'BROWSEROS_MCP_URL'];
 const BROWSEROS_DEFAULT_SERVER_PORT = 9239;
+const BROWSEROS_EMBEDDED_PROFILE = 'embedded';
+const BROWSEROS_BACKGROUND_PROFILE = 'background';
+const BROWSEROS_SERVER_PORT_MIN = 31000;
+const BROWSEROS_SERVER_PORT_MAX = 31999;
+const BROWSEROS_BACKGROUND_CDP_PORT_MIN = 42000;
+const BROWSEROS_BACKGROUND_CDP_PORT_MAX = 42999;
 const E2B_REQUIRED_ENV_KEYS = ['E2B_API_KEY'];
 const E2B_AUTH_MODE_ALLOWED_VALUES = new Set(['hybrid', 'byok', 'managed']);
 const DESKTOP_CONTROL_MCP_ALLOWLIST = Object.freeze([...MCP_POLICY_ALLOWED]);
@@ -103,7 +110,34 @@ const DESKTOP_CONTROL_DEFAULT_POLICY = Object.freeze({
   backgroundModes: ['e2b'],
 });
 const INTERACTIVE_BROWSER_MODES = new Set(['browseros', 'desktop-browser']);
-const USER_DESKTOP_PROVIDER_ORDER = Object.freeze([COMPUTER_USE_MCP_NAME, AUTOMATION_MCP_NAME, 'ts-tools']);
+const BROWSER_SKILL_ROUTING_RULES = Object.freeze([
+  {
+    id: 'form-filling',
+    keywords: ['form', 'fill', 'submit', 'checkout', 'login', 'sign in', 'register'],
+    skillHints: ['form-filling'],
+  },
+  {
+    id: 'web-scraping',
+    keywords: ['scrape', 'extract', 'crawl', 'collect data', 'table', 'dataset'],
+    skillHints: ['web-scraping', 'data extraction'],
+  },
+  {
+    id: 'file-download',
+    keywords: ['download', 'pdf', 'export', 'save file', 'attachment'],
+    skillHints: ['file-download'],
+  },
+  {
+    id: 'e2e-testing',
+    keywords: ['test flow', 'e2e', 'qa', 'regression', 'user journey'],
+    skillHints: ['e2e-testing'],
+  },
+  {
+    id: 'page-analysis',
+    keywords: ['analyze page', 'summarize page', 'inspect page', 'page structure'],
+    skillHints: ['page-analysis'],
+  },
+]);
+const USER_DESKTOP_PROVIDER_ORDER = Object.freeze(['e2b', GHOST_OS_MCP_NAME, COMPUTER_USE_MCP_NAME, AUTOMATION_MCP_NAME, 'ts-tools']);
 const RUNTIME_CONTRACT_VERSION = (() => {
   const fromEnv = typeof process.env.KRONOSCHAMBER_RUNTIME_CONTRACT_VERSION === 'string'
     ? process.env.KRONOSCHAMBER_RUNTIME_CONTRACT_VERSION.trim()
@@ -301,6 +335,75 @@ const readEnvPresence = (keys) =>
     present: Boolean(normalizeOptionalString(process.env[key])),
   }));
 
+const DEFAULT_MCP_PRESETS = Object.freeze([
+  {
+    id: GHOST_OS_MCP_NAME,
+    name: 'Ghost OS',
+    description: 'Accessibility-tree first macOS automation for native apps, reusable recipes, and local vision fallback.',
+    transport: 'stdio',
+    command: 'ghost',
+    args: [],
+    requiredEnv: [],
+    tags: ['desktop', 'macos', 'automation', 'recipes'],
+    setupInstructions: 'Install Ghost OS first (`brew install ghostwright/ghost-os/ghost-os`) and run `ghost setup` before connecting the MCP entry.',
+    source: 'kronoschamber:default',
+    workspaceIntent: 'native macOS desktop control and recipe-driven workflows',
+    connector: GHOST_OS_MCP_NAME,
+  },
+  {
+    id: 'excalidraw',
+    name: 'Excalidraw MCP',
+    description: 'Canvas and chat diagram workflows powered by Excalidraw MCP.',
+    transport: 'stdio',
+    command: 'npx',
+    args: ['-y', 'github:excalidraw/excalidraw-mcp'],
+    requiredEnv: [],
+    tags: ['diagram', 'canvas', 'chat'],
+    setupInstructions: 'Requires Node.js + npm/npx. First launch may take longer while dependency cache is created.',
+    source: 'kronoschamber:default',
+    workspaceIntent: 'canvas/chat diagram workflows',
+    connector: 'excalidraw',
+  },
+  {
+    id: 'atsurae',
+    name: 'Atsurae MCP',
+    description: 'Creative workflow connector used for Jaaz-adjacent ideation and generation support.',
+    transport: 'stdio',
+    command: 'npx',
+    args: ['-y', 'github:1000ri-jp/atsurae'],
+    requiredEnv: [],
+    tags: ['creative', 'jaaz', 'generation'],
+    setupInstructions: 'Requires Node.js + npm/npx. Ensure local network access for dependency resolution.',
+    source: 'kronoschamber:default',
+    workspaceIntent: 'creative and Jaaz support flows',
+    connector: 'atsurae',
+  },
+  {
+    id: 'personalizationmcp',
+    name: 'PersonalizationMCP',
+    description: 'Personalized social growth workflow connector for content personalization and strategy.',
+    transport: 'stdio',
+    command: 'npx',
+    args: ['-y', 'github:YangLiangwei/PersonalizationMCP'],
+    requiredEnv: [
+      {
+        name: 'OPENAI_API_KEY',
+        label: 'OpenAI API Key',
+        help: 'Required by PersonalizationMCP for model-backed personalization workflows.',
+        isSecret: true,
+        getUrl: 'https://platform.openai.com/api-keys',
+      },
+    ],
+    tags: ['social', 'growth', 'personalization'],
+    setupInstructions: 'Requires Node.js + npm/npx and OPENAI_API_KEY in environment.',
+    source: 'kronoschamber:default',
+    workspaceIntent: 'social-growth personalization workflows',
+    connector: 'personalizationmcp',
+  },
+]);
+
+const DEFAULT_MCP_PRESET_IDS = new Set(DEFAULT_MCP_PRESETS.map((preset) => preset.id));
+
 const resolveE2bAuthMode = () => {
   const mode = normalizeOptionalString(process.env.KRONOSCHAMBER_E2B_AUTH_MODE)?.toLowerCase() || 'hybrid';
   if (E2B_AUTH_MODE_ALLOWED_VALUES.has(mode)) {
@@ -350,6 +453,13 @@ const resolveDesktopControlKnowledgeSummary = () => {
       [AUTOMATION_MCP_NAME]: {
         id: AUTOMATION_MCP_NAME,
         capabilities: ['interactive-control', 'screenshot', 'mouse', 'keyboard', 'desktop-automation'],
+        authMode: 'byok',
+        requiredEnv: [],
+        env: [],
+      },
+      [GHOST_OS_MCP_NAME]: {
+        id: GHOST_OS_MCP_NAME,
+        capabilities: ['native-macos-app-control', 'desktop-recipes', 'accessibility-tree', 'vision-fallback'],
         authMode: 'byok',
         requiredEnv: [],
         env: [],
@@ -509,6 +619,24 @@ const buildAgentModeConnectorStatus = (mode) => {
     };
   }
 
+  if (mode === 'e2b') {
+    const missingEnv = E2B_REQUIRED_ENV_KEYS.filter((key) => !normalizeOptionalString(process.env[key]));
+    if (missingEnv.length > 0) {
+      return {
+        mode,
+        provider: 'none',
+        available: false,
+        apiConfigured: false,
+        command: null,
+        commandAvailable: false,
+        endpoint: null,
+        requiredEnv: E2B_REQUIRED_ENV_KEYS,
+        missingEnv,
+        error: `E2B credentials missing: ${missingEnv.join(', ')}`,
+      };
+    }
+  }
+
   const config = resolveAgentModeConnectorConfig(mode);
   const commandAvailable = Boolean(config.command && isCommandOnPath(config.command));
   const provider = config.apiUrl ? 'api' : (commandAvailable ? 'command' : 'none');
@@ -579,9 +707,10 @@ const parseJsonFromStdout = (value) => {
   }
 };
 
-const parsePortNumber = (value, fallback) => {
+const parsePortNumber = (value, fallback, options = {}) => {
+  const allowZero = options.allowZero === true;
   const parsed = Number.parseInt(String(value ?? '').trim(), 10);
-  if (Number.isFinite(parsed) && parsed > 0 && parsed <= 65535) {
+  if (Number.isFinite(parsed) && ((allowZero && parsed === 0) || (parsed > 0 && parsed <= 65535))) {
     return parsed;
   }
   return fallback;
@@ -598,34 +727,70 @@ const resolveBrowserosServerPort = (payload) =>
 
 const buildBrowserosMcpUrl = (port) => `http://127.0.0.1:${port}/mcp`;
 
-const runBrowserosSetupScript = (mode) => {
+const pickRandomPortInRange = (min, max) => {
+  const span = max - min + 1;
+  return min + Math.floor(Math.random() * span);
+};
+
+const runBrowserosChamberScript = ({
+  action = 'status',
+  mode = 'embedded',
+  profile = mode === 'background' ? BROWSEROS_BACKGROUND_PROFILE : BROWSEROS_EMBEDDED_PROFILE,
+  serverPort: requestedServerPort,
+  cdpPort: requestedCdpPort,
+  autoStartCdp,
+} = {}) => {
   const allowed = new Set(['status', 'install', 'start', 'stop']);
-  const targetMode = allowed.has(mode) ? mode : 'status';
-  const result = spawnSync(process.execPath, [BROWSEROS_SETUP_SCRIPT_PATH, targetMode], {
+  const targetAction = allowed.has(action) ? action : 'status';
+  const result = spawnSync(process.execPath, [BROWSEROS_CHAMBER_SETUP_SCRIPT_PATH, targetAction], {
     encoding: 'utf8',
     stdio: 'pipe',
-    env: process.env,
+    env: {
+      ...process.env,
+      BROWSEROS_CHAMBER_MODE: mode,
+      KRONOSCHAMBER_BROWSEROS_MODE: mode,
+      BROWSEROS_PROFILE: profile,
+      KRONOSCHAMBER_BROWSEROS_PROFILE: profile,
+      ...(typeof requestedServerPort === 'number' ? { BROWSEROS_SERVER_PORT: String(requestedServerPort) } : {}),
+      ...(typeof requestedCdpPort === 'number' ? { BROWSEROS_CDP_PORT: String(requestedCdpPort) } : {}),
+      ...(typeof autoStartCdp === 'boolean' ? { BROWSEROS_AUTO_START_CDP: autoStartCdp ? '1' : '0' } : {}),
+    },
   });
 
   if (result.status !== 0) {
     const stderr = (result.stderr || '').trim();
     const stdout = (result.stdout || '').trim();
     const detail = stderr || stdout || `exit code ${result.status ?? 'unknown'}`;
-    throw new Error(`browseros setup failed: ${detail}`);
+    throw new Error(`browseros chamber setup failed: ${detail}`);
   }
 
   const parsed = parseJsonFromStdout(result.stdout);
   const serverPort = resolveBrowserosServerPort(parsed);
+  const cdpPort = parsePortNumber(parsed?.cdpPort, null, { allowZero: true });
   const mcpUrl = typeof parsed?.mcpUrl === 'string' && parsed.mcpUrl.trim().length > 0
     ? parsed.mcpUrl.trim()
     : buildBrowserosMcpUrl(serverPort);
 
   return {
     ...parsed,
+    action: targetAction,
+    mode,
+    profile,
     serverPort,
+    cdpPort,
+    cdpDisabled: parsed?.cdpDisabled === true || cdpPort === 0,
     mcpUrl,
   };
 };
+
+const runBrowserosSetupScript = (mode) =>
+  runBrowserosChamberScript({
+    action: mode,
+    mode: 'embedded',
+    profile: BROWSEROS_EMBEDDED_PROFILE,
+    cdpPort: 0,
+    autoStartCdp: false,
+  });
 
 const buildBrowserosMcpConfig = (mcpUrl) => ({
   type: 'remote',
@@ -802,8 +967,11 @@ const serializeAgentModeTask = (task) => ({
   agentName: task.agentName ?? null,
   connector: task.connector ?? null,
   routedProvider: task.routedProvider ?? null,
+  routingStage: task.routingStage ?? null,
   routingReason: task.routingReason ?? null,
   routingOrder: Array.isArray(task.routingOrder) ? task.routingOrder : USER_DESKTOP_PROVIDER_ORDER,
+  resolvedBrowserProfile: task.resolvedBrowserProfile ?? null,
+  matchedSkill: task.matchedSkill ?? null,
   runtimeSessionID: task.runtimeSessionID ?? null,
   liveUrl: task.liveUrl ?? null,
   artifacts: Array.isArray(task.artifacts) ? task.artifacts : [],
@@ -1713,6 +1881,99 @@ const shouldApplyResolvedTemplateMessage = (template, resolved, variables) => {
 };
 
 const ZEN_DEFAULT_MODEL = 'gpt-5-nano';
+const ZEN_DEFAULT_BASE_URL = 'https://opencode.ai/zen/v1';
+
+const resolveZenBaseUrl = () => {
+  const configured = normalizeOptionalString(
+    process.env.KRONOSCHAMBER_ZEN_BASE_URL || process.env.KRONOSCODE_ZEN_BASE_URL
+  );
+  if (!configured) {
+    return ZEN_DEFAULT_BASE_URL;
+  }
+  return configured.replace(/\/+$/, '');
+};
+
+const ZEN_BASE_URL = resolveZenBaseUrl();
+
+const resolveZenApiKey = () => {
+  const candidates = ['KRONOSCHAMBER_ZEN_API_KEY', 'KRONOSCODE_ZEN_API_KEY', 'ZENMUX_API_KEY'];
+  for (const key of candidates) {
+    const value = normalizeOptionalString(process.env[key]);
+    if (value) {
+      return { value, source: key };
+    }
+  }
+  return { value: null, source: null };
+};
+
+const getZenRequestHeaders = ({ json = false, extra = {} } = {}) => {
+  const headers = {
+    Accept: 'application/json',
+    ...extra,
+  };
+  if (json) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  const apiKey = resolveZenApiKey();
+  if (apiKey.value) {
+    headers.Authorization = `Bearer ${apiKey.value}`;
+  }
+
+  return headers;
+};
+
+const parseRetryDelayMs = (response, attempt) => {
+  const retryAfterMs = Number.parseFloat(response.headers?.get?.('retry-after-ms') || '');
+  if (Number.isFinite(retryAfterMs) && retryAfterMs > 0) {
+    return retryAfterMs;
+  }
+
+  const retryAfter = response.headers?.get?.('retry-after') || '';
+  const retryAfterSeconds = Number.parseFloat(retryAfter);
+  if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds >= 0) {
+    return retryAfterSeconds * 1000;
+  }
+
+  const retryAfterDateMs = Date.parse(retryAfter) - Date.now();
+  if (Number.isFinite(retryAfterDateMs) && retryAfterDateMs > 0) {
+    return retryAfterDateMs;
+  }
+
+  return Math.min(1000 * Math.pow(2, Math.max(0, attempt)), 8000);
+};
+
+const sleepZen = (delayMs) => new Promise((resolve) => setTimeout(resolve, delayMs));
+
+const fetchZenWithRetry = async (pathname, options = {}) => {
+  const {
+    method = 'GET',
+    body = undefined,
+    signal,
+    headers = {},
+    retries = 2,
+  } = options;
+
+  for (let attempt = 0; ; attempt += 1) {
+    const response = await fetch(`${ZEN_BASE_URL}${pathname}`, {
+      method,
+      headers: getZenRequestHeaders({
+        json: body !== undefined,
+        extra: headers,
+      }),
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal,
+    });
+
+    const shouldRetry = (response.status === 429 || response.status >= 500) && attempt < retries;
+    if (!shouldRetry) {
+      return response;
+    }
+
+    const delayMs = parseRetryDelayMs(response, attempt);
+    await sleepZen(delayMs);
+  }
+};
 
 /**
  * Validated fallback zen model determined at startup by checking available free
@@ -1740,9 +2001,9 @@ const fetchFreeZenModels = async () => {
   const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
   const timeout = controller ? setTimeout(() => controller.abort(), 8000) : null;
   try {
-    const response = await fetch('https://opencode.ai/zen/v1/models', {
+    const response = await fetchZenWithRetry('/models', {
       signal: controller?.signal,
-      headers: { Accept: 'application/json' },
+      retries: 1,
     });
     if (!response.ok) {
       throw new Error(`zen/v1/models responded with status ${response.status}`);
@@ -1790,17 +2051,17 @@ const summarizeText = async (text, targetLength, zenModel) => {
     const completionTimeout = createTimeoutSignal(15000);
     let response;
     try {
-      response = await fetch('https://opencode.ai/zen/v1/responses', {
+      response = await fetchZenWithRetry('/responses', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           model: zenModel || ZEN_DEFAULT_MODEL,
           input: [{ role: 'user', content: prompt }],
           max_output_tokens: 1000,
           stream: false,
           reasoning: { effort: 'low' },
-        }),
+        },
         signal: completionTimeout.signal,
+        retries: 1,
       });
     } finally {
       completionTimeout.cleanup();
@@ -2554,6 +2815,9 @@ const sanitizeSettingsUpdate = (payload) => {
   if (typeof candidate.browserOpenAtStartup === 'boolean') {
     result.browserOpenAtStartup = candidate.browserOpenAtStartup;
   }
+  if (candidate.browserAutomationMode === 'embedded' || candidate.browserAutomationMode === 'background') {
+    result.browserAutomationMode = candidate.browserAutomationMode;
+  }
   if (typeof candidate.screenpipeEnabled === 'boolean') {
     result.screenpipeEnabled = candidate.screenpipeEnabled;
   }
@@ -3013,6 +3277,10 @@ const formatSettingsResponse = (settings) => {
       sanitized.modeAgentMap && typeof sanitized.modeAgentMap === 'object' && !Array.isArray(sanitized.modeAgentMap)
         ? sanitized.modeAgentMap
         : {},
+    browserAutomationMode:
+      settings.browserAutomationMode === 'background'
+        ? 'background'
+        : 'embedded',
     approvedDirectories: approved,
     securityScopedBookmarks: bookmarks,
     pinnedDirectories: normalizeStringArray(settings.pinnedDirectories),
@@ -4058,8 +4326,6 @@ const normalizeKronosCodePassword = (value) => {
 if (typeof hmrState.userProvidedKronosCodePassword === 'undefined') {
   const initialPassword = normalizeKronosCodePassword(
     process.env.KRONOSCODE_SERVER_PASSWORD ||
-    process.env.OPENCODE_SERVER_PASSWORD ||
-    process.env.OPENCHAMBER_OPENCODE_SERVER_PASSWORD ||
     ''
   );
   hmrState.userProvidedKronosCodePassword = initialPassword || null;
@@ -4084,6 +4350,8 @@ let exitOnShutdown = true;
 let uiAuthController = null;
 let cloudflareTunnelController = null;
 let terminalInputWsServer = null;
+let startupScreenpipePrompted = false;
+let startupScreenpipeDeclined = false;
 const userProvidedKronosCodePassword =
   typeof hmrState.userProvidedKronosCodePassword === 'string' && hmrState.userProvidedKronosCodePassword.length > 0
     ? hmrState.userProvidedKronosCodePassword
@@ -4214,10 +4482,6 @@ const ENV_CONFIGURED_KRONOSCODE_PORT = (() => {
     'KRONOSCODE_PORT',
     'KRONOSCHAMBER_KRONOSCODE_PORT',
     'KRONOSCHAMBER_INTERNAL_PORT',
-    // TODO(compat): remove OPENCODE/OpenChamber aliases after one stable release.
-    'OPENCODE_PORT',
-    'OPENCHAMBER_OPENCODE_PORT',
-    'OPENCHAMBER_INTERNAL_PORT',
   ]);
   if (!raw) {
     return null;
@@ -4229,16 +4493,10 @@ const ENV_CONFIGURED_KRONOSCODE_PORT = (() => {
 const ENV_SKIP_KRONOSCODE_START = readRuntimeFlag([
   'KRONOSCODE_SKIP_START',
   'KRONOSCHAMBER_SKIP_KRONOSCODE_START',
-  // TODO(compat): remove OPENCODE/OpenChamber aliases after one stable release.
-  'OPENCODE_SKIP_START',
-  'OPENCHAMBER_SKIP_OPENCODE_START',
 ]);
 const ENV_KRONOSCODE_EXTERNAL_ONLY = readRuntimeFlag([
   'KRONOSCODE_EXTERNAL_ONLY',
   'KRONOSCHAMBER_EXTERNAL_ONLY',
-  // TODO(compat): remove OPENCODE/OpenChamber aliases after one stable release.
-  'OPENCODE_EXTERNAL_ONLY',
-  'OPENCHAMBER_EXTERNAL_ONLY',
 ]);
 const ENV_DESKTOP_NOTIFY = process.env.KRONOSCHAMBER_DESKTOP_NOTIFY === 'true';
 
@@ -4252,8 +4510,6 @@ function getKronosCodeAuthHeaders() {
   const password = normalizeKronosCodePassword(
     openCodeAuthPassword ||
     process.env.KRONOSCODE_SERVER_PASSWORD ||
-    process.env.OPENCODE_SERVER_PASSWORD ||
-    process.env.OPENCHAMBER_OPENCODE_SERVER_PASSWORD ||
     ''
   );
   
@@ -4489,8 +4745,8 @@ const ENV_CONFIGURED_API_PREFIX = normalizeApiPrefix(
 
 let globalEventWatcherAbortController = null;
 
-let resolvedOpencodeBinary = null;
-let resolvedOpencodeBinarySource = null;
+let resolvedKronosCodeBinary = null;
+let resolvedKronosCodeBinarySource = null;
 let resolvedNodeBinary = null;
 let resolvedBunBinary = null;
 
@@ -4531,7 +4787,7 @@ function searchPathFor(binaryName) {
   return null;
 }
 
-function resolveOpencodeCliPath() {
+function resolveKronosCodeCliPath() {
   const explicit = [
     process.env.KRONOSCODE_BINARY,
     process.env.KRONOSCODE_PATH,
@@ -4543,14 +4799,14 @@ function resolveOpencodeCliPath() {
 
   for (const candidate of explicit) {
     if (isExecutable(candidate)) {
-      resolvedOpencodeBinarySource = 'env';
+      resolvedKronosCodeBinarySource = 'env';
       return candidate;
     }
   }
 
   const resolvedFromPath = searchPathFor('kronoscode');
   if (resolvedFromPath) {
-    resolvedOpencodeBinarySource = 'path';
+    resolvedKronosCodeBinarySource = 'path';
     return resolvedFromPath;
   }
 
@@ -4588,7 +4844,7 @@ function resolveOpencodeCliPath() {
   const fallbacks = process.platform === 'win32' ? winFallbacks : unixFallbacks;
   for (const candidate of fallbacks) {
     if (isExecutable(candidate)) {
-      resolvedOpencodeBinarySource = 'fallback';
+      resolvedKronosCodeBinarySource = 'fallback';
       return candidate;
     }
   }
@@ -4606,7 +4862,7 @@ function resolveOpencodeCliPath() {
           .filter(Boolean);
         const found = lines.find((line) => isExecutable(line));
         if (found) {
-          resolvedOpencodeBinarySource = 'where';
+          resolvedKronosCodeBinarySource = 'where';
           return found;
         }
       }
@@ -4627,7 +4883,7 @@ function resolveOpencodeCliPath() {
       if (result.status === 0) {
         const found = (result.stdout || '').trim().split(/\s+/).pop() || '';
         if (found && isExecutable(found)) {
-          resolvedOpencodeBinarySource = 'shell';
+          resolvedKronosCodeBinarySource = 'shell';
           return found;
         }
       }
@@ -4860,7 +5116,7 @@ function kronoscodeShimInterpreter(kronoscodePath) {
   return null;
 }
 
-function ensureOpencodeShimRuntime(kronoscodePath) {
+function ensureKronosCodeShimRuntime(kronoscodePath) {
   const runtime = kronoscodeShimInterpreter(kronoscodePath);
   if (runtime === 'node') {
     ensureNodeCliEnv();
@@ -4870,7 +5126,7 @@ function ensureOpencodeShimRuntime(kronoscodePath) {
   }
 }
 
-function normalizeOpencodeBinarySetting(raw) {
+function normalizeKronosCodeBinarySetting(raw) {
   if (typeof raw !== 'string') {
     return null;
   }
@@ -4899,6 +5155,15 @@ function normalizeAiBrowserSetting(raw) {
   return raw;
 }
 
+function ensureAiBrowserRuntimeDefault() {
+  const current = typeof process.env.KRONOSCODE_ENABLE_AI_BROWSER === 'string'
+    ? process.env.KRONOSCODE_ENABLE_AI_BROWSER.trim().toLowerCase()
+    : '';
+  if (!current) {
+    process.env.KRONOSCODE_ENABLE_AI_BROWSER = 'true';
+  }
+}
+
 async function applyAiBrowserSettingFromSettings() {
   try {
     const settings = await readSettingsFromDiskMigrated();
@@ -4923,7 +5188,7 @@ async function applyAiBrowserSettingFromSettings() {
   return null;
 }
 
-async function applyOpencodeBinaryFromSettings() {
+async function applyKronosCodeBinaryFromSettings() {
   try {
     const settings = await readSettingsFromDiskMigrated();
     if (!settings || typeof settings !== 'object') {
@@ -4933,21 +5198,21 @@ async function applyOpencodeBinaryFromSettings() {
       return null;
     }
 
-    const normalized = normalizeOpencodeBinarySetting(settings.kronoscodeBinary);
+    const normalized = normalizeKronosCodeBinarySetting(settings.kronoscodeBinary);
 
     if (normalized === '') {
       delete process.env.KRONOSCODE_BINARY;
-      resolvedOpencodeBinary = null;
-      resolvedOpencodeBinarySource = null;
+      resolvedKronosCodeBinary = null;
+      resolvedKronosCodeBinarySource = null;
       return null;
     }
 
     if (normalized && isExecutable(normalized)) {
       process.env.KRONOSCODE_BINARY = normalized;
       prependToPath(path.dirname(normalized));
-      resolvedOpencodeBinary = normalized;
-      resolvedOpencodeBinarySource = 'settings';
-      ensureOpencodeShimRuntime(normalized);
+      resolvedKronosCodeBinary = normalized;
+      resolvedKronosCodeBinarySource = 'settings';
+      ensureKronosCodeShimRuntime(normalized);
       return normalized;
     }
 
@@ -4958,10 +5223,10 @@ async function applyOpencodeBinaryFromSettings() {
 
     // Invalid configured override: clear previously applied settings-based override
     // so PATH/env detection can take over.
-    if (resolvedOpencodeBinarySource === 'settings') {
+    if (resolvedKronosCodeBinarySource === 'settings') {
       delete process.env.KRONOSCODE_BINARY;
-      resolvedOpencodeBinary = null;
-      resolvedOpencodeBinarySource = null;
+      resolvedKronosCodeBinary = null;
+      resolvedKronosCodeBinarySource = null;
     }
   } catch {
     // ignore
@@ -4970,28 +5235,28 @@ async function applyOpencodeBinaryFromSettings() {
   return null;
 }
 
-function ensureOpencodeCliEnv() {
-  if (resolvedOpencodeBinary) {
-    ensureOpencodeShimRuntime(resolvedOpencodeBinary);
-    return resolvedOpencodeBinary;
+function ensureKronosCodeCliEnv() {
+  if (resolvedKronosCodeBinary) {
+    ensureKronosCodeShimRuntime(resolvedKronosCodeBinary);
+    return resolvedKronosCodeBinary;
   }
 
   const existing = typeof process.env.KRONOSCODE_BINARY === 'string' ? process.env.KRONOSCODE_BINARY.trim() : '';
   if (existing && isExecutable(existing)) {
-    resolvedOpencodeBinary = existing;
-    resolvedOpencodeBinarySource = resolvedOpencodeBinarySource || 'env';
+    resolvedKronosCodeBinary = existing;
+    resolvedKronosCodeBinarySource = resolvedKronosCodeBinarySource || 'env';
     prependToPath(path.dirname(existing));
-    ensureOpencodeShimRuntime(existing);
-    return resolvedOpencodeBinary;
+    ensureKronosCodeShimRuntime(existing);
+    return resolvedKronosCodeBinary;
   }
 
-  const resolved = resolveOpencodeCliPath();
+  const resolved = resolveKronosCodeCliPath();
   if (resolved) {
     process.env.KRONOSCODE_BINARY = resolved;
     prependToPath(path.dirname(resolved));
-    ensureOpencodeShimRuntime(resolved);
-    resolvedOpencodeBinary = resolved;
-    resolvedOpencodeBinarySource = resolvedOpencodeBinarySource || 'unknown';
+    ensureKronosCodeShimRuntime(resolved);
+    resolvedKronosCodeBinary = resolved;
+    resolvedKronosCodeBinarySource = resolvedKronosCodeBinarySource || 'unknown';
     console.log(`Resolved kronoscode CLI: ${resolved}`);
     return resolved;
   }
@@ -5411,6 +5676,151 @@ function broadcastUiNotification(payload) {
     } catch {
       // ignore
     }
+  }
+}
+
+function notifyDesktopAndUi(payload) {
+  emitDesktopNotification(payload);
+  broadcastUiNotification(payload);
+}
+
+const isLocalScreenpipeTarget = (baseUrl) => {
+  try {
+    const parsed = new URL(baseUrl);
+    return parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost';
+  } catch {
+    return false;
+  }
+};
+
+const parseScreenpipePort = (baseUrl) => {
+  try {
+    const parsed = new URL(baseUrl);
+    if (parsed.port) {
+      const value = parseInt(parsed.port, 10);
+      return Number.isFinite(value) && value > 0 ? value : null;
+    }
+    return parsed.protocol === 'https:' ? 443 : 80;
+  } catch {
+    return null;
+  }
+};
+
+const shouldLaunchScreenpipeViaPrompt = async ({ baseUrl }) => {
+  if (process.platform !== 'darwin') {
+    return false;
+  }
+
+  const script = [
+    `set promptText to "Screenpipe is offline for this session (${baseUrl}). Launch it in the background now?"`,
+    'set resultButton to button returned of (display dialog promptText buttons {"Not Now", "Launch"} default button "Launch" cancel button "Not Now" with title "KronosChamber Screenpipe")',
+    'return resultButton',
+  ].join('\n');
+
+  try {
+    const result = spawnSync('osascript', ['-e', script], {
+      stdio: 'pipe',
+      encoding: 'utf8',
+    });
+    const stdout = typeof result.stdout === 'string' ? result.stdout.trim().toLowerCase() : '';
+    return result.status === 0 && stdout === 'launch';
+  } catch {
+    return false;
+  }
+};
+
+const launchScreenpipeBackground = ({ baseUrl }) => {
+  const args = [];
+  if (isLocalScreenpipeTarget(baseUrl)) {
+    const port = parseScreenpipePort(baseUrl);
+    if (Number.isFinite(port) && port > 0) {
+      args.push('--port', String(port));
+    }
+  }
+
+  try {
+    const child = spawn('screenpipe', args, {
+      detached: true,
+      stdio: 'ignore',
+      env: process.env,
+    });
+    child.unref();
+    return { success: true, pid: child.pid || null };
+  } catch (error) {
+    return {
+      success: false,
+      error: toErrorMessage(error, 'Failed to launch screenpipe'),
+    };
+  }
+};
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function maybeStartScreenpipeAtDesktopStartup() {
+  if (!ENV_DESKTOP_NOTIFY || startupScreenpipePrompted) {
+    return;
+  }
+  startupScreenpipePrompted = true;
+
+  try {
+    const settings = await readSettingsFromDiskMigrated();
+    const config = resolveScreenpipeConfig(settings);
+    if (!config.enabled) {
+      return;
+    }
+
+    const status = await getScreenpipeStatus(settings);
+    if (status.healthy) {
+      return;
+    }
+
+    if (startupScreenpipeDeclined) {
+      return;
+    }
+
+    const confirmed = await shouldLaunchScreenpipeViaPrompt({ baseUrl: config.baseUrl });
+    if (!confirmed) {
+      startupScreenpipeDeclined = true;
+      notifyDesktopAndUi({
+        title: 'Screenpipe Not Started',
+        body: 'Startup launch was skipped for this session. You can start Screenpipe manually anytime.',
+        tag: 'screenpipe-startup-skipped',
+      });
+      return;
+    }
+
+    const launched = launchScreenpipeBackground({ baseUrl: config.baseUrl });
+    if (!launched.success) {
+      notifyDesktopAndUi({
+        title: 'Screenpipe Launch Failed',
+        body: launched.error || 'Unable to start Screenpipe in the background.',
+        tag: 'screenpipe-startup-failed',
+      });
+      return;
+    }
+
+    await sleep(1500);
+    const postLaunch = await getScreenpipeStatus(settings);
+    if (postLaunch.healthy) {
+      notifyDesktopAndUi({
+        title: 'Screenpipe Started',
+        body: `Screenpipe launched in the background at ${config.baseUrl}.`,
+        tag: 'screenpipe-startup-success',
+      });
+      return;
+    }
+
+    notifyDesktopAndUi({
+      title: 'Screenpipe Still Offline',
+      body: postLaunch?.error || `Screenpipe did not become healthy at ${config.baseUrl}.`,
+      tag: 'screenpipe-startup-degraded',
+    });
+  } catch (error) {
+    notifyDesktopAndUi({
+      title: 'Screenpipe Startup Check Failed',
+      body: toErrorMessage(error, 'Failed to verify Screenpipe startup state.'),
+      tag: 'screenpipe-startup-error',
+    });
   }
 }
 
@@ -6177,10 +6587,11 @@ async function startKronosCode() {
       : `Starting KronosCode on allocated port ${spawnPort}...`
   );
 
-  await applyOpencodeBinaryFromSettings();
+  ensureAiBrowserRuntimeDefault();
+  await applyKronosCodeBinaryFromSettings();
   await applyAiBrowserSettingFromSettings();
-  ensureOpencodeCliEnv();
-  const openCodePassword = await ensureLocalKronosCodeServerPassword({
+  ensureKronosCodeCliEnv();
+  const kronosCodePassword = await ensureLocalKronosCodeServerPassword({
     rotateManaged: true,
   });
 
@@ -6192,7 +6603,7 @@ async function startKronosCode() {
       cwd: openCodeWorkingDirectory,
       env: {
         ...process.env,
-        KRONOSCODE_SERVER_PASSWORD: openCodePassword,
+        KRONOSCODE_SERVER_PASSWORD: kronosCodePassword,
       },
     });
 
@@ -6499,8 +6910,9 @@ async function refreshKronosCodeAfterConfigChange(reason, options = {}) {
   console.log(`Refreshing KronosCode after ${reason}`);
 
   // Settings might include a new kronoscodeBinary; drop cache before restart.
-  resolvedOpencodeBinary = null;
-  await applyOpencodeBinaryFromSettings();
+  resolvedKronosCodeBinary = null;
+  ensureAiBrowserRuntimeDefault();
+  await applyKronosCodeBinaryFromSettings();
   await applyAiBrowserSettingFromSettings();
 
   await restartKronosCode();
@@ -7088,6 +7500,7 @@ async function main(options = {}) {
     const kronoscodeApiPrefix = '';
     const kronoscodeApiPrefixDetected = true;
     const kronoscodeAiBrowserEnabled = process.env.KRONOSCODE_ENABLE_AI_BROWSER === 'true';
+    const zenApiKey = resolveZenApiKey();
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -7107,22 +7520,18 @@ async function main(options = {}) {
       kronoscodeSkipStart: ENV_SKIP_KRONOSCODE_START,
       kronoscodeConfiguredPort: ENV_CONFIGURED_KRONOSCODE_PORT,
       lastKronosCodeError,
-      kronoscodeBinaryResolved: resolvedOpencodeBinary || null,
-      kronoscodeBinarySource: resolvedOpencodeBinarySource || null,
-      kronoscodeShimInterpreter: resolvedOpencodeBinary ? kronoscodeShimInterpreter(resolvedOpencodeBinary) : null,
+      kronoscodeBinaryResolved: resolvedKronosCodeBinary || null,
+      kronoscodeBinarySource: resolvedKronosCodeBinarySource || null,
+      kronoscodeShimInterpreter: resolvedKronosCodeBinary ? kronoscodeShimInterpreter(resolvedKronosCodeBinary) : null,
       nodeBinaryResolved: resolvedNodeBinary || null,
       bunBinaryResolved: resolvedBunBinary || null,
-      // TODO(compat): remove openCode* aliases after one stable release.
-      openCodePort: kronoscodePort,
-      openCodeRunning: kronoscodeRunning,
-      openCodeSecureConnection: kronoscodeSecureConnection,
-      openCodeAuthSource: kronoscodeAuthSource,
-      openCodeApiPrefix: kronoscodeApiPrefix,
-      openCodeApiPrefixDetected: kronoscodeApiPrefixDetected,
-      openCodeAiBrowserEnabled: kronoscodeAiBrowserEnabled,
-      openCodeExternalOnly: ENV_KRONOSCODE_EXTERNAL_ONLY,
-      openCodeSkipStart: ENV_SKIP_KRONOSCODE_START,
-      openCodeConfiguredPort: ENV_CONFIGURED_KRONOSCODE_PORT,
+      zen: {
+        baseUrl: ZEN_BASE_URL,
+        authConfigured: Boolean(zenApiKey.value),
+        authSource: zenApiKey.source,
+        modelDefault: ZEN_DEFAULT_MODEL,
+        validatedFallback: validatedZenFallback,
+      },
     });
   });
 
@@ -7332,14 +7741,6 @@ async function main(options = {}) {
       kronoscodeConfiguredPort: ENV_CONFIGURED_KRONOSCODE_PORT,
       isKronosCodeReady,
       lastKronosCodeError,
-      // TODO(compat): remove openCode* aliases after one stable release.
-      openCodePort: kronoscodePort,
-      openCodeRunning: kronoscodeRunning,
-      openCodeSecureConnection: kronoscodeSecureConnection,
-      openCodeAuthSource: kronoscodeAuthSource,
-      openCodeExternalOnly: ENV_KRONOSCODE_EXTERNAL_ONLY,
-      openCodeSkipStart: ENV_SKIP_KRONOSCODE_START,
-      openCodeConfiguredPort: ENV_CONFIGURED_KRONOSCODE_PORT,
     };
 
     res.json({
@@ -8184,18 +8585,19 @@ async function main(options = {}) {
       const configuredAiBrowser =
         typeof settings?.aiBrowserEnabled === 'boolean' ? settings.aiBrowserEnabled : null;
 
-      const previousSource = resolvedOpencodeBinarySource;
-      const detectedNow = resolveOpencodeCliPath();
-      const rawDetectedSourceNow = resolvedOpencodeBinarySource;
-      resolvedOpencodeBinarySource = previousSource;
+      const previousSource = resolvedKronosCodeBinarySource;
+      const detectedNow = resolveKronosCodeCliPath();
+      const rawDetectedSourceNow = resolvedKronosCodeBinarySource;
+      resolvedKronosCodeBinarySource = previousSource;
 
       // Best-effort: apply configured override (if any) and resolve.
-      await applyOpencodeBinaryFromSettings();
+      ensureAiBrowserRuntimeDefault();
+      await applyKronosCodeBinaryFromSettings();
       await applyAiBrowserSettingFromSettings();
-      ensureOpencodeCliEnv();
+      ensureKronosCodeCliEnv();
 
-      const resolved = resolvedOpencodeBinary || null;
-      const source = resolvedOpencodeBinarySource || null;
+      const resolved = resolvedKronosCodeBinary || null;
+      const source = resolvedKronosCodeBinarySource || null;
       const detectedSourceNow =
         detectedNow &&
         resolved &&
@@ -8380,6 +8782,9 @@ async function main(options = {}) {
 
       const tasks = Array.from(agentModeTasks.values());
       const runningTasks = tasks.filter((entry) => entry?.status === 'running').length;
+      const zenApiKey = resolveZenApiKey();
+      const cachedModelsAgeMs =
+        cachedZenModelsTimestamp > 0 ? Math.max(0, Date.now() - cachedZenModelsTimestamp) : null;
 
       res.json({
         mode: persistedMode,
@@ -8406,9 +8811,6 @@ async function main(options = {}) {
           total: tasks.length,
           running: runningTasks,
         },
-        // TODO(compat): remove openCode* aliases after one stable release.
-        openCodeRunning: Boolean(openCodePort && isKronosCodeReady && !isRestartingKronosCode),
-        openCodeSecureConnection: isKronosCodeConnectionSecure(),
       });
     } catch (error) {
       console.error('Failed to load agent mode status:', error);
@@ -8575,11 +8977,55 @@ async function main(options = {}) {
   const isRuntimeTaskMode = (value) =>
     value === 'e2b' || value === 'user-desktop' || value === 'desktop-browser' || value === 'browseros';
 
+  const normalizeBrowserAutomationMode = (value) => {
+    if (value === 'background') return 'background';
+    return 'embedded';
+  };
+
+  const matchBrowserSkillFallback = async (prompt, directory) => {
+    const normalizedPrompt = String(prompt || '').trim().toLowerCase();
+    if (!normalizedPrompt) {
+      return null;
+    }
+
+    const discoveredSkills = ((await fetchKronosCodeDiscoveredSkills(directory)) || discoverSkills(directory) || [])
+      .filter((entry) => entry && typeof entry === 'object');
+    if (discoveredSkills.length === 0) {
+      return null;
+    }
+
+    const searchable = discoveredSkills.map((entry) => {
+      const name = typeof entry.name === 'string' ? entry.name.trim() : '';
+      const description = typeof entry.description === 'string' ? entry.description.trim() : '';
+      const haystack = `${name} ${description}`.toLowerCase();
+      return { name, description, haystack };
+    }).filter((entry) => entry.name.length > 0);
+
+    for (const rule of BROWSER_SKILL_ROUTING_RULES) {
+      const keywordMatched = rule.keywords.some((keyword) => normalizedPrompt.includes(keyword.toLowerCase()));
+      if (!keywordMatched) continue;
+      const matched = searchable.find((skill) => {
+        return rule.skillHints.some((hint) => skill.haystack.includes(hint.toLowerCase()));
+      });
+      if (matched) {
+        return {
+          name: matched.name,
+          description: matched.description || null,
+          rule: rule.id,
+          reason: `Matched deterministic rule "${rule.id}" and discovered skill "${matched.name}".`,
+        };
+      }
+    }
+
+    return null;
+  };
+
   app.get('/api/runtime/status', async (_req, res) => {
     try {
       pruneAgentModeTasks();
       const settings = await readSettingsFromDiskMigrated();
       const persistedMode = normalizeAgentModeSetting(settings?.agentMode);
+      const browserAutomationMode = normalizeBrowserAutomationMode(settings?.browserAutomationMode);
       const mcpStatusMap = await fetchKronosCodeMcpStatusMap();
       const mcpPolicy = summarizeDesktopMcpPolicy(mcpStatusMap);
       const [userDesktopResult, browserosResult] = await Promise.allSettled([
@@ -8598,6 +9044,8 @@ async function main(options = {}) {
       const browserosStatus = browserosResult.status === 'fulfilled'
         ? browserosResult.value
         : {
+          mode: 'embedded',
+          profile: BROWSEROS_EMBEDDED_PROFILE,
           installed: false,
           configured: false,
           connected: false,
@@ -8613,11 +9061,22 @@ async function main(options = {}) {
           mcpStatus: null,
           setupError: toErrorMessage(browserosResult.reason, 'Failed to resolve KronosOS status.'),
           mcpStatusError: toErrorMessage(browserosResult.reason, 'Failed to resolve KronosOS MCP status.'),
+          profiles: {
+            embedded: null,
+            background: null,
+          },
+          activeProfile: null,
+          backgroundProfile: null,
           environment: BROWSEROS_MCP_ENV_KEYS.map((key) => ({
             key,
             present: typeof process.env[key] === 'string' && process.env[key].trim().length > 0,
           })),
         };
+      const embeddedBrowserProfile = browserosStatus?.profiles?.embedded || browserosStatus?.activeProfile || browserosStatus;
+      const backgroundBrowserProfile = browserosStatus?.profiles?.background || browserosStatus?.backgroundProfile || null;
+      const selectedBrowserProfile = browserAutomationMode === 'background' && backgroundBrowserProfile
+        ? backgroundBrowserProfile
+        : embeddedBrowserProfile;
       const desktopControl = resolveDesktopControlKnowledgeSummary();
 
       let providers = [];
@@ -8634,24 +9093,27 @@ async function main(options = {}) {
       const browserosConnector = buildAgentModeConnectorStatus('browseros');
       const browserosConnectorStatus = {
         ...browserosConnector,
-        provider: browserosStatus.connected
+        provider: selectedBrowserProfile?.connected
           ? 'mcp'
-          : browserosStatus.healthy
+          : selectedBrowserProfile?.healthy
             ? 'api'
             : browserosConnector.provider,
         available: Boolean(
-          browserosStatus.connected ||
-            browserosStatus.healthy ||
-            browserosStatus.installed ||
+          selectedBrowserProfile?.connected ||
+            selectedBrowserProfile?.healthy ||
+            selectedBrowserProfile?.installed ||
             browserosConnector.available,
         ),
-        endpoint: browserosStatus.mcpUrl || browserosConnector.endpoint,
-        connected: browserosStatus.connected,
-        healthy: browserosStatus.healthy,
-        installed: browserosStatus.installed,
-        running: browserosStatus.running,
-        setupError: browserosStatus.setupError,
-        mcpStatusError: browserosStatus.mcpStatusError ?? null,
+        endpoint: selectedBrowserProfile?.mcpUrl || browserosConnector.endpoint,
+        connected: selectedBrowserProfile?.connected === true,
+        healthy: selectedBrowserProfile?.healthy === true,
+        installed: selectedBrowserProfile?.installed === true,
+        running: selectedBrowserProfile?.running === true,
+        setupError: selectedBrowserProfile?.setupError ?? null,
+        mcpStatusError: selectedBrowserProfile?.mcpStatusError ?? null,
+        resolvedBrowserProfile: selectedBrowserProfile?.profile || null,
+        browserAutomationMode,
+        profiles: browserosStatus?.profiles || null,
       };
       browserosConnectorStatus.health = classifyConnectorHealth(browserosConnectorStatus);
 
@@ -8676,6 +9138,7 @@ async function main(options = {}) {
 
       res.json({
         mode: persistedMode,
+        browserAutomationMode,
         availableModes: ['browseros', 'desktop-browser', 'e2b', 'user-desktop', 'off'],
         timestamp: Date.now(),
         runtimeContract: {
@@ -8716,18 +9179,162 @@ async function main(options = {}) {
           restarting: isRestartingKronosCode,
           lastError: lastKronosCodeError,
         },
+        zen: {
+          baseUrl: ZEN_BASE_URL,
+          authConfigured: Boolean(zenApiKey.value),
+          authSource: zenApiKey.source,
+          modelDefault: ZEN_DEFAULT_MODEL,
+          validatedFallback: validatedZenFallback,
+          cachedModelsAgeMs,
+        },
         providers,
         tasks: {
           total: tasks.length,
           running: runningTasks,
         },
-        // TODO(compat): remove openCode* aliases after one stable release.
-        openCodeRunning: Boolean(openCodePort && isKronosCodeReady && !isRestartingKronosCode),
-        openCodeSecureConnection: isKronosCodeConnectionSecure(),
       });
     } catch (error) {
       console.error('Failed to load runtime status:', error);
       res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to load runtime status' });
+    }
+  });
+
+  app.get('/api/runtime/capabilities', async (req, res) => {
+    try {
+      const { directory, error } = await resolveOptionalProjectDirectory(req);
+      if (error) {
+        return res.status(400).json({ error });
+      }
+
+      const statusMap = await fetchKronosCodeMcpStatusMap();
+      const [computerUse, automation, browseros, openfangStatus] = await Promise.all([
+        resolveMcpConnectionStatus(COMPUTER_USE_MCP_NAME, directory, statusMap),
+        resolveMcpConnectionStatus(AUTOMATION_MCP_NAME, directory, statusMap),
+        resolveBrowserosMcpStatus(directory, statusMap),
+        readSettingsFromDiskMigrated().then((settings) => getOpenfangStatus(settings)).catch(() => null),
+      ]);
+      const e2b = buildAgentModeConnectorStatus('e2b');
+      const excalidrawPreset = normalizeDefaultMcpPresetForResponse(DEFAULT_MCP_PRESETS[0]);
+      const atsuraePreset = normalizeDefaultMcpPresetForResponse(DEFAULT_MCP_PRESETS[1]);
+      const personalizationPreset = normalizeDefaultMcpPresetForResponse(DEFAULT_MCP_PRESETS[2]);
+
+      const manifest = {
+        e2b: {
+          capabilities: [
+            'desktop_screenshot',
+            'desktop_click',
+            'desktop_type',
+            'desktop_hotkey',
+            'desktop_drag',
+            'desktop_window_list',
+            'desktop_window_focus',
+            'desktop_open_app',
+            'desktop_clipboard_get',
+            'desktop_clipboard_set',
+            'desktop_wait',
+            'desktop_run_macro',
+          ],
+          health: classifyConnectorHealth(e2b),
+          required_permissions: ['desktop_control', 'keyboard_mouse'],
+          risk_level: 'high',
+        },
+        browseros: {
+          capabilities: ['browser_navigation', 'browser_actions', 'background_profile', 'embedded_profile'],
+          health: classifyConnectorHealth({
+            available: browseros?.connected || browseros?.healthy || browseros?.running || false,
+            connected: browseros?.connected === true,
+            healthy: browseros?.healthy === true,
+            configured: browseros?.configured === true,
+            installed: browseros?.installed === true,
+          }),
+          required_permissions: ['browser_control'],
+          risk_level: 'medium',
+        },
+        anything: {
+          capabilities: ['browser_action_bridge', 'double_click_handoff', 'context_menu', 'capture_selection'],
+          health: 'unknown',
+          required_permissions: ['browser_control'],
+          risk_level: 'medium',
+        },
+        pluely: {
+          capabilities: ['voice_start_stop', 'overlay_show_hide', 'transcript_get', 'context_recent'],
+          health: 'unknown',
+          required_permissions: ['microphone', 'screen_recording'],
+          risk_level: 'medium',
+        },
+        jaaz: {
+          capabilities: ['generate', 'generate_batch', 'project_list_create', 'export'],
+          health: 'unknown',
+          required_permissions: ['local_app_launch'],
+          risk_level: 'medium',
+        },
+        screenpipe: {
+          capabilities: ['search', 'recall', 'context', 'digest'],
+          health: 'unknown',
+          required_permissions: ['screen_recording', 'microphone'],
+          risk_level: 'low',
+        },
+        voice_bus: {
+          capabilities: ['voice_box_open', 'voice_box_listen', 'voice_box_interrupt', 'voice_box_inject_prompt'],
+          health: 'healthy',
+          required_permissions: ['microphone'],
+          risk_level: 'medium',
+        },
+        excalidraw: {
+          capabilities: ['diagram_canvas', 'whiteboard_sync', 'chat_canvas_handoff'],
+          health: excalidrawPreset.health,
+          required_permissions: ['filesystem', 'network'],
+          risk_level: 'medium',
+          required_env: excalidrawPreset.requiredEnv || [],
+        },
+        atsurae: {
+          capabilities: ['creative_generation', 'jaaz_support', 'prompt_styling'],
+          health: atsuraePreset.health,
+          required_permissions: ['filesystem', 'network'],
+          risk_level: 'medium',
+          required_env: atsuraePreset.requiredEnv || [],
+        },
+        personalizationmcp: {
+          capabilities: ['social_personalization', 'growth_workflows', 'content_strategy'],
+          health: personalizationPreset.health,
+          required_permissions: ['filesystem', 'network', 'llm_api'],
+          risk_level: 'medium',
+          required_env: personalizationPreset.requiredEnv || [],
+        },
+        mcp_connectors: {
+          capabilities: [
+            'computer-use-mcp',
+            'automation-mcp',
+            'openfang',
+            'excalidraw',
+            'atsurae',
+            'personalizationmcp',
+          ],
+          health: classifyConnectorHealth({
+            available:
+              computerUse.connected === true ||
+              automation.connected === true ||
+              Boolean(openfangStatus?.cliDetected || openfangStatus?.daemonHealthy) ||
+              excalidrawPreset.health !== 'degraded' ||
+              atsuraePreset.health !== 'degraded' ||
+              personalizationPreset.health !== 'degraded',
+            connected: computerUse.connected === true || automation.connected === true,
+            healthy: Boolean(openfangStatus?.daemonHealthy),
+            configured: computerUse.configured === true || automation.configured === true,
+            installed: computerUse.installed === true || automation.installed === true,
+          }),
+          required_permissions: ['mcp_config'],
+          risk_level: 'high',
+        },
+      };
+
+      res.json({
+        timestamp: Date.now(),
+        order: USER_DESKTOP_PROVIDER_ORDER,
+        connectors: manifest,
+      });
+    } catch (error) {
+      res.status(500).json({ error: toErrorMessage(error, 'Failed to resolve runtime capabilities') });
     }
   });
 
@@ -8742,10 +9349,16 @@ async function main(options = {}) {
 
       const settings = await readSettingsFromDiskMigrated();
       const persistedMode = normalizeAgentModeSetting(settings?.agentMode);
+      const browserAutomationMode = normalizeBrowserAutomationMode(settings?.browserAutomationMode);
       const requestedMode = normalizeRuntimeMode(normalizeOptionalString(req.body?.mode) || persistedMode);
       let resolvedMode = requestedMode;
       let routing = null;
       let resolvedDirectory = null;
+      let routingStage = 'direct';
+      let routingReason = null;
+      let resolvedBrowserProfile = null;
+      let matchedSkill = null;
+      let effectivePrompt = prompt;
 
       if (!isRuntimeTaskMode(requestedMode)) {
         return res.status(400).json({
@@ -8754,7 +9367,7 @@ async function main(options = {}) {
         });
       }
 
-      if (requestedMode !== 'user-desktop') {
+      if (requestedMode !== 'user-desktop' && requestedMode !== 'browseros') {
         const connectorStatus = buildAgentModeConnectorStatus(requestedMode);
         if (!connectorStatus.available) {
           return res.status(400).json({
@@ -8772,13 +9385,75 @@ async function main(options = {}) {
         }
         resolvedDirectory = directory;
         const browserosStatus = await resolveBrowserosMcpStatus(directory);
-        const browserRuntimeReady = Boolean(browserosStatus.connected || browserosStatus.healthy || browserosStatus.running);
-        if (!browserRuntimeReady) {
+        const embeddedProfile = browserosStatus?.profiles?.embedded || browserosStatus?.activeProfile || null;
+        const backgroundProfile = browserosStatus?.profiles?.background || browserosStatus?.backgroundProfile || null;
+        const embeddedReady = Boolean(embeddedProfile && (embeddedProfile.connected || embeddedProfile.healthy || embeddedProfile.running));
+        const backgroundReady = Boolean(backgroundProfile && (backgroundProfile.connected || backgroundProfile.healthy || backgroundProfile.running));
+
+        if (browserAutomationMode === 'embedded' && embeddedReady) {
+          resolvedMode = 'browseros';
+          resolvedBrowserProfile = embeddedProfile?.profile || BROWSEROS_EMBEDDED_PROFILE;
+          routingStage = 'embedded';
+          routingReason = 'Embedded KronosChamber BrowserOS profile is healthy and selected as primary mode.';
+        } else {
+          const skillFallback = await matchBrowserSkillFallback(prompt, directory);
+          if (skillFallback) {
+            const desktopConnector = buildAgentModeConnectorStatus('desktop-browser');
+            if (desktopConnector.available) {
+              resolvedMode = 'desktop-browser';
+              matchedSkill = skillFallback.name;
+              routingStage = 'skills';
+              routingReason = skillFallback.reason;
+              effectivePrompt = [
+                prompt,
+                '',
+                '[Skill Fallback]',
+                `Prioritize the "${skillFallback.name}" skill for this workflow before generic browser actions.`,
+              ].join('\n');
+            }
+          }
+
+          if (resolvedMode === 'browseros' || resolvedMode === requestedMode) {
+            if (backgroundReady) {
+              resolvedMode = 'browseros';
+              resolvedBrowserProfile = backgroundProfile?.profile || BROWSEROS_BACKGROUND_PROFILE;
+              routingStage = 'background';
+              routingReason = browserAutomationMode === 'background'
+                ? 'Background BrowserOS mode is selected and healthy.'
+                : 'Embedded profile unavailable; routed to background BrowserOS fallback.';
+            } else if (browserAutomationMode === 'embedded' && embeddedReady) {
+              resolvedMode = 'browseros';
+              resolvedBrowserProfile = embeddedProfile?.profile || BROWSEROS_EMBEDDED_PROFILE;
+              routingStage = 'embedded';
+              routingReason = 'Embedded BrowserOS remained available after skill fallback checks.';
+            } else {
+              return res.status(400).json({
+                error: 'No browser automation route is currently available (embedded, skills, or background).',
+                mode: persistedMode,
+                routingStage: 'unavailable',
+                routingReason: 'Neither BrowserOS profile is healthy and no deterministic skill fallback could be routed.',
+                browserAutomationMode,
+                matchedSkill: matchedSkill ?? null,
+                connector: {
+                  ...buildAgentModeConnectorStatus('browseros'),
+                  status: browserosStatus,
+                },
+              });
+            }
+          }
+        }
+
+        const resolvedConnectorStatus = buildAgentModeConnectorStatus(resolvedMode);
+        if (resolvedMode !== 'browseros' && !resolvedConnectorStatus.available) {
           return res.status(400).json({
-            error: 'browseros runtime is unavailable. Start/connect browseros, or switch mode to e2b for background tasks.',
+            error: `${resolvedMode} connector is unavailable after browser fallback resolution.`,
             mode: persistedMode,
+            routingStage,
+            routingReason,
+            browserAutomationMode,
+            matchedSkill: matchedSkill ?? null,
             connector: {
-              ...buildAgentModeConnectorStatus('browseros'),
+              ...resolvedConnectorStatus,
               status: browserosStatus,
             },
           });
@@ -8806,12 +9481,22 @@ async function main(options = {}) {
         resolvedMode = routing.mode;
       }
 
+      console.info('[runtime-task:routing]', {
+        requestedMode,
+        resolvedMode,
+        browserAutomationMode,
+        routingStage,
+        routingReason,
+        matchedSkill,
+        resolvedBrowserProfile,
+      });
+
       const taskID = crypto.randomUUID();
       const task = {
         taskID,
         mode: resolvedMode,
         requestedMode,
-        prompt,
+        prompt: effectivePrompt,
         status: 'queued',
         success: null,
         error: null,
@@ -8826,8 +9511,11 @@ async function main(options = {}) {
         modelID: normalizeOptionalString(req.body?.modelID) || null,
         agentName: normalizeOptionalString(req.body?.agentName) || null,
         routedProvider: routing?.provider ?? null,
-        routingReason: routing?.reason ?? null,
+        routingReason: routing?.reason ?? routingReason ?? null,
+        routingStage,
         routingOrder: routing?.order ?? USER_DESKTOP_PROVIDER_ORDER,
+        resolvedBrowserProfile,
+        matchedSkill,
         createdAt: Date.now(),
         startedAt: null,
         finishedAt: null,
@@ -8919,6 +9607,45 @@ async function main(options = {}) {
         signal: AbortSignal.timeout(LONG_REQUEST_TIMEOUT_MS),
       });
       const body = await upstream.text();
+      let payload = null;
+      try {
+        payload = JSON.parse(body);
+      } catch {
+        payload = null;
+      }
+
+      if (upstream.ok && payload && typeof payload === 'object') {
+        const record = payload;
+        const backend =
+          typeof record.backend === 'string' && record.backend.trim().length > 0
+            ? record.backend
+            : 'playwright';
+        const capabilities =
+          record.capabilities && typeof record.capabilities === 'object'
+            ? record.capabilities
+            : {};
+
+        return res.json({
+          ...record,
+          sessionID,
+          provider: 'kronoscode-relay',
+          backend,
+          capabilities: {
+            tabs: capabilities.tabs !== false,
+            history: capabilities.history !== false,
+            selection: capabilities.selection === true,
+            highFidelityScreenshot: capabilities.highFidelityScreenshot === true,
+            downloads: capabilities.downloads === true,
+          },
+          lastError:
+            typeof record.lastError === 'string'
+              ? record.lastError
+              : typeof record.error === 'string'
+                ? record.error
+                : null,
+        });
+      }
+
       res.status(upstream.status);
       res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/json');
       res.send(body);
@@ -9341,6 +10068,105 @@ async function main(options = {}) {
     }
   });
 
+  const getDefaultMcpPresetCapabilities = (presetId) => {
+    if (presetId === GHOST_OS_MCP_NAME) {
+      return {
+        capabilities: ['native_macos_control', 'desktop_recipes', 'accessibility_tree', 'vision_fallback'],
+        required_permissions: ['filesystem', 'desktop_accessibility'],
+        risk_level: 'high',
+      };
+    }
+    if (presetId === 'excalidraw') {
+      return {
+        capabilities: ['diagram_canvas', 'whiteboard_sync', 'chat_canvas_handoff'],
+        required_permissions: ['filesystem', 'network'],
+        risk_level: 'medium',
+      };
+    }
+    if (presetId === 'atsurae') {
+      return {
+        capabilities: ['creative_generation', 'jaaz_support', 'prompt_styling'],
+        required_permissions: ['filesystem', 'network'],
+        risk_level: 'medium',
+      };
+    }
+    return {
+      capabilities: ['social_personalization', 'growth_workflows', 'content_strategy'],
+      required_permissions: ['filesystem', 'network', 'llm_api'],
+      risk_level: 'medium',
+    };
+  };
+
+  const normalizeDefaultMcpPresetForResponse = (preset) => {
+    const commandReady = isCommandOnPath(preset.command);
+    const missingEnv = (preset.requiredEnv || [])
+      .map((item) => item?.name)
+      .filter((name) => typeof name === 'string' && name.length > 0 && !normalizeOptionalString(process.env[name]));
+    const health = missingEnv.length > 0 ? 'degraded' : commandReady ? 'healthy' : 'degraded';
+    return {
+      ...preset,
+      ...getDefaultMcpPresetCapabilities(preset.id),
+      health,
+      requiredEnv: preset.requiredEnv || [],
+      runtime: {
+        commandAvailable: commandReady,
+        missingEnv,
+      },
+    };
+  };
+
+  const toDefaultMcpConfig = (preset) => {
+    const command = [preset.command, ...(Array.isArray(preset.args) ? preset.args : [])].filter(
+      (entry) => typeof entry === 'string' && entry.trim().length > 0,
+    );
+    const environment = {};
+    for (const envVar of preset.requiredEnv || []) {
+      const key = typeof envVar?.name === 'string' ? envVar.name.trim() : '';
+      if (!key) continue;
+      const value = normalizeOptionalString(process.env[key]);
+      if (value) {
+        environment[key] = value;
+      }
+    }
+    return {
+      type: 'local',
+      command,
+      ...(Object.keys(environment).length > 0 ? { environment } : {}),
+      enabled: true,
+    };
+  };
+
+  const ensureDefaultMcpPresetBootstrap = ({ getMcpConfig, createMcpConfig, AGENT_SCOPE }) => {
+    const created = [];
+    const skipped = [];
+    for (const preset of DEFAULT_MCP_PRESETS) {
+      try {
+        const existing = getMcpConfig(preset.id, undefined);
+        if (existing) {
+          skipped.push({ id: preset.id, reason: 'already-configured' });
+          continue;
+        }
+        createMcpConfig(preset.id, toDefaultMcpConfig(preset), undefined, AGENT_SCOPE.USER);
+        created.push(preset.id);
+      } catch (error) {
+        skipped.push({ id: preset.id, reason: toErrorMessage(error, 'bootstrap-failed') });
+      }
+    }
+    return { created, skipped };
+  };
+
+  try {
+    const bootstrap = ensureDefaultMcpPresetBootstrap({ getMcpConfig, createMcpConfig, AGENT_SCOPE });
+    if (bootstrap.created.length > 0) {
+      console.log(`[mcp-bootstrap] enabled default connectors: ${bootstrap.created.join(', ')}`);
+    }
+    for (const item of bootstrap.skipped) {
+      console.log(`[mcp-bootstrap] skipped ${item.id}: ${item.reason}`);
+    }
+  } catch (error) {
+    console.error('[mcp-bootstrap] failed:', error);
+  }
+
   // ============================================================
   // MCP Config Routes
   // ============================================================
@@ -9361,7 +10187,10 @@ async function main(options = {}) {
 
   app.get('/api/config/mcp/presets', async (_req, res) => {
     try {
-      const presets = await loadOpenfangMcpPresets();
+      const openfangPresets = await loadOpenfangMcpPresets();
+      const defaults = DEFAULT_MCP_PRESETS.map(normalizeDefaultMcpPresetForResponse);
+      const openfangWithoutDefaultDupes = openfangPresets.filter((preset) => !DEFAULT_MCP_PRESET_IDS.has(preset.id));
+      const presets = [...defaults, ...openfangWithoutDefaultDupes];
       res.json({ presets });
     } catch (error) {
       console.error('[API:GET /api/config/mcp/presets] Failed:', error);
@@ -9512,35 +10341,52 @@ async function main(options = {}) {
     }
   };
 
-  const resolveBrowserosMcpStatus = async (directory, statusMap) => {
+  const resolveBrowserosProfileStatus = async (directory, statusMap, mode) => {
+    const profile = mode === 'background' ? BROWSEROS_BACKGROUND_PROFILE : BROWSEROS_EMBEDDED_PROFILE;
+    const defaultPort = mode === 'background' ? null : BROWSEROS_DEFAULT_SERVER_PORT;
     let setup = null;
     let setupError = null;
     try {
-      setup = runBrowserosSetupScript('status');
+      setup = runBrowserosChamberScript({
+        action: 'status',
+        mode,
+        profile,
+        ...(mode === 'embedded' ? { cdpPort: 0, autoStartCdp: false } : {}),
+      });
     } catch (error) {
       setupError = error instanceof Error ? error.message : String(error);
     }
 
     const connection = await resolveMcpConnectionStatus(BROWSEROS_MCP_NAME, directory, statusMap);
-    const serverPort = resolveBrowserosServerPort(setup || {});
-    const mcpUrl =
-      typeof setup?.mcpUrl === 'string' && setup.mcpUrl.trim().length > 0
-        ? setup.mcpUrl.trim()
-        : buildBrowserosMcpUrl(serverPort);
-    const healthUrl = `http://127.0.0.1:${serverPort}/health`;
+    const serverPort = parsePortNumber(setup?.serverPort, defaultPort);
+    const cdpPort = parsePortNumber(setup?.cdpPort, null, { allowZero: true });
+    const cdpDisabled = setup?.cdpDisabled === true || cdpPort === 0;
+    const mcpUrl = typeof setup?.mcpUrl === 'string' && setup.mcpUrl.trim().length > 0
+      ? setup.mcpUrl.trim()
+      : (typeof serverPort === 'number' ? buildBrowserosMcpUrl(serverPort) : null);
+    const healthUrl = typeof setup?.healthUrl === 'string' && setup.healthUrl.trim().length > 0
+      ? setup.healthUrl.trim()
+      : (typeof serverPort === 'number' ? `http://127.0.0.1:${serverPort}/health` : null);
+    const cdpUrl = typeof setup?.cdpUrl === 'string' && setup.cdpUrl.trim().length > 0
+      ? setup.cdpUrl.trim()
+      : (!cdpDisabled && typeof cdpPort === 'number' ? `http://127.0.0.1:${cdpPort}/json/version` : null);
 
     let healthy = false;
-    try {
-      const response = await fetch(healthUrl, {
-        method: 'GET',
-        signal: AbortSignal.timeout(3000),
-      });
-      healthy = response.ok;
-    } catch {
-      healthy = false;
+    if (typeof healthUrl === 'string' && healthUrl.length > 0) {
+      try {
+        const response = await fetch(healthUrl, {
+          method: 'GET',
+          signal: AbortSignal.timeout(3000),
+        });
+        healthy = response.ok;
+      } catch {
+        healthy = false;
+      }
     }
 
     return {
+      mode,
+      profile,
       installed: Boolean(setup?.installed),
       configured: connection.configured,
       connected: connection.connected,
@@ -9548,6 +10394,9 @@ async function main(options = {}) {
       agentRepoPath: typeof setup?.agentRepoPath === 'string' ? setup.agentRepoPath : null,
       launcherPath: typeof setup?.launcherPath === 'string' ? setup.launcherPath : null,
       serverPort,
+      cdpPort,
+      cdpDisabled,
+      cdpUrl,
       mcpUrl,
       healthUrl,
       healthy,
@@ -9563,11 +10412,49 @@ async function main(options = {}) {
     };
   };
 
+  const resolveBrowserosMcpStatus = async (directory, statusMap) => {
+    const [embedded, background] = await Promise.all([
+      resolveBrowserosProfileStatus(directory, statusMap, 'embedded'),
+      resolveBrowserosProfileStatus(directory, statusMap, 'background'),
+    ]);
+
+    return {
+      ...embedded,
+      profiles: {
+        embedded,
+        background,
+      },
+      activeProfile: embedded,
+      backgroundProfile: background,
+    };
+  };
+
   const resolveUserDesktopRouting = async (directory, statusMap) => {
+    const ghost = await resolveMcpConnectionStatus(GHOST_OS_MCP_NAME, directory, statusMap);
     const computerUse = await resolveMcpConnectionStatus(COMPUTER_USE_MCP_NAME, directory, statusMap);
     const automation = await resolveMcpConnectionStatus(AUTOMATION_MCP_NAME, directory, statusMap);
 
     const e2bConnector = buildAgentModeConnectorStatus('e2b');
+
+    if (e2bConnector.available) {
+      return {
+        requestedMode: 'user-desktop',
+        mode: 'e2b',
+        provider: 'e2b',
+        reason: 'E2B connector is healthy; routing user-desktop through E2B full desktop automation first.',
+        order: USER_DESKTOP_PROVIDER_ORDER,
+      };
+    }
+
+    if (ghost.connected) {
+      return {
+        requestedMode: 'user-desktop',
+        mode: 'user-desktop',
+        provider: GHOST_OS_MCP_NAME,
+        reason: 'Ghost OS is connected; routing user-desktop through native macOS automation before generic desktop fallbacks.',
+        order: USER_DESKTOP_PROVIDER_ORDER,
+      };
+    }
 
     if (computerUse.connected) {
       return {
@@ -9589,21 +10476,11 @@ async function main(options = {}) {
       };
     }
 
-    if (e2bConnector.available) {
-      return {
-        requestedMode: 'user-desktop',
-        mode: 'e2b',
-        provider: 'ts-tools',
-        reason: 'computer-use-mcp is not connected; falling back to local TypeScript E2B runner.',
-        order: USER_DESKTOP_PROVIDER_ORDER,
-      };
-    }
-
     return {
       requestedMode: 'user-desktop',
       mode: null,
       provider: 'none',
-      reason: 'No user desktop provider is available. Connect computer-use-mcp or automation-mcp, or configure E2B fallback.',
+      reason: 'No user desktop provider is available. Connect ghost-os, computer-use-mcp, or automation-mcp, or configure E2B fallback.',
       order: USER_DESKTOP_PROVIDER_ORDER,
     };
   };
@@ -9612,9 +10489,10 @@ async function main(options = {}) {
     const summary = resolveDesktopControlKnowledgeSummary();
     const mcpStatusMap = await fetchKronosCodeMcpStatusMap();
     const mcpPolicy = summarizeDesktopMcpPolicy(mcpStatusMap);
-    const [computerUseStatus, automationStatus, appleStatus, browserosStatus, entitlement] = await Promise.all([
+    const [computerUseStatus, automationStatus, ghostStatus, appleStatus, browserosStatus, entitlement] = await Promise.all([
       resolveMcpConnectionStatus(COMPUTER_USE_MCP_NAME, directory, mcpStatusMap),
       resolveMcpConnectionStatus(AUTOMATION_MCP_NAME, directory, mcpStatusMap),
+      resolveMcpConnectionStatus(GHOST_OS_MCP_NAME, directory, mcpStatusMap),
       resolveMcpConnectionStatus(APPLE_MCP_NAME, directory, mcpStatusMap),
       resolveBrowserosMcpStatus(directory, mcpStatusMap),
       fetchE2bEntitlementSummary(directory),
@@ -9664,6 +10542,22 @@ async function main(options = {}) {
               configured: automationStatus.configured,
               connected: automationStatus.connected,
               available: automationStatus.configured || automationStatus.connected,
+            }),
+          },
+        },
+        [GHOST_OS_MCP_NAME]: {
+          ...summary.providers[GHOST_OS_MCP_NAME],
+          status: {
+            configured: ghostStatus.configured,
+            connected: ghostStatus.connected,
+            allowlisted: ghostStatus.allowlisted,
+            mcpName: GHOST_OS_MCP_NAME,
+            mcpStatus: ghostStatus.mcpStatus,
+            error: ghostStatus.error ?? null,
+            health: classifyConnectorHealth({
+              configured: ghostStatus.configured,
+              connected: ghostStatus.connected,
+              available: ghostStatus.configured || ghostStatus.connected,
             }),
           },
         },
@@ -12582,10 +13476,9 @@ ${diffSummaries}`;
       const completionTimeout = createTimeoutSignal(LONG_REQUEST_TIMEOUT_MS);
       let response;
       try {
-        response = await fetch('https://opencode.ai/zen/v1/responses', {
+        response = await fetchZenWithRetry('/responses', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          body: {
             model,
             input: [{ role: 'user', content: prompt }],
             max_output_tokens: 1000,
@@ -12593,8 +13486,9 @@ ${diffSummaries}`;
             reasoning: {
               effort: 'low'
             }
-          }),
+          },
           signal: completionTimeout.signal,
+          retries: 1,
         });
       } finally {
         completionTimeout.cleanup();
@@ -12695,17 +13589,17 @@ Context:
       const completionTimeout = createTimeoutSignal(LONG_REQUEST_TIMEOUT_MS);
       let response;
       try {
-        response = await fetch('https://opencode.ai/zen/v1/responses', {
+        response = await fetchZenWithRetry('/responses', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          body: {
             model,
             input: [{ role: 'user', content: prompt }],
             max_output_tokens: 1200,
             stream: false,
             reasoning: { effort: 'low' },
-          }),
+          },
           signal: completionTimeout.signal,
+          retries: 1,
         });
       } finally {
         completionTimeout.cleanup();
@@ -14512,6 +15406,7 @@ Context:
 
   try {
     syncFromHmrState();
+    ensureAiBrowserRuntimeDefault();
     if (ENV_KRONOSCODE_EXTERNAL_ONLY) {
       const externalPort = ENV_CONFIGURED_KRONOSCODE_PORT || 4096;
       if (openCodeProcess) {
@@ -14659,6 +15554,7 @@ Context:
       console.log(`KronosChamber server running on port ${activePort}`);
       console.log(`Health check: http://localhost:${activePort}/health`);
       console.log(`Web interface: http://localhost:${activePort}`);
+      void maybeStartScreenpipeAtDesktopStartup();
 
       if (tryCfTunnel) {
         console.log('\nInitializing Cloudflare Quick Tunnel...');

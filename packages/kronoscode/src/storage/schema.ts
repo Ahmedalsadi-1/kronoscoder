@@ -1,4 +1,5 @@
 export { ControlAccountTable } from "../control/control.sql"
 export { SessionTable, MessageTable, PartTable, TodoTable, PermissionTable } from "../session/session.sql"
+export { WorkflowRunTable, WorkflowRunNodeTable } from "../workflow/workflow.sql"
 export { SessionShareTable } from "../share/share.sql"
 export { ProjectTable } from "../project/project.sql"

@@ -136,11 +136,11 @@ export const AgentPOVStrip: React.FC<AgentPOVStripProps> = ({ snapshot, onOpenFo
               <button
                 type="button"
                 onClick={onOpenFollow}
-                className="inline-flex h-8 items-center gap-1 rounded-full border border-border/70 bg-background/70 px-3 text-[11px] text-foreground hover:bg-interactive-hover/50"
+                className="inline-flex h-7 items-center gap-1 rounded-md border border-border/60 bg-card/40 px-2.5 text-[10px] text-foreground hover:bg-card/60"
                 aria-label="Follow agent work"
                 title="Follow agent work"
               >
-                <RiCompassDiscoverLine className="h-3.5 w-3.5" />
+                <RiCompassDiscoverLine className="h-3 w-3" />
                 <span>Follow</span>
               </button>
             ) : null}

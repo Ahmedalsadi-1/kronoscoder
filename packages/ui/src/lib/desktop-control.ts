@@ -15,6 +15,17 @@ export interface DesktopControlMcpServer {
 // Popular desktop control MCP servers
 export const DESKTOP_CONTROL_MCP_SERVERS: DesktopControlMcpServer[] = [
   {
+    id: "ghost-os",
+    mcpName: "ghost-os",
+    name: "Ghost OS",
+    description:
+      "Accessibility-tree first macOS automation with reusable recipes and local vision fallback for native app workflows.",
+    installCommand: "brew install ghostwright/ghost-os/ghost-os && ghost setup",
+    stars: 0,
+    language: "Go",
+    features: ["native-macos", "recipes", "accessibility-tree", "vision-fallback"],
+  },
+  {
     id: "automation-mcp",
     mcpName: "automation-mcp",
     name: "Automation MCP (local macOS)",

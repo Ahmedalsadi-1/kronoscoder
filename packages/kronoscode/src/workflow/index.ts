@@ -1,4 +1,5 @@
 export { WorkflowEngine } from "./engine.js"
+export { WorkflowRun } from "./run.js"
 export type {
   WorkflowDefinition,
   WorkflowExecution,

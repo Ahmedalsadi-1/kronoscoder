@@ -20,6 +20,7 @@ import { DialogHelp } from "./ui/dialog-help"
 import { CommandProvider, useCommandDialog } from "@tui/component/dialog-command"
 import { DialogAgent } from "@tui/component/dialog-agent"
 import { DialogSessionList } from "@tui/component/dialog-session-list"
+import { DialogWorkflowPanel } from "@tui/component/dialog-workflow"
 import { MediaPreview } from "@tui/component/media-preview"
 import { extractMediaItems } from "@tui/util/media-extract"
 import { KeybindProvider } from "@tui/context/keybind"
@@ -366,6 +367,67 @@ function App() {
   )
 
   const connected = useConnected()
+
+  const resumeLastObjective = async () => {
+    try {
+      const response = await sdk.request({
+        path: "/session/resume_last_objective",
+        method: "POST",
+        body: {},
+      })
+
+      if (!response.ok) {
+        throw new Error(`Resume endpoint failed (${response.status})`)
+      }
+
+      const payload = (await response.json().catch(() => null)) as
+        | {
+            session?: { id?: string; title?: string }
+            objective?: { text?: string }
+            pending_todos?: unknown[]
+          }
+        | null
+
+      const resumedSessionID = typeof payload?.session?.id === "string" ? payload.session.id : ""
+      if (!resumedSessionID) {
+        throw new Error("No resumable session found")
+      }
+
+      route.navigate({
+        type: "session",
+        sessionID: resumedSessionID,
+      })
+
+      const objective = typeof payload?.objective?.text === "string" ? payload.objective.text.trim() : ""
+      if (objective.length > 0) {
+        setTimeout(() => {
+          promptRef.current?.set({
+            input: `Continue objective: ${objective}`,
+            parts: [],
+          })
+        }, 0)
+      }
+
+      const todoCount = Array.isArray(payload?.pending_todos) ? payload.pending_todos.length : 0
+      const title =
+        typeof payload?.session?.title === "string" && payload.session.title.length > 0
+          ? payload.session.title
+          : resumedSessionID
+
+      toast.show({
+        variant: "info",
+        message: `Resumed ${title} (${todoCount} todos)`,
+      })
+    } catch (error) {
+      toast.show({
+        variant: "error",
+        message: error instanceof Error ? error.message : "Failed to resume last objective",
+      })
+    } finally {
+      dialog.clear()
+    }
+  }
+
   command.register(() => [
     {
       title: "Switch session",
@@ -400,6 +462,19 @@ function App() {
           initialPrompt: currentPrompt,
         })
         dialog.clear()
+      },
+    },
+    {
+      title: "Resume last objective",
+      value: "session.resume_last_objective",
+      category: "Session",
+      suggested: true,
+      slash: {
+        name: "resume-last",
+        aliases: ["resume-last-objective"],
+      },
+      onSelect: () => {
+        void resumeLastObjective()
       },
     },
     {
@@ -484,6 +559,18 @@ function App() {
             <text fg={theme.text_muted} marginTop={1}>Press ESC to close</text>
           </box>
         ))
+      },
+    },
+    {
+      title: "Workflow panel",
+      value: "workflow.panel",
+      category: "Workflow",
+      slash: {
+        name: "workflow",
+        aliases: ["workflows"],
+      },
+      onSelect: () => {
+        dialog.replace(() => <DialogWorkflowPanel />)
       },
     },
     {

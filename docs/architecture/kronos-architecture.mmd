@@ -1,0 +1,254 @@
+# KronosCoder + KronosChamber Architecture
+
+## C4 Container Diagram - High-Level Architecture
+
+```mermaid
+c4Container
+    title System Context Diagram - KronosCoder AI Coding Platform
+
+    Person(user, "User", "Software developer using AI assistance")
+    
+    ContainerDb(filesystem, "Filesystem", "Local disk", "Project files, code, configs")
+    ContainerDb(ai_providers, "AI Providers", "External APIs", "Claude, GPT, Gemini, Grok, etc.")
+
+    System_Boundary("KronosChamber Runtimes", "") {
+        Container(web_app, "Web App", "React + Express", "Browser-based IDE experience")
+        Container(desktop_app, "Desktop App", "Tauri + React", "Native desktop application")
+        Container(vscode_ext, "VS Code Extension", "TypeScript", "Editor-integrated AI assistant")
+    }
+
+    System_Boundary("KronosCoder Core", "") {
+        Container(http_server, "HTTP Server", "Hono + TypeScript", "REST API + SSE on port 4096")
+        Container(session_mgr, "Session Manager", "TypeScript", "Conversation state, persistence, compaction")
+        Container(tool_registry, "Tool Registry", "TypeScript", "69 tools: file ops, exec, search")
+        Container(provider_layer, "Provider Layer", "TypeScript", "20+ AI provider integrations")
+        Container(agent_system, "Agent System", "TypeScript", "6 agent types with permissions")
+    }
+
+    System_Boundary("SDK Layer", "") {
+        Container(sdk, "@kronoscode-ai/sdk", "TypeScript", "Generated from OpenAPI 3.1 spec")
+    }
+
+    Rel(user, web_app, "Uses", "HTTPS")
+    Rel(user, desktop_app, "Uses", "Native IPC")
+    Rel(user, vscode_ext, "Uses", "VS Code API")
+
+    Rel(web_app, sdk, "API calls", "HTTP")
+    Rel(desktop_app, sdk, "API calls", "Tauri IPC")
+    Rel(vscode_ext, sdk, "API calls", "HTTP")
+
+    Rel(sdk, http_server, "Forwards requests", "HTTP/SSE :4096")
+
+    Rel(http_server, session_mgr, "Manages sessions")
+    Rel(http_server, tool_registry, "Executes tools")
+    Rel(http_server, provider_layer, "Calls AI")
+    Rel(http_server, agent_system, "Routes to agents")
+
+    Rel(tool_registry, filesystem, "Reads/writes files")
+    Rel(provider_layer, ai_providers, "API calls")
+
+    UpdateRelStyle(user, web_app, $lineStyle="dashed")
+    UpdateRelStyle(web_app, sdk, $lineStyle="dashed")
+```
+
+## Data Flow Diagram - Request Processing
+
+```mermaid
+flowchart TB
+    subgraph User["User Layer"]
+        U[("User Input")]
+    end
+
+    subgraph Chamber["KronosChamber Runtime"]
+        UI[("UI Component")]
+        WS[("WebSocket/SSE")]
+        SDK[("@kronoscode-ai/sdk")]
+        API[("Express Proxy")]
+    end
+
+    subgraph Core["KronosCoder Core Engine"]
+        SERVER[("HTTP Server\n:4096")]
+        SESSION[("Session\nManager")]
+        AGENT[("Agent\nSystem")]
+        LLM[("LLM\nIntegration")]
+        TOOLS[("Tool\nRegistry")]
+        
+        subgraph Execution["Tool Execution Loop"]
+            TC[("Tool Call")]
+            EXEC[("Execute\nTool")]
+            RESULT[("Tool\nResult")]
+        end
+    end
+
+    subgraph External["External Services"]
+        PROVIDER[("AI Provider\nClaude/GPT/Gemini...")]
+        FILES[("Filesystem")]
+    end
+
+    U --> UI
+    UI --> WS
+    WS --> SDK
+    SDK --> API
+    API --> SERVER
+    
+    SERVER --> SESSION
+    SESSION --> AGENT
+    AGENT --> LLM
+    
+    LLM --> PROVIDER
+    PROVIDER -- "Streaming response" --> LLM
+    
+    LLM --> TC
+    TC --> EXEC
+    EXEC --> RESULT
+    RESULT --> LLM
+    
+    EXEC --> FILES
+    
+    LLM -- "Final response" --> SERVER
+    SERVER -- "SSE stream" --> API
+    API -- "SSE stream" --> WS
+    WS --> UI
+    UI -- "Display" --> U
+
+    style Chamber fill:#e3f2fd,stroke:#1976d2
+    style Core fill:#fff3e0,stroke:#f57c00
+    style External fill:#fce4ec,stroke:#c2185b
+```
+
+## Component Diagram - KronosCoder Internal Structure
+
+```mermaid
+classDiagram
+    class Session {
+        +string id
+        +string projectID
+        +string directory
+        +MessageV2[] messages
+        +create()
+        +addMessage()
+        +compact()
+    }
+
+    class SessionProcessor {
+        +process()
+        +streamResponse()
+        +executeToolCalls()
+    }
+
+    class Agent {
+        +string name
+        +PermissionSet permissions
+        +string systemPrompt
+        +execute()
+    }
+
+    class Provider {
+        +string id
+        +Model[] models
+        +getModel()
+        +stream()
+    }
+
+    class ToolRegistry {
+        +Tool[] tools
+        +register()
+        +execute()
+        +routeIntelligent()
+    }
+
+    class Tool {
+        +string id
+        +string description
+        +ZodSchema parameters
+        +execute()
+    }
+
+    class MessageV2 {
+        +string role
+        +Content[] parts
+        +toolCallId?
+    }
+
+    Session "1" --> "*" MessageV2
+    SessionProcessor "1" --> "*" Session
+    SessionProcessor "1" --> "1" Agent
+    SessionProcessor "1" --> "1" Provider
+    SessionProcessor "1" --> "1" ToolRegistry
+    Agent "1" --> "*" Tool
+    ToolRegistry "1" --> "*" Tool
+    Provider "1" --> "*" Tool
+
+    note for Session "Manages conversation\nstate and history"
+    note for SessionProcessor "Handles LLM streaming\nand tool execution loop"
+    note for ToolRegistry "Routes requests to\nappropriate tools"
+```
+
+## Integration Diagram - Multi-Platform Support
+
+```mermaid
+flowchart LR
+    subgraph Clients["KronosChamber Clients"]
+        Web[("Web App\nlocalhost:3000")]
+        Desktop[("Desktop App\nTauri")]
+        VSCode[("VS Code\nExtension")]
+        CLI[("CLI\nkronoscode")]
+    end
+
+    subgraph Server["KronosCoder Server"]
+        Hono[("Hono Server\nlocalhost:4096")]
+        
+        subgraph API["REST API Endpoints"]
+            SessionAPI["/session/*"]
+            GlobalAPI["/global/*"]
+            ConfigAPI["/config/*"]
+            ToolAPI["/tool/*"]
+            PermAPI["/permission/*"]
+        end
+        
+        subgraph Core["Core Services"]
+            SessionMgr["Session Manager"]
+            ToolReg["Tool Registry"]
+            ProviderMgr["Provider Manager"]
+            AgentMgr["Agent Manager"]
+        end
+        
+        subgraph Runtime["Runtime"]
+            LLMRuntime["LLM Runtime"]
+            ToolExec["Tool Executor"]
+        end
+    end
+
+    subgraph External["External"]
+        AI[("AI Providers")]
+        FS[("Filesystem")]
+    end
+
+    Web -->|HTTP/SSE| Hono
+    Desktop -->|Tauri IPC| Hono
+    VSCode -->|HTTP| Hono
+    CLI -->|stdin/stdout| Hono
+
+    Hono --> SessionAPI
+    Hono --> GlobalAPI
+    Hono --> ConfigAPI
+    Hono --> ToolAPI
+    Hono --> PermAPI
+
+    SessionAPI --> SessionMgr
+    GlobalAPI --> SessionMgr
+    ToolAPI --> ToolReg
+    PermAPI --> SessionMgr
+
+    SessionMgr --> AgentMgr
+    AgentMgr --> LLMRuntime
+    LLMRuntime --> ProviderMgr
+    ProviderMgr --> AI
+
+    ToolReg --> ToolExec
+    ToolExec --> FS
+
+    style Clients fill:#e8f5e9,stroke:#2e7d32
+    style Server fill:#e3f2fd,stroke:#1565c0
+    style External fill:#fff3e0,stroke:#ef6c00
+```

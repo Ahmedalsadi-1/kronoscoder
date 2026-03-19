@@ -1,11 +1,28 @@
-const MCP_POLICY_ALLOWED = Object.freeze([
+const DEFAULT_ALLOWED = Object.freeze([
   "apple_mcp",
   "automation-mcp",
   "browseros",
   "computer-use-mcp",
+  "ghost-os",
   "sequential-thinking",
   "openfang",
+  "excalidraw",
+  "atsurae",
+  "personalizationmcp",
 ])
+
+const getAllowedFromEnv = () => {
+  const envVar = process.env.MCP_ALLOWED_SERVERS
+  if (!envVar) return Object.freeze(["*"])
+  if (envVar.trim() === "*") return Object.freeze(["*"])
+  const envList = envVar
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+  return Object.freeze([...new Set([...DEFAULT_ALLOWED, ...envList])])
+}
+
+const MCP_POLICY_ALLOWED = getAllowedFromEnv()
 
 const MCP_POLICY_ALIASES = Object.freeze({
   "apple-mcp": "apple_mcp",
@@ -16,11 +33,20 @@ const MCP_POLICY_ALIASES = Object.freeze({
   "kronoschamber-browser-mcp": "browseros",
   "computer-use-mcp": "computer-use-mcp",
   "computer_use_mcp": "computer-use-mcp",
+  "ghost-os": "ghost-os",
+  "ghost_os": "ghost-os",
+  "ghostos": "ghost-os",
   "sequential-thinking": "sequential-thinking",
   "sequential_thinking": "sequential-thinking",
   "sequentialthinking": "sequential-thinking",
   "openfang": "openfang",
   "openfang-mcp": "openfang",
+  "excalidraw": "excalidraw",
+  "excalidraw-mcp": "excalidraw",
+  "atsurae": "atsurae",
+  "personalizationmcp": "personalizationmcp",
+  "personalization-mcp": "personalizationmcp",
+  "personalizationmcp-mcp": "personalizationmcp",
 })
 
 const MCP_POLICY_ALLOWED_SET = new Set(MCP_POLICY_ALLOWED)
@@ -41,19 +67,24 @@ const normalizeMcpPolicyName = (value) => {
 
 const isMcpPolicyAllowed = (value) => {
   const normalized = normalizeMcpPolicyName(value)
-  return normalized.length > 0 && MCP_POLICY_ALLOWED_SET.has(normalized)
+  if (!normalized.length) return false
+  if (MCP_POLICY_ALLOWED_SET.has("*")) return true
+  return MCP_POLICY_ALLOWED_SET.has(normalized)
 }
 
 const disallowedMcpPolicyMessage = (value) => {
   const attempted = typeof value === "string" && value.trim().length > 0 ? value.trim() : "<empty>"
-  return `MCP server "${attempted}" is blocked by policy. Allowed MCP servers: ${MCP_POLICY_ALLOWED.join(", ")}.`
+  const allowedList = MCP_POLICY_ALLOWED_SET.has("*") ? "ALL (using wildcard)" : MCP_POLICY_ALLOWED.join(", ")
+  return `MCP server "${attempted}" is blocked by policy. Allowed MCP servers: ${allowedList}.`
 }
 
 const buildMcpPolicyMetadata = () => ({
-  mode: "hard-enforced-allowlist",
+  mode: MCP_POLICY_ALLOWED_SET.has("*") ? "wildcard-allow-all" : "hard-enforced-allowlist",
   allowed: MCP_POLICY_ALLOWED,
   aliases: MCP_POLICY_ALIASES,
-  message: `Only these MCP servers are allowed: ${MCP_POLICY_ALLOWED.join(", ")}.`,
+  message: MCP_POLICY_ALLOWED_SET.has("*")
+    ? "All MCP servers are allowed (wildcard mode)."
+    : `Only these MCP servers are allowed: ${MCP_POLICY_ALLOWED.join(", ")}.`,
 })
 
 export {

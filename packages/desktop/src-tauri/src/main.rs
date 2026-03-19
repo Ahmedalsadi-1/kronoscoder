@@ -1035,6 +1035,74 @@ const LEGACY_ENV_DIST_DIR: &str = "OPENCHAMBER_DIST_DIR";
 const LEGACY_ENV_RUNTIME: &str = "OPENCHAMBER_RUNTIME";
 const LEGACY_ENV_DESKTOP_NOTIFY: &str = "OPENCHAMBER_DESKTOP_NOTIFY";
 const LEGACY_ENV_SERVER_URL: &str = "OPENCHAMBER_SERVER_URL";
+const ENV_BROWSEROS_HELPER_PATH: &str = "KRONOSCHAMBER_BROWSEROS_HELPER_PATH";
+const ENV_BROWSEROS_MODE: &str = "BROWSEROS_CHAMBER_MODE";
+const ENV_BROWSEROS_PROFILE: &str = "BROWSEROS_PROFILE";
+const ENV_NODE_BINARY: &str = "KRONOSCHAMBER_NODE_BINARY";
+const DEFAULT_BROWSEROS_EMBEDDED_PROFILE: &str = "embedded";
+const DEFAULT_BROWSEROS_BACKGROUND_PROFILE: &str = "background";
+const BROWSEROS_SERVER_PORT_MIN: u16 = 31_000;
+const BROWSEROS_SERVER_PORT_MAX: u16 = 31_999;
+const BROWSEROS_BACKGROUND_CDP_PORT_MIN: u16 = 42_000;
+const BROWSEROS_BACKGROUND_CDP_PORT_MAX: u16 = 42_999;
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct BrowserosProfileStatus {
+    mode: String,
+    profile: String,
+    running: bool,
+    healthy: bool,
+    installed: bool,
+    server_port: Option<u16>,
+    cdp_port: Option<u16>,
+    cdp_disabled: bool,
+    mcp_url: Option<String>,
+    health_url: Option<String>,
+    cdp_url: Option<String>,
+    setup_error: Option<String>,
+    updated_at: u64,
+}
+
+impl BrowserosProfileStatus {
+    fn new(mode: &str, profile: &str) -> Self {
+        Self {
+            mode: mode.to_string(),
+            profile: profile.to_string(),
+            running: false,
+            healthy: false,
+            installed: false,
+            server_port: None,
+            cdp_port: None,
+            cdp_disabled: false,
+            mcp_url: None,
+            health_url: None,
+            cdp_url: None,
+            setup_error: None,
+            updated_at: now_ms_u64(),
+        }
+    }
+}
+
+struct BrowserosAgentsState {
+    embedded: Mutex<BrowserosProfileStatus>,
+    background: Mutex<BrowserosProfileStatus>,
+}
+
+impl BrowserosAgentsState {
+    fn new() -> Self {
+        Self {
+            embedded: Mutex::new(BrowserosProfileStatus::new(
+                "embedded",
+                DEFAULT_BROWSEROS_EMBEDDED_PROFILE,
+            )),
+            background: Mutex::new(BrowserosProfileStatus::new(
+                "background",
+                DEFAULT_BROWSEROS_BACKGROUND_PROFILE,
+            )),
+        }
+    }
+}
 
 #[derive(Default)]
 struct SidecarState {
@@ -1880,6 +1948,246 @@ fn now_ms_u64() -> u64 {
         .as_millis() as u64
 }
 
+fn resolve_env_value(key: &str) -> Option<String> {
+    env::var(key)
+        .ok()
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+}
+
+fn sanitize_browseros_profile(raw: Option<&str>, fallback: &str) -> String {
+    let source = raw
+        .map(|value| value.trim().to_lowercase())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| fallback.to_string());
+    let mut out = String::with_capacity(source.len());
+    let mut last_dash = false;
+    for ch in source.chars() {
+        let normalized = if ch.is_ascii_alphanumeric() || ch == '_' || ch == '-' {
+            ch
+        } else {
+            '-'
+        };
+        if normalized == '-' {
+            if last_dash {
+                continue;
+            }
+            last_dash = true;
+            out.push('-');
+        } else {
+            last_dash = false;
+            out.push(normalized);
+        }
+    }
+    let trimmed = out.trim_matches('-');
+    if trimmed.is_empty() {
+        fallback.to_string()
+    } else {
+        trimmed.to_string()
+    }
+}
+
+fn resolve_browseros_helper_path() -> Option<PathBuf> {
+    if let Some(explicit) = resolve_env_value(ENV_BROWSEROS_HELPER_PATH) {
+        let path = PathBuf::from(explicit);
+        if path.exists() {
+            return Some(path);
+        }
+    }
+    let fallback = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../scripts/setup-browseros-chamber.mjs")
+        .canonicalize()
+        .ok();
+    fallback.filter(|path| path.exists())
+}
+
+fn resolve_node_binary() -> String {
+    resolve_env_value(ENV_NODE_BINARY).unwrap_or_else(|| "node".to_string())
+}
+
+fn parse_u16_from_json(value: Option<&serde_json::Value>) -> Option<u16> {
+    if let Some(number) = value.and_then(|v| v.as_u64()) {
+        if number <= u16::MAX as u64 {
+            return Some(number as u16);
+        }
+    }
+    if let Some(text) = value.and_then(|v| v.as_str()) {
+        if let Ok(parsed) = text.trim().parse::<u16>() {
+            return Some(parsed);
+        }
+    }
+    None
+}
+
+fn parse_bool_from_json(value: Option<&serde_json::Value>) -> Option<bool> {
+    if let Some(boolean) = value.and_then(|v| v.as_bool()) {
+        return Some(boolean);
+    }
+    if let Some(text) = value.and_then(|v| v.as_str()) {
+        let lowered = text.trim().to_ascii_lowercase();
+        if lowered == "true" || lowered == "1" || lowered == "yes" || lowered == "on" {
+            return Some(true);
+        }
+        if lowered == "false" || lowered == "0" || lowered == "no" || lowered == "off" {
+            return Some(false);
+        }
+    }
+    None
+}
+
+fn run_browseros_helper_action(
+    action: &str,
+    mode: &str,
+    profile: &str,
+    server_port: Option<u16>,
+    cdp_port: Option<u16>,
+    auto_start_cdp: Option<bool>,
+) -> Result<BrowserosProfileStatus, String> {
+    let helper_path = resolve_browseros_helper_path()
+        .ok_or_else(|| "BrowserOS helper script is not configured".to_string())?;
+    let mut command = Command::new(resolve_node_binary());
+    command
+        .arg(helper_path)
+        .arg(action)
+        .env(ENV_BROWSEROS_MODE, mode)
+        .env("KRONOSCHAMBER_BROWSEROS_MODE", mode)
+        .env(ENV_BROWSEROS_PROFILE, profile)
+        .env("KRONOSCHAMBER_BROWSEROS_PROFILE", profile);
+
+    if let Some(port) = server_port {
+        command.env("BROWSEROS_SERVER_PORT", port.to_string());
+    }
+    if let Some(port) = cdp_port {
+        command.env("BROWSEROS_CDP_PORT", port.to_string());
+    }
+    if let Some(flag) = auto_start_cdp {
+        command.env("BROWSEROS_AUTO_START_CDP", if flag { "1" } else { "0" });
+    }
+
+    let output = command
+        .output()
+        .map_err(|err| format!("Failed to run BrowserOS helper: {err}"))?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        let detail = if !stderr.is_empty() {
+            stderr
+        } else if !stdout.is_empty() {
+            stdout
+        } else {
+            format!("exit code {:?}", output.status.code())
+        };
+        return Err(detail);
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if stdout.is_empty() {
+        return Err("BrowserOS helper returned empty JSON payload".to_string());
+    }
+    let payload: serde_json::Value = serde_json::from_str(&stdout)
+        .map_err(|err| format!("Failed to parse BrowserOS helper JSON: {err}"))?;
+
+    let resolved_mode = payload
+        .get("mode")
+        .and_then(|v| v.as_str())
+        .unwrap_or(mode)
+        .to_string();
+    let resolved_profile = sanitize_browseros_profile(
+        payload.get("profile").and_then(|v| v.as_str()),
+        profile,
+    );
+    let resolved_server_port = parse_u16_from_json(payload.get("serverPort")).or(server_port);
+    let resolved_cdp_port = parse_u16_from_json(payload.get("cdpPort")).or(cdp_port);
+    let resolved_cdp_disabled =
+        parse_bool_from_json(payload.get("cdpDisabled")).unwrap_or(resolved_cdp_port == Some(0));
+    let mcp_url = payload
+        .get("mcpUrl")
+        .and_then(|v| v.as_str())
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty())
+        .or_else(|| {
+            resolved_server_port.map(|port| format!("http://127.0.0.1:{port}/mcp"))
+        });
+    let health_url = payload
+        .get("healthUrl")
+        .and_then(|v| v.as_str())
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty())
+        .or_else(|| {
+            resolved_server_port.map(|port| format!("http://127.0.0.1:{port}/health"))
+        });
+    let cdp_url = payload
+        .get("cdpUrl")
+        .and_then(|v| v.as_str())
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty())
+        .or_else(|| {
+            if resolved_cdp_disabled {
+                None
+            } else {
+                resolved_cdp_port.map(|port| format!("http://127.0.0.1:{port}/json/version"))
+            }
+        });
+
+    Ok(BrowserosProfileStatus {
+        mode: resolved_mode,
+        profile: resolved_profile,
+        running: parse_bool_from_json(payload.get("running")).unwrap_or(false),
+        healthy: parse_bool_from_json(payload.get("healthy")).unwrap_or(false),
+        installed: parse_bool_from_json(payload.get("installed")).unwrap_or(false),
+        server_port: resolved_server_port,
+        cdp_port: resolved_cdp_port,
+        cdp_disabled: resolved_cdp_disabled,
+        mcp_url,
+        health_url,
+        cdp_url,
+        setup_error: payload
+            .get("setupError")
+            .and_then(|v| v.as_str())
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty()),
+        updated_at: now_ms_u64(),
+    })
+}
+
+fn set_browseros_profile_status(
+    app: &tauri::AppHandle,
+    mode: &str,
+    status: BrowserosProfileStatus,
+) -> BrowserosProfileStatus {
+    let status_for_return = status.clone();
+    if let Some(state) = app.try_state::<BrowserosAgentsState>() {
+        if mode == "background" {
+            *state.background.lock().expect("browseros background mutex") = status;
+        } else {
+            *state.embedded.lock().expect("browseros embedded mutex") = status;
+        }
+    }
+    status_for_return
+}
+
+fn get_browseros_profile_status(app: &tauri::AppHandle, mode: &str) -> BrowserosProfileStatus {
+    if let Some(state) = app.try_state::<BrowserosAgentsState>() {
+        if mode == "background" {
+            return state
+                .background
+                .lock()
+                .expect("browseros background mutex")
+                .clone();
+        }
+        return state
+            .embedded
+            .lock()
+            .expect("browseros embedded mutex")
+            .clone();
+    }
+    if mode == "background" {
+        BrowserosProfileStatus::new("background", DEFAULT_BROWSEROS_BACKGROUND_PROFILE)
+    } else {
+        BrowserosProfileStatus::new("embedded", DEFAULT_BROWSEROS_EMBEDDED_PROFILE)
+    }
+}
+
 fn current_interconnect_snapshot(app: &tauri::AppHandle) -> InterconnectStateSnapshot {
     if let Some(state) = app.try_state::<InterconnectRelayState>() {
         let status = state.status.lock().expect("interconnect status mutex").clone();
@@ -2712,7 +3020,7 @@ pub struct SelectionState {
 
 #[tauri::command]
 fn desktop_browser_selection_state(
-    window: tauri::Window,
+    _window: tauri::Window,
 ) -> Result<Option<SelectionState>, String> {
     // Note: in Tauri v2, we might need a different way to get the webview selection 
     // if we want it to be fully synchronous or use the new webview objects.
@@ -2893,6 +3201,430 @@ fn desktop_browser_state(
     Ok(payload)
 }
 
+fn active_desktop_browser_url(app: &tauri::AppHandle, window_label: &str) -> Option<String> {
+    let state = app.state::<DesktopBrowserState>();
+    let windows = state.windows.lock().expect("desktop browser windows mutex");
+    let window_state = windows.get(window_label)?;
+    let tab = window_state.tabs.get(window_state.active_index)?;
+    Some(tab.url.clone())
+}
+
+fn resolve_browseros_navigation_target(
+    app: &tauri::AppHandle,
+    window_label: &str,
+    raw: &str,
+) -> String {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return DESKTOP_BROWSER_HOME_URL.to_string();
+    }
+
+    let looks_relative = trimmed.starts_with('/')
+        || trimmed.starts_with("./")
+        || trimmed.starts_with("../")
+        || trimmed.starts_with('?')
+        || trimmed.starts_with('#');
+    if looks_relative {
+        if let Some(base_url) = active_desktop_browser_url(app, window_label) {
+            if let Ok(base) = url::Url::parse(&base_url) {
+                if let Ok(joined) = base.join(trimmed) {
+                    let scheme = joined.scheme();
+                    if scheme == "http" || scheme == "https" || scheme == "about" {
+                        return joined.to_string();
+                    }
+                }
+            }
+        }
+    }
+
+    coerce_desktop_browser_url(trimmed)
+}
+
+fn append_cache_bust_query(url_value: &str) -> String {
+    if let Ok(mut parsed) = url::Url::parse(url_value) {
+        let scheme = parsed.scheme();
+        if scheme == "http" || scheme == "https" {
+            parsed
+                .query_pairs_mut()
+                .append_pair("_kronos_reload", &now_ms_u64().to_string());
+            return parsed.to_string();
+        }
+    }
+    url_value.to_string()
+}
+
+fn resolve_embedded_browseros_profile() -> String {
+    sanitize_browseros_profile(
+        resolve_env_value("KRONOSCHAMBER_BROWSEROS_EMBEDDED_PROFILE").as_deref(),
+        DEFAULT_BROWSEROS_EMBEDDED_PROFILE,
+    )
+}
+
+fn browseros_profile_with_error(
+    mode: &str,
+    profile: &str,
+    server_port: Option<u16>,
+    cdp_port: Option<u16>,
+    message: String,
+) -> BrowserosProfileStatus {
+    let mut status = BrowserosProfileStatus::new(mode, profile);
+    status.server_port = server_port;
+    status.cdp_port = cdp_port;
+    status.cdp_disabled = cdp_port == Some(0);
+    status.setup_error = Some(message);
+    status
+}
+
+fn stop_background_browseros_agent_internal(app: &tauri::AppHandle) -> BrowserosProfileStatus {
+    let current = get_browseros_profile_status(app, "background");
+    let profile = sanitize_browseros_profile(
+        Some(&current.profile),
+        DEFAULT_BROWSEROS_BACKGROUND_PROFILE,
+    );
+    let result = run_browseros_helper_action(
+        "stop",
+        "background",
+        &profile,
+        current.server_port,
+        current.cdp_port,
+        Some(true),
+    );
+
+    let status = match result {
+        Ok(value) => value,
+        Err(err) => {
+            let mut failed = current;
+            failed.running = false;
+            failed.healthy = false;
+            failed.setup_error = Some(err);
+            failed.updated_at = now_ms_u64();
+            failed
+        }
+    };
+    set_browseros_profile_status(app, "background", status)
+}
+
+fn stop_embedded_browseros_agent_internal(app: &tauri::AppHandle) -> BrowserosProfileStatus {
+    let current = get_browseros_profile_status(app, "embedded");
+    let profile = sanitize_browseros_profile(
+        Some(&current.profile),
+        DEFAULT_BROWSEROS_EMBEDDED_PROFILE,
+    );
+    let result = run_browseros_helper_action(
+        "stop",
+        "embedded",
+        &profile,
+        current.server_port,
+        Some(0),
+        Some(false),
+    );
+    let status = match result {
+        Ok(value) => value,
+        Err(err) => {
+            let mut failed = current;
+            failed.running = false;
+            failed.healthy = false;
+            failed.setup_error = Some(err);
+            failed.updated_at = now_ms_u64();
+            failed
+        }
+    };
+    set_browseros_profile_status(app, "embedded", status)
+}
+
+fn start_embedded_browseros_agent(app: tauri::AppHandle) {
+    tauri::async_runtime::spawn_blocking(move || {
+        let profile = resolve_embedded_browseros_profile();
+        let server_port = resolve_env_value("BROWSEROS_SERVER_PORT")
+            .and_then(|value| value.parse::<u16>().ok())
+            .filter(|value| *value >= BROWSEROS_SERVER_PORT_MIN && *value <= BROWSEROS_SERVER_PORT_MAX)
+            .or_else(|| pick_unused_port_in_range(BROWSEROS_SERVER_PORT_MIN, BROWSEROS_SERVER_PORT_MAX).ok());
+        let status = match server_port {
+            Some(port) => match run_browseros_helper_action(
+                "start",
+                "embedded",
+                &profile,
+                Some(port),
+                Some(0),
+                Some(false),
+            ) {
+                Ok(value) => value,
+                Err(err) => browseros_profile_with_error("embedded", &profile, Some(port), Some(0), err),
+            },
+            None => browseros_profile_with_error(
+                "embedded",
+                &profile,
+                None,
+                Some(0),
+                "Failed to allocate embedded BrowserOS server port".to_string(),
+            ),
+        };
+        let _ = set_browseros_profile_status(&app, "embedded", status);
+    });
+}
+
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct BrowserosExecuteCommandArgs {
+    url: Option<String>,
+    cache_bust: Option<bool>,
+    window_label: Option<String>,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BrowserosCommandErrorPayload {
+    code: String,
+    message: String,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BrowserosExecuteCommandResponse {
+    success: bool,
+    command: String,
+    state: Option<DesktopBrowserStatePayload>,
+    resolved_url: Option<String>,
+    resolved_browser_profile: String,
+    error: Option<BrowserosCommandErrorPayload>,
+}
+
+fn browseros_execute_error(
+    command: &str,
+    profile: &str,
+    code: &str,
+    message: String,
+    resolved_url: Option<String>,
+) -> BrowserosExecuteCommandResponse {
+    BrowserosExecuteCommandResponse {
+        success: false,
+        command: command.to_string(),
+        state: None,
+        resolved_url,
+        resolved_browser_profile: profile.to_string(),
+        error: Some(BrowserosCommandErrorPayload {
+            code: code.to_string(),
+            message,
+        }),
+    }
+}
+
+#[tauri::command]
+fn browseros_execute_browser_command(
+    window: tauri::Window,
+    app: tauri::AppHandle,
+    command: String,
+    args: Option<BrowserosExecuteCommandArgs>,
+) -> BrowserosExecuteCommandResponse {
+    let normalized_command = command.trim().to_ascii_lowercase();
+    let embedded_profile = get_browseros_profile_status(&app, "embedded").profile;
+    let payload = args.unwrap_or(BrowserosExecuteCommandArgs {
+        url: None,
+        cache_bust: None,
+        window_label: None,
+    });
+    let window_label = payload
+        .window_label
+        .as_deref()
+        .map(|value| value.trim())
+        .filter(|value| !value.is_empty())
+        .unwrap_or(window.label());
+
+    let result: Result<(DesktopBrowserStatePayload, Option<String>), String> =
+        match normalized_command.as_str() {
+            "navigate" => {
+                let raw_url = payload.url.clone().unwrap_or_default();
+                let resolved = resolve_browseros_navigation_target(&app, window_label, &raw_url);
+                desktop_browser_navigate(window, app, resolved.clone()).map(|state| (state, Some(resolved)))
+            }
+            "back" => desktop_browser_back(window, app).map(|state| (state, None)),
+            "forward" => desktop_browser_forward(window, app).map(|state| (state, None)),
+            "reload" => {
+                if payload.cache_bust.unwrap_or(false) {
+                    if let Some(current_url) = active_desktop_browser_url(&app, window_label) {
+                        let busted = append_cache_bust_query(&current_url);
+                        desktop_browser_navigate(window, app, busted.clone()).map(|state| (state, Some(busted)))
+                    } else {
+                        desktop_browser_reload(window, app).map(|state| (state, None))
+                    }
+                } else {
+                    desktop_browser_reload(window, app).map(|state| (state, None))
+                }
+            }
+            "new_tab" => {
+                let resolved = payload
+                    .url
+                    .as_deref()
+                    .map(|url| resolve_browseros_navigation_target(&app, window_label, url));
+                desktop_browser_new_page(window, app, resolved.clone()).map(|state| (state, resolved))
+            }
+            _ => {
+                return browseros_execute_error(
+                    &normalized_command,
+                    &embedded_profile,
+                    "unsupported_command",
+                    format!("Unsupported browser command: {normalized_command}"),
+                    None,
+                )
+            }
+        };
+
+    match result {
+        Ok((state, resolved_url)) => BrowserosExecuteCommandResponse {
+            success: true,
+            command: normalized_command,
+            state: Some(state),
+            resolved_url,
+            resolved_browser_profile: embedded_profile,
+            error: None,
+        },
+        Err(err) => browseros_execute_error(
+            &normalized_command,
+            &embedded_profile,
+            "command_failed",
+            err,
+            None,
+        ),
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BrowserosBackgroundStatusResponse {
+    success: bool,
+    running: bool,
+    installed: bool,
+    healthy: bool,
+    port: Option<u16>,
+    cdp_port: Option<u16>,
+    cdp_disabled: bool,
+    mcp_url: Option<String>,
+    health_url: Option<String>,
+    cdp_url: Option<String>,
+    mode: String,
+    profile: String,
+    error: Option<String>,
+    updated_at: u64,
+}
+
+impl BrowserosBackgroundStatusResponse {
+    fn from_status(status: BrowserosProfileStatus, success: bool) -> Self {
+        Self {
+            success,
+            running: status.running,
+            installed: status.installed,
+            healthy: status.healthy,
+            port: status.server_port,
+            cdp_port: status.cdp_port,
+            cdp_disabled: status.cdp_disabled,
+            mcp_url: status.mcp_url,
+            health_url: status.health_url,
+            cdp_url: status.cdp_url,
+            mode: status.mode,
+            profile: status.profile,
+            error: status.setup_error,
+            updated_at: status.updated_at,
+        }
+    }
+}
+
+#[tauri::command]
+fn start_browseros_background_agent(app: tauri::AppHandle) -> BrowserosBackgroundStatusResponse {
+    let profile = sanitize_browseros_profile(
+        resolve_env_value("KRONOSCHAMBER_BROWSEROS_BACKGROUND_PROFILE").as_deref(),
+        DEFAULT_BROWSEROS_BACKGROUND_PROFILE,
+    );
+    let server_port = match pick_unused_port_in_range(BROWSEROS_SERVER_PORT_MIN, BROWSEROS_SERVER_PORT_MAX) {
+        Ok(port) => port,
+        Err(err) => {
+            let status = browseros_profile_with_error("background", &profile, None, None, err);
+            return BrowserosBackgroundStatusResponse::from_status(
+                set_browseros_profile_status(&app, "background", status),
+                false,
+            );
+        }
+    };
+    let cdp_port = match pick_unused_port_in_range(
+        BROWSEROS_BACKGROUND_CDP_PORT_MIN,
+        BROWSEROS_BACKGROUND_CDP_PORT_MAX,
+    ) {
+        Ok(port) => port,
+        Err(err) => {
+            let status = browseros_profile_with_error(
+                "background",
+                &profile,
+                Some(server_port),
+                None,
+                err,
+            );
+            return BrowserosBackgroundStatusResponse::from_status(
+                set_browseros_profile_status(&app, "background", status),
+                false,
+            );
+        }
+    };
+
+    let status = match run_browseros_helper_action(
+        "start",
+        "background",
+        &profile,
+        Some(server_port),
+        Some(cdp_port),
+        Some(true),
+    ) {
+        Ok(value) => value,
+        Err(err) => browseros_profile_with_error(
+            "background",
+            &profile,
+            Some(server_port),
+            Some(cdp_port),
+            err,
+        ),
+    };
+    let success = status.setup_error.is_none();
+    BrowserosBackgroundStatusResponse::from_status(
+        set_browseros_profile_status(&app, "background", status),
+        success,
+    )
+}
+
+#[tauri::command]
+fn stop_browseros_background_agent(app: tauri::AppHandle) -> BrowserosBackgroundStatusResponse {
+    let status = stop_background_browseros_agent_internal(&app);
+    BrowserosBackgroundStatusResponse::from_status(status, true)
+}
+
+#[tauri::command]
+fn get_browseros_background_status(app: tauri::AppHandle) -> BrowserosBackgroundStatusResponse {
+    let current = get_browseros_profile_status(&app, "background");
+    let profile = sanitize_browseros_profile(
+        Some(&current.profile),
+        DEFAULT_BROWSEROS_BACKGROUND_PROFILE,
+    );
+    let refreshed = run_browseros_helper_action(
+        "status",
+        "background",
+        &profile,
+        current.server_port,
+        current.cdp_port,
+        Some(true),
+    );
+    let status = match refreshed {
+        Ok(value) => value,
+        Err(err) => {
+            let mut failed = current;
+            failed.setup_error = Some(err);
+            failed.updated_at = now_ms_u64();
+            failed
+        }
+    };
+    let success = status.setup_error.is_none();
+    BrowserosBackgroundStatusResponse::from_status(
+        set_browseros_profile_status(&app, "background", status),
+        success,
+    )
+}
+
 #[derive(Clone, Serialize)]
 #[serde(tag = "event", content = "data")]
 enum UpdateProgressEvent {
@@ -2925,6 +3657,25 @@ fn pick_unused_port() -> Result<u16> {
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
     Ok(port)
+}
+
+fn pick_unused_port_in_range(min: u16, max: u16) -> Result<u16, String> {
+    if min > max {
+        return Err(format!("Invalid port range: {min}..{max}"));
+    }
+    let span = (max - min) as u32 + 1;
+    let seed = now_ms_u64() as u32;
+    let attempts = span.saturating_mul(2).max(64);
+    for idx in 0..attempts {
+        let candidate = min + ((seed.wrapping_add(idx.wrapping_mul(7919))) % span) as u16;
+        if let Ok(listener) = TcpListener::bind(("127.0.0.1", candidate)) {
+            drop(listener);
+            return Ok(candidate);
+        }
+    }
+    Err(format!(
+        "Failed to allocate an available port in range {min}..{max}"
+    ))
 }
 
 fn is_nonempty_string(value: &str) -> bool {
@@ -3734,6 +4485,80 @@ fn desktop_read_file(path: String) -> Result<FileContent, String> {
     })
 }
 
+/// Evaluate JavaScript in KronosChamber's focused webview window.
+#[tauri::command]
+fn webview_eval_js(app: tauri::AppHandle, script: String) -> Result<serde_json::Value, String> {
+    let windows = app.webview_windows();
+    
+    // Try focused window first
+    let window = windows.values()
+        .find(|w| w.is_focused().unwrap_or(false))
+        .or_else(|| windows.get("main"))
+        .or_else(|| windows.values().next());
+    
+    let window = window.ok_or("No webview window available")?;
+    
+    let result = window.eval(&script).map_err(|e| e.to_string())?;
+    
+    // Try to parse as JSON, fallback to string
+    if result.is_empty() {
+        return Ok(serde_json::Value::Null);
+    }
+    
+    serde_json::from_str(&result).unwrap_or(serde_json::Value::String(result))
+}
+
+/// Capture a screenshot of KronosChamber's webview.
+#[tauri::command]
+fn webview_capture_screenshot(app: tauri::AppHandle) -> Result<ScreenshotResult, String> {
+    use base64::{engine::general_purpose, Engine as _};
+    
+    let windows = app.webview_windows();
+    
+    let window = windows.values()
+        .find(|w| w.is_focused().unwrap_or(false))
+        .or_else(|| windows.get("main"))
+        .or_else(|| windows.values().next());
+    
+    let window = window.ok_or("No webview window available")?;
+    
+    // Get window size
+    let size = window.inner_size().map_err(|e| e.to_string())?;
+    
+    // Create a capture using the webview
+    let script = format!(r#"
+        (function() {{
+            const canvas = document.createElement('canvas');
+            canvas.width = {};
+            canvas.height = {};
+            const ctx = canvas.getContext('2d');
+            // For now, return placeholder - full screenshot requires platform-specific implementation
+            return JSON.stringify({{
+                width: canvas.width,
+                height: canvas.height,
+                placeholder: true
+            }});
+        }})()
+    "#, size.width, size.height);
+    
+    let _ = window.eval(&script);
+    
+    Ok(ScreenshotResult {
+        width: size.width,
+        height: size.height,
+        base64: String::new(),
+        placeholder: true,
+    })
+}
+
+#[derive(Serialize)]
+struct ScreenshotResult {
+    width: u32,
+    height: u32,
+    base64: String,
+    placeholder: bool,
+}
+
 #[derive(Serialize)]
 struct FileContent {
     mime: String,
@@ -4168,6 +4993,7 @@ fn main() {
         .manage(MenuRuntimeState::default())
         .manage(InterconnectRelayState::default())
         .manage(DesktopBrowserState::default())
+        .manage(BrowserosAgentsState::new())
         .manage(PendingUpdate(Mutex::new(None)))
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
@@ -4357,6 +5183,8 @@ fn main() {
                 // If this was the last window, kill the sidecar and exit.
                 let remaining = app.webview_windows().len();
                 if remaining == 0 {
+                    let _ = stop_embedded_browseros_agent_internal(&app);
+                    let _ = stop_background_browseros_agent_internal(&app);
                     kill_sidecar(app.clone());
                     app.exit(0);
                 }
@@ -4400,9 +5228,16 @@ fn main() {
             desktop_browser_close_page,
             desktop_browser_state,
             desktop_browser_selection_state,
+            browseros_execute_browser_command,
+            start_browseros_background_agent,
+            stop_browseros_background_agent,
+            get_browseros_background_status,
             desktop_read_file,
+            webview_eval_js,
+            webview_capture_screenshot,
         ])
         .setup(|app| {
+            start_embedded_browseros_agent(app.handle().clone());
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 let local_url = if cfg!(debug_assertions) {
@@ -4573,9 +5408,13 @@ fn main() {
         match event {
             tauri::RunEvent::ExitRequested { .. } => {
                 // Best-effort cleanup; never block shutdown.
+                let _ = stop_embedded_browseros_agent_internal(app_handle);
+                let _ = stop_background_browseros_agent_internal(app_handle);
                 kill_sidecar(app_handle.clone());
             }
             tauri::RunEvent::Exit => {
+                let _ = stop_embedded_browseros_agent_internal(app_handle);
+                let _ = stop_background_browseros_agent_internal(app_handle);
                 kill_sidecar(app_handle.clone());
             }
             #[cfg(target_os = "macos")]

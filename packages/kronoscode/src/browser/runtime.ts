@@ -84,10 +84,364 @@ const EVENT_THROTTLE_MS = 120
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 }
 const CHROME_USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+const AGENT_FEEDBACK_BOOTSTRAP = String.raw`
+(() => {
+  if (window.__kronosAgentVisualFeedback) {
+    return true;
+  }
+
+  const STATUS_VALUES = new Set(["Thinking", "Navigating", "Clicking", "Success"]);
+  const ROOT_ID = "__kronos_agent_feedback_root";
+  const STYLE_ID = "__kronos_agent_feedback_style";
+  const OVERLAY_ID = "__kronos_agent_feedback_overlay";
+  const GHOST_ID = "__kronos_agent_feedback_ghost";
+  const DRAG_LAYER_ID = "__kronos_agent_feedback_drag";
+  const DRAG_PATH_ID = "__kronos_agent_feedback_drag_path";
+  const DRAG_GRIP_ID = "__kronos_agent_feedback_drag_grip";
+  const state = {
+    root: null,
+    ghost: null,
+    dragPath: null,
+    dragGrip: null,
+    trackedElement: null,
+    raf: 0,
+  };
+
+  const ensureStyles = () => {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = [
+      "#" + ROOT_ID + " { position: fixed; inset: 0; pointer-events: none; z-index: 2147483646; }",
+      "#" + OVERLAY_ID + " { position: absolute; inset: 0; border-radius: 14px; box-shadow: inset 0 0 0 3px rgba(0, 122, 255, 0.78), inset 0 0 24px rgba(0, 122, 255, 0.18); opacity: 0.34; animation: kronosAgentBreath 3s ease-in-out infinite; transition: opacity 260ms cubic-bezier(.22,1,.36,1), box-shadow 260ms cubic-bezier(.22,1,.36,1); }",
+      "#" + ROOT_ID + '[data-status="Thinking"] #' + OVERLAY_ID + " { opacity: .28; }",
+      "#" + ROOT_ID + '[data-status="Navigating"] #' + OVERLAY_ID + " { opacity: .44; }",
+      "#" + ROOT_ID + '[data-status="Clicking"] #' + OVERLAY_ID + " { opacity: .62; box-shadow: inset 0 0 0 3px rgba(0, 122, 255, 0.92), inset 0 0 32px rgba(0, 122, 255, 0.26); }",
+      "#" + ROOT_ID + '[data-status="Success"] #' + OVERLAY_ID + " { opacity: .42; }",
+      "@keyframes kronosAgentBreath { 0%,100% { transform: scale(1); filter: saturate(1); } 50% { transform: scale(.998); filter: saturate(1.08); } }",
+      "#" + GHOST_ID + " { position: fixed; left: 0; top: 0; width: 0; height: 0; opacity: 0; border-radius: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.58); box-shadow: 0 0 0 1px rgba(0,122,255,0.44), 0 10px 28px rgba(0,122,255,0.2), inset 0 1px 0 rgba(255,255,255,0.42); backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%); transition: transform 280ms cubic-bezier(.22,1,.36,1), width 280ms cubic-bezier(.22,1,.36,1), height 280ms cubic-bezier(.22,1,.36,1), opacity 180ms ease-out; }",
+      "#" + DRAG_LAYER_ID + " { position: absolute; inset: 0; }",
+      "#" + DRAG_LAYER_ID + " svg { position: absolute; inset: 0; width: 100%; height: 100%; }",
+      "#" + DRAG_PATH_ID + " { fill: none; stroke: rgba(0,122,255,0.94); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 10 10; filter: drop-shadow(0 0 6px rgba(0,122,255,0.45)); animation: kronosAgentDashFlow 1s linear infinite; }",
+      "#" + DRAG_GRIP_ID + " { position: absolute; width: 40px; height: 40px; border-radius: 999px; display: grid; place-items: center; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.62), rgba(255,255,255,0.14)); border: 1px solid rgba(255,255,255,0.68); box-shadow: 0 10px 24px rgba(0,122,255,0.26), inset 0 1px 0 rgba(255,255,255,0.72); backdrop-filter: blur(8px) saturate(130%); -webkit-backdrop-filter: blur(8px) saturate(130%); opacity: 0; transform: translate3d(-9999px, -9999px, 0); }",
+      "#" + DRAG_GRIP_ID + '::after { content: ""; width: 8px; height: 8px; border-radius: 999px; background: rgba(0,122,255,0.96); box-shadow: 0 0 10px rgba(0,122,255,0.5); }',
+      "@keyframes kronosAgentDashFlow { to { stroke-dashoffset: -16; } }",
+    ].join("\n")
+    document.documentElement.appendChild(style);
+  };
+
+  const ensureRoot = () => {
+    ensureStyles();
+    if (!state.root || !state.root.isConnected) {
+      const root = document.getElementById(ROOT_ID) || document.createElement("div");
+      root.id = ROOT_ID;
+      root.dataset.status = "Thinking";
+      if (!root.isConnected) {
+        document.documentElement.appendChild(root);
+      }
+
+      if (!document.getElementById(OVERLAY_ID)) {
+        const overlay = document.createElement("div");
+        overlay.id = OVERLAY_ID;
+        root.appendChild(overlay);
+      }
+
+      const ghost = document.getElementById(GHOST_ID) || document.createElement("div");
+      ghost.id = GHOST_ID;
+      if (!ghost.isConnected) {
+        root.appendChild(ghost);
+      }
+
+      const dragLayer = document.getElementById(DRAG_LAYER_ID) || document.createElement("div");
+      dragLayer.id = DRAG_LAYER_ID;
+      if (!dragLayer.isConnected) {
+        root.appendChild(dragLayer);
+      }
+      if (!dragLayer.querySelector("svg")) {
+        const ns = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(ns, "svg");
+        const path = document.createElementNS(ns, "path");
+        path.id = DRAG_PATH_ID;
+        svg.appendChild(path);
+        dragLayer.appendChild(svg);
+      }
+      const grip = document.getElementById(DRAG_GRIP_ID) || document.createElement("div");
+      grip.id = DRAG_GRIP_ID;
+      if (!grip.isConnected) {
+        dragLayer.appendChild(grip);
+      }
+
+      state.root = root;
+      state.ghost = ghost;
+      state.dragPath = document.getElementById(DRAG_PATH_ID);
+      state.dragGrip = grip;
+    }
+  };
+
+  const normalizedStatus = (status) => {
+    const value = typeof status === "string" ? status.trim() : "";
+    return STATUS_VALUES.has(value) ? value : "Thinking";
+  };
+
+  const setStatus = (status) => {
+    ensureRoot();
+    state.root.dataset.status = normalizedStatus(status);
+  };
+
+  const rectFor = (element, padding = 6) => {
+    const rect = element.getBoundingClientRect();
+    if (!rect || rect.width <= 0 || rect.height <= 0) {
+      return null;
+    }
+    return {
+      x: Math.round(rect.left - padding),
+      y: Math.round(rect.top - padding),
+      width: Math.round(rect.width + padding * 2),
+      height: Math.round(rect.height + padding * 2),
+    };
+  };
+
+  const paintGhost = () => {
+    if (!state.trackedElement || !state.ghost) {
+      return;
+    }
+    if (!document.contains(state.trackedElement)) {
+      state.ghost.style.opacity = "0";
+      return;
+    }
+    const rect = rectFor(state.trackedElement);
+    if (!rect) {
+      state.ghost.style.opacity = "0";
+      return;
+    }
+    state.ghost.style.transform = "translate3d(" + rect.x + "px," + rect.y + "px,0)";
+    state.ghost.style.width = rect.width + "px";
+    state.ghost.style.height = rect.height + "px";
+    state.ghost.style.opacity = "1";
+  };
+
+  const tickTrack = () => {
+    state.raf = 0;
+    if (!state.trackedElement) {
+      return;
+    }
+    paintGhost();
+    state.raf = requestAnimationFrame(tickTrack);
+  };
+
+  const highlightTarget = (target) => {
+    ensureRoot();
+    let element = null;
+    if (typeof target === "string" && target.trim()) {
+      element = document.querySelector(target.trim());
+    } else if (target instanceof Element) {
+      element = target;
+    }
+    if (!element) {
+      if (state.ghost) {
+        state.ghost.style.opacity = "0";
+      }
+      state.trackedElement = null;
+      if (state.raf) {
+        cancelAnimationFrame(state.raf);
+        state.raf = 0;
+      }
+      return false;
+    }
+    state.trackedElement = element;
+    paintGhost();
+    if (!state.raf) {
+      state.raf = requestAnimationFrame(tickTrack);
+    }
+    return true;
+  };
+
+  const clearTarget = () => {
+    state.trackedElement = null;
+    if (state.ghost) {
+      state.ghost.style.opacity = "0";
+    }
+    if (state.raf) {
+      cancelAnimationFrame(state.raf);
+      state.raf = 0;
+    }
+  };
+
+  const centerOf = (element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      x: Math.round(rect.left + rect.width / 2),
+      y: Math.round(rect.top + rect.height / 2),
+    };
+  };
+
+  const buildPath = (x1, y1, x2, y2) => {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const c1x = x1 + dx * 0.28;
+    const c1y = y1 + dy * 0.08;
+    const c2x = x1 + dx * 0.72;
+    const c2y = y1 + dy * 0.92;
+    return "M " + x1 + " " + y1 + " C " + c1x + " " + c1y + ", " + c2x + " " + c2y + ", " + x2 + " " + y2;
+  };
+
+  const animateGrip = async (x1, y1, x2, y2, durationMs) => {
+    if (!state.dragGrip) {
+      return;
+    }
+    const from = "translate3d(" + (x1 - 20) + "px," + (y1 - 20) + "px,0)";
+    const to = "translate3d(" + (x2 - 20) + "px," + (y2 - 20) + "px,0)";
+    state.dragGrip.style.opacity = "1";
+    state.dragGrip.style.transform = from;
+
+    const maybeFramer = window.framerMotion || window.Motion || null;
+    if (maybeFramer && typeof maybeFramer.animate === "function") {
+      try {
+        maybeFramer.animate(
+          state.dragGrip,
+          { transform: [from, to] },
+          { duration: durationMs / 1000, ease: [0.22, 1, 0.36, 1] }
+        );
+        await new Promise((resolve) => window.setTimeout(resolve, durationMs));
+        return;
+      } catch (_) {
+      }
+    }
+
+    if (typeof state.dragGrip.animate === "function") {
+      state.dragGrip.animate(
+        [{ transform: from }, { transform: to }],
+        {
+          duration: durationMs,
+          easing: "cubic-bezier(.22,1,.36,1)",
+          fill: "forwards",
+        }
+      );
+      await new Promise((resolve) => window.setTimeout(resolve, durationMs));
+      return;
+    }
+
+    state.dragGrip.style.transform = to;
+  };
+
+  const clearDrag = () => {
+    if (state.dragPath) {
+      state.dragPath.setAttribute("d", "");
+    }
+    if (state.dragGrip) {
+      state.dragGrip.style.opacity = "0";
+      state.dragGrip.style.transform = "translate3d(-9999px, -9999px, 0)";
+    }
+  };
+
+  const renderDragFromPoints = async (x1, y1, x2, y2, durationMs = 500) => {
+    ensureRoot();
+    if (!state.dragPath || !state.dragGrip) {
+      return null;
+    }
+    const clampedDuration = Number.isFinite(durationMs) ? Math.max(120, Math.min(1600, durationMs)) : 500;
+    state.dragPath.setAttribute("d", buildPath(x1, y1, x2, y2));
+    await animateGrip(x1, y1, x2, y2, clampedDuration);
+    window.setTimeout(clearDrag, 260);
+    return { x1, y1, x2, y2, durationMs: clampedDuration };
+  };
+
+  const renderDragBetweenSelectors = async (sourceSelector, targetSelector, durationMs = 500) => {
+    const source = typeof sourceSelector === "string" ? document.querySelector(sourceSelector) : null;
+    const target = typeof targetSelector === "string" ? document.querySelector(targetSelector) : null;
+    if (!(source instanceof Element) || !(target instanceof Element)) {
+      return null;
+    }
+    const from = centerOf(source);
+    const to = centerOf(target);
+    return renderDragFromPoints(from.x, from.y, to.x, to.y, durationMs);
+  };
+
+  window.__kronosAgentVisualFeedback = {
+    setStatus,
+    highlightTarget,
+    clearTarget,
+    renderDragBetweenSelectors,
+    renderDragFromPoints,
+  };
+
+  setStatus("Thinking");
+  return true;
+})();
+`
+
+type AgentFeedbackStatus = "Thinking" | "Navigating" | "Clicking" | "Success"
 
 function ensureEnabled() {
   if (!Flag.KRONOSCODE_ENABLE_AI_BROWSER) {
     throw new Error("AI Browser is disabled. Enable KRONOSCODE_ENABLE_AI_BROWSER=true to use browser tools.")
+  }
+}
+
+async function ensureAgentFeedback(page: any) {
+  try {
+    await page.evaluate(AGENT_FEEDBACK_BOOTSTRAP)
+  } catch {
+    // best-effort visual feedback
+  }
+}
+
+async function setAgentFeedbackStatus(page: any, status: AgentFeedbackStatus) {
+  try {
+    await ensureAgentFeedback(page)
+    await page.evaluate((nextStatus: AgentFeedbackStatus) => {
+      ;(window as any).__kronosAgentVisualFeedback?.setStatus?.(nextStatus)
+    }, status)
+  } catch {
+    // best-effort visual feedback
+  }
+}
+
+async function pulseAgentFeedbackSuccess(page: any) {
+  await setAgentFeedbackStatus(page, "Success")
+  try {
+    await page.waitForTimeout(220)
+  } catch {
+    // ignore
+  }
+  await setAgentFeedbackStatus(page, "Thinking")
+}
+
+async function highlightAgentFeedbackTarget(page: any, selector: string | null | undefined) {
+  if (typeof selector !== "string" || selector.trim().length === 0) return
+  try {
+    await ensureAgentFeedback(page)
+    await page.evaluate((targetSelector: string) => {
+      ;(window as any).__kronosAgentVisualFeedback?.highlightTarget?.(targetSelector)
+    }, selector.trim())
+  } catch {
+    // best-effort visual feedback
+  }
+}
+
+async function clearAgentFeedbackTarget(page: any) {
+  try {
+    await ensureAgentFeedback(page)
+    await page.evaluate(() => {
+      ;(window as any).__kronosAgentVisualFeedback?.clearTarget?.()
+    })
+  } catch {
+    // best-effort visual feedback
+  }
+}
+
+async function renderAgentFeedbackDrag(page: any, sourceSelector: string, targetSelector: string) {
+  try {
+    await ensureAgentFeedback(page)
+    await page.evaluate(
+      (source: string, target: string) => {
+        return (window as any).__kronosAgentVisualFeedback?.renderDragBetweenSelectors?.(source, target, 500) ?? null
+      },
+      sourceSelector,
+      targetSelector,
+    )
+  } catch {
+    // best-effort visual feedback
   }
 }
 
@@ -294,6 +648,8 @@ async function attachPageListeners(state: RuntimeSessionState, pageState: Runtim
 
 async function createPage(state: RuntimeSessionState, url?: string, timeoutMs?: number) {
   const page = await state.context.newPage()
+  await ensureAgentFeedback(page)
+  await setAgentFeedbackStatus(page, "Thinking")
   const pageState: RuntimePageState = {
     id: randomUUID(),
     createdAt: Date.now(),
@@ -310,10 +666,16 @@ async function createPage(state: RuntimeSessionState, url?: string, timeoutMs?: 
 
   if (typeof url === "string" && url.trim().length > 0) {
     try {
+      await setAgentFeedbackStatus(page, "Navigating")
+      await clearAgentFeedbackTarget(page)
       await page.goto(url, { timeout: timeoutMs ?? 30_000, waitUntil: "domcontentloaded" })
+      await ensureAgentFeedback(page)
+      await pulseAgentFeedbackSuccess(page)
       pageState.isLoading = false
       pageState.lastError = null
     } catch (error) {
+      await ensureAgentFeedback(page)
+      await setAgentFeedbackStatus(page, "Thinking")
       pageState.isLoading = false
       pageState.lastError = error instanceof Error ? error.message : String(error)
       scheduleStateEvent(state, "navigation-failed")
@@ -508,6 +870,9 @@ export namespace BrowserRuntime {
 
     pageState.isLoading = true
     pageState.lastError = null
+    await ensureAgentFeedback(page)
+    await setAgentFeedbackStatus(page, "Navigating")
+    await clearAgentFeedbackTarget(page)
     scheduleStateEvent(state, "navigation-start")
 
     try {
@@ -525,10 +890,14 @@ export namespace BrowserRuntime {
       }
       pageState.isLoading = false
       pageState.lastError = null
+      await ensureAgentFeedback(page)
+      await pulseAgentFeedbackSuccess(page)
       scheduleStateEvent(state, "navigation-complete")
     } catch (error) {
       pageState.isLoading = false
       pageState.lastError = error instanceof Error ? error.message : String(error)
+      await ensureAgentFeedback(page)
+      await setAgentFeedbackStatus(page, "Thinking")
       scheduleStateEvent(state, "navigation-failed")
       throw error
     }
@@ -556,12 +925,16 @@ export namespace BrowserRuntime {
     const state = await ensureSession(sessionID)
     const pageState = requirePageState(state)
 
+    await ensureAgentFeedback(pageState.page)
+    await setAgentFeedbackStatus(pageState.page, "Thinking")
+
     await pageState.page.waitForFunction(
       (needle: string) => document.body?.innerText?.toLowerCase().includes(needle.toLowerCase()),
       text,
       { timeout: timeoutMs }
     )
     pageState.isLoading = false
+    await pulseAgentFeedbackSuccess(pageState.page)
     scheduleStateEvent(state, "wait-for")
 
     return {
@@ -603,12 +976,16 @@ export namespace BrowserRuntime {
     const pageState = requirePageState(state)
     const target = await resolveTargetElement(args)
     const locator = pageState.page.locator(target).first()
+    await ensureAgentFeedback(pageState.page)
+    await setAgentFeedbackStatus(pageState.page, "Clicking")
+    await highlightAgentFeedbackTarget(pageState.page, target)
 
     if (args.doubleClick) {
       await locator.dblclick({ button: args.button ?? "left" })
     } else {
       await locator.click({ button: args.button ?? "left" })
     }
+    await pulseAgentFeedbackSuccess(pageState.page)
     scheduleStateEvent(state, "click")
 
     return {
@@ -621,7 +998,11 @@ export namespace BrowserRuntime {
     const state = await ensureSession(sessionID)
     const pageState = requirePageState(state)
     const target = await resolveTargetElement(args)
+    await ensureAgentFeedback(pageState.page)
+    await setAgentFeedbackStatus(pageState.page, "Navigating")
+    await highlightAgentFeedbackTarget(pageState.page, target)
     await pageState.page.locator(target).first().hover()
+    await pulseAgentFeedbackSuccess(pageState.page)
     scheduleStateEvent(state, "hover")
     return {
       hovered: true,
@@ -633,7 +1014,11 @@ export namespace BrowserRuntime {
     const state = await ensureSession(sessionID)
     const pageState = requirePageState(state)
     const target = await resolveTargetElement(args)
+    await ensureAgentFeedback(pageState.page)
+    await setAgentFeedbackStatus(pageState.page, "Clicking")
+    await highlightAgentFeedbackTarget(pageState.page, target)
     await pageState.page.locator(target).first().fill(args.value)
+    await pulseAgentFeedbackSuccess(pageState.page)
     scheduleStateEvent(state, "fill")
     return {
       filled: true,
@@ -653,10 +1038,13 @@ export namespace BrowserRuntime {
     const state = await ensureSession(sessionID)
     const pageState = requirePageState(state)
 
+    await ensureAgentFeedback(pageState.page)
+    await setAgentFeedbackStatus(pageState.page, "Clicking")
     const output: Array<{ target: string; ok: boolean; error?: string }> = []
     for (const field of fields) {
       try {
         const target = await resolveTargetElement(field)
+        await highlightAgentFeedbackTarget(pageState.page, target)
         await pageState.page.locator(target).first().fill(field.value)
         output.push({ target, ok: true })
       } catch (error) {
@@ -667,6 +1055,7 @@ export namespace BrowserRuntime {
         })
       }
     }
+    await pulseAgentFeedbackSuccess(pageState.page)
     scheduleStateEvent(state, "fill-form")
 
     return output
@@ -687,7 +1076,13 @@ export namespace BrowserRuntime {
     const source = await resolveTargetElement({ uid: args.sourceUid, selector: args.sourceSelector })
     const target = await resolveTargetElement({ uid: args.targetUid, selector: args.targetSelector })
 
+    await ensureAgentFeedback(pageState.page)
+    await setAgentFeedbackStatus(pageState.page, "Clicking")
+    await highlightAgentFeedbackTarget(pageState.page, source)
+    await renderAgentFeedbackDrag(pageState.page, source, target)
     await pageState.page.dragAndDrop(source, target)
+    await highlightAgentFeedbackTarget(pageState.page, target)
+    await pulseAgentFeedbackSuccess(pageState.page)
     scheduleStateEvent(state, "drag")
 
     return {
@@ -699,7 +1094,10 @@ export namespace BrowserRuntime {
   export async function pressKey(sessionID: string, key: string) {
     const state = await ensureSession(sessionID)
     const pageState = requirePageState(state)
+    await ensureAgentFeedback(pageState.page)
+    await setAgentFeedbackStatus(pageState.page, "Clicking")
     await pageState.page.keyboard.press(key)
+    await pulseAgentFeedbackSuccess(pageState.page)
     scheduleStateEvent(state, "press-key")
     return { key }
   }
@@ -715,7 +1113,11 @@ export namespace BrowserRuntime {
     const state = await ensureSession(sessionID)
     const pageState = requirePageState(state)
     const target = await resolveTargetElement(args)
+    await ensureAgentFeedback(pageState.page)
+    await setAgentFeedbackStatus(pageState.page, "Clicking")
+    await highlightAgentFeedbackTarget(pageState.page, target)
     await pageState.page.setInputFiles(target, args.files)
+    await pulseAgentFeedbackSuccess(pageState.page)
     scheduleStateEvent(state, "upload-file")
     return {
       target,
@@ -726,6 +1128,8 @@ export namespace BrowserRuntime {
   export async function snapshot(sessionID: string) {
     const state = await ensureSession(sessionID)
     const pageState = requirePageState(state)
+    await ensureAgentFeedback(pageState.page)
+    await setAgentFeedbackStatus(pageState.page, "Thinking")
     return await buildAccessibilitySnapshot(pageState.page)
   }
 

@@ -30,6 +30,7 @@ export type SkillCatalogConfig = {
 };
 
 export type DesktopAgentMode = 'off' | 'e2b' | 'openbrowser' | 'desktop-browser' | 'browseros' | 'user-desktop';
+export type BrowserAutomationMode = 'embedded' | 'background';
 
 export type DesktopBrowserPage = {
   id: string;
@@ -83,6 +84,7 @@ export type DesktopSettings = {
   agentMode?: DesktopAgentMode;
   agentModeByProject?: Record<string, Exclude<DesktopAgentMode, 'off'>>;
   modeAgentMap?: Partial<Record<'off' | 'browseros' | 'desktop-browser' | 'user-desktop' | 'e2b', string | null>>;
+  browserAutomationMode?: BrowserAutomationMode;
   browserOpenAtStartup?: boolean;
   desktopControlAutoCompact?: boolean;
   projects?: ProjectEntry[];
@@ -730,6 +732,84 @@ export type DesktopBrowserSelection = {
   timestamp: number;
 };
 
+export type BrowserosExecuteCommandArgs = {
+  url?: string;
+  cacheBust?: boolean;
+  windowLabel?: string;
+};
+
+export type BrowserosExecuteCommandResponse = {
+  success: boolean;
+  command: string;
+  state: DesktopBrowserState | null;
+  resolvedUrl: string | null;
+  resolvedBrowserProfile: string;
+  error: {
+    code: string;
+    message: string;
+  } | null;
+};
+
+export type BrowserosBackgroundStatus = {
+  success: boolean;
+  running: boolean;
+  installed: boolean;
+  healthy: boolean;
+  port: number | null;
+  cdpPort: number | null;
+  cdpDisabled: boolean;
+  mcpUrl: string | null;
+  healthUrl: string | null;
+  cdpUrl: string | null;
+  mode: string;
+  profile: string;
+  error: string | null;
+  updatedAt: number | null;
+};
+
+const normalizeBrowserosExecuteCommandResponse = (value: unknown): BrowserosExecuteCommandResponse | null => {
+  if (!value || typeof value !== 'object') return null;
+  const raw = value as Record<string, unknown>;
+  const rawError = raw.error && typeof raw.error === 'object' ? (raw.error as Record<string, unknown>) : null;
+  return {
+    success: raw.success === true,
+    command: typeof raw.command === 'string' ? raw.command : '',
+    state: normalizeDesktopBrowserState(raw.state),
+    resolvedUrl: typeof raw.resolvedUrl === 'string' ? raw.resolvedUrl : null,
+    resolvedBrowserProfile:
+      typeof raw.resolvedBrowserProfile === 'string' && raw.resolvedBrowserProfile.trim().length > 0
+        ? raw.resolvedBrowserProfile.trim()
+        : 'embedded',
+    error: rawError
+      ? {
+        code: typeof rawError.code === 'string' ? rawError.code : 'unknown_error',
+        message: typeof rawError.message === 'string' ? rawError.message : 'Unknown BrowserOS command error',
+      }
+      : null,
+  };
+};
+
+const normalizeBrowserosBackgroundStatus = (value: unknown): BrowserosBackgroundStatus | null => {
+  if (!value || typeof value !== 'object') return null;
+  const raw = value as Record<string, unknown>;
+  return {
+    success: raw.success === true,
+    running: raw.running === true,
+    installed: raw.installed === true,
+    healthy: raw.healthy === true,
+    port: typeof raw.port === 'number' && Number.isFinite(raw.port) ? raw.port : null,
+    cdpPort: typeof raw.cdpPort === 'number' && Number.isFinite(raw.cdpPort) ? raw.cdpPort : null,
+    cdpDisabled: raw.cdpDisabled === true,
+    mcpUrl: typeof raw.mcpUrl === 'string' ? raw.mcpUrl : null,
+    healthUrl: typeof raw.healthUrl === 'string' ? raw.healthUrl : null,
+    cdpUrl: typeof raw.cdpUrl === 'string' ? raw.cdpUrl : null,
+    mode: typeof raw.mode === 'string' && raw.mode.trim().length > 0 ? raw.mode : 'background',
+    profile: typeof raw.profile === 'string' && raw.profile.trim().length > 0 ? raw.profile : 'background',
+    error: typeof raw.error === 'string' ? raw.error : null,
+    updatedAt: typeof raw.updatedAt === 'number' && Number.isFinite(raw.updatedAt) ? raw.updatedAt : null,
+  };
+};
+
 export const desktopBrowserSelectionState = async (): Promise<DesktopBrowserSelection | null> => {
   const result = await invokeDesktopCommand<unknown>('desktop_browser_selection_state', undefined, 'browser');
   if (!result || typeof result !== 'object') return null;
@@ -740,6 +820,36 @@ export const desktopBrowserSelectionState = async (): Promise<DesktopBrowserSele
     title: typeof raw.title === 'string' ? raw.title : '',
     timestamp: typeof raw.timestamp === 'number' ? raw.timestamp : Date.now(),
   };
+};
+
+export const browserosExecuteBrowserCommand = async (
+  command: 'navigate' | 'back' | 'forward' | 'reload' | 'new_tab',
+  args?: BrowserosExecuteCommandArgs,
+): Promise<BrowserosExecuteCommandResponse | null> => {
+  const result = await invokeDesktopCommand<unknown>(
+    'browseros_execute_browser_command',
+    {
+      command,
+      ...(args ? { args } : {}),
+    },
+    'browser',
+  );
+  return normalizeBrowserosExecuteCommandResponse(result);
+};
+
+export const startBrowserosBackgroundAgent = async (): Promise<BrowserosBackgroundStatus | null> => {
+  const result = await invokeDesktopCommand<unknown>('start_browseros_background_agent', undefined, 'browser');
+  return normalizeBrowserosBackgroundStatus(result);
+};
+
+export const stopBrowserosBackgroundAgent = async (): Promise<BrowserosBackgroundStatus | null> => {
+  const result = await invokeDesktopCommand<unknown>('stop_browseros_background_agent', undefined, 'browser');
+  return normalizeBrowserosBackgroundStatus(result);
+};
+
+export const getBrowserosBackgroundStatus = async (): Promise<BrowserosBackgroundStatus | null> => {
+  const result = await invokeDesktopCommand<unknown>('get_browseros_background_status', undefined, 'browser');
+  return normalizeBrowserosBackgroundStatus(result);
 };
 
 export const isDesktopBrowserCommandReady = (): boolean => {

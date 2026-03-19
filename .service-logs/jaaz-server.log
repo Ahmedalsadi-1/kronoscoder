@@ -1,0 +1,504 @@
+INFO:     Started server process [12685]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:57988 (Press CTRL+C to quit)
+INFO:     127.0.0.1:51643 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection closed
+INFO:     127.0.0.1:51645 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+Importing websocket_router
+Importing routers
+local db version (3,) latest version 3
+Importing websocket_state
+Importing websocket_service
+Importing config_service
+Importing tool_service
+Creating FastAPI app
+Including routers
+Creating socketio app
+🌟Starting server, UI_DIST_DIR: None
+Initializing config_service
+Initializing broadcast_init_done
+Broadcasted init_done to all clients
+INFO:     127.0.0.1:51646 - "GET /api/list_models HTTP/1.1" 200 OK
+INFO:     connection open
+INFO:     127.0.0.1:51653 - "GET /api/list_tools HTTP/1.1" 200 OK
+Client UBeKSXHAVWgf24n1AAAC connected
+New connection added: UBeKSXHAVWgf24n1AAAC, total connections: 1
+INFO:     127.0.0.1:51649 - "GET /api/canvas/list HTTP/1.1" 200 OK
+👇 chat_service got tool_list []
+INFO:     127.0.0.1:51714 - "POST /api/canvas/create HTTP/1.1" 200 OK
+📸 图像工具: []
+🎬 视频工具: []
+👇agent_names ['planner', 'image_video_creator']
+👇last_agent None
+INFO:     127.0.0.1:51729 - "GET /api/chat_session/oBNnPhM99emBcSUEWmYNm HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51730 - "GET /api/canvas/ADXiKoNDe1AYmDgbEFS5- HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51731 - "GET /api/chat_session/oBNnPhM99emBcSUEWmYNm HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51732 - "GET /api/canvas/ADXiKoNDe1AYmDgbEFS5- HTTP/1.1" 200 OK
+👇 chat_service got tool_list []
+📸 图像工具: []
+🎬 视频工具: []
+👇agent_names ['planner', 'image_video_creator']
+👇last_agent planner
+INFO:     127.0.0.1:51844 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51846 - "GET /api/config HTTP/1.1" 200 OK
+ComfyUI connection error: All connection attempts failed
+INFO:     127.0.0.1:51853 - "POST /api/comfyui/object_info HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:51854 - "POST /api/settings/comfyui/proxy HTTP/1.1" 500 Internal Server Error
+ComfyUI connection error: All connection attempts failed
+INFO:     127.0.0.1:51855 - "POST /api/comfyui/object_info HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:51856 - "POST /api/settings/comfyui/proxy HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51852 - "GET /api/settings/comfyui/list_workflows HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51862 - "GET /api/settings/comfyui/list_workflows HTTP/1.1" 200 OK
+😘tool_call event [{'name': 'write_plan', 'args': {'steps': [{'description': 'Merancang konsep visual untuk kolase yang menggabungkan identitas kedua brand: kronoscoder (coding/tech) dan kronoschamber (premium/private space). Menentukan tema, warna dominan, elemen visual, dan layout kolase yang harmonis antara kedua brand', 'title': 'Konseptualisasi desain kolase'}, {'description': 'Membuat 2-3 gambar tema teknologi/programming untuk brand kronoscoder dengan elemen visual seperti kode, terminal, digital matrix, atau ikon programming yang modern dan profesional', 'title': 'Hasilkan gambar untuk kronoscoder'}, {'description': 'Membuat 2-3 gambar tema eksklusif/private chamber untuk brand kronoschamber dengan elemen visual seperti pintu misterius, ruangan elegan, jam kuno (kronos=waktu), atau suasana premium yang intim', 'title': 'Hasilkan gambar untuk kronoschamber'}, {'description': 'Menyusun semua gambar yang dihasilkan menjadi satu komposisi kolase yang seimbang, dengan mempertimbangkan posisi logo, harmoni warna, dan pesan brand yang ingin disampaikan', 'title': 'Susun dan gabungkan kolase'}]}, 'id': 'f51ced3b-61d3-4b94-8160-60d3324d8402', 'type': 'tool_call'}]
+write_plan_tool
+👇toolcall res oai_message {'role': 'tool', 'name': 'write_plan', 'tool_call_id': 'f51ced3b-61d3-4b94-8160-60d3324d8402', 'content': '<hide_in_user_ui> Plan made. Now you can start executing the plan, or handoff the task to the suitable agent who specializes in the steps of the plan.</hide_from_user>'}
+😘tool_call event [{'name': 'transfer_to_image_video_creator', 'args': {}, 'id': 'b199a083-e9a8-470c-ac85-8959f156734e', 'type': 'tool_call'}]
+INFO:     127.0.0.1:51968 - "GET /api/list_models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51972 - "GET /api/list_tools HTTP/1.1" 200 OK
+😘tool_call event [{'name': 'generate_image', 'args': {'prompt': 'Professional brand visual for "KRONOSCODER" - futuristic terminal interface with holographic code streams, neon cyan and magenta glow effects, matrix-style falling code in background, sleek dark UI design with glowing syntax highlighting, cyberpunk aesthetic, high-tech programming environment, dark carbon background #0a0a0a, electric blue and magenta accent lights, sharp and modern, 4K quality, cinematic lighting', 'size': '1024x1024'}, 'id': '5cac20a4-087d-436f-ad5b-62ae855ee71c', 'type': 'tool_call'}, {'name': 'generate_image', 'args': {'prompt': 'Professional brand visual for "KRONOSCHAMBER" - mysterious exclusive entrance door with warm amber and gold lighting, dark elegant corridor leading to a private chamber, luxurious mysterious atmosphere, antique brass elements mixed with modern design, dramatic chiaroscuro lighting, black and gold color scheme, velvet textures, sense of exclusivity and privacy, cinematic composition, premium quality, 4K resolution', 'size': '1024x1024'}, 'id': '86a92af2-2cd3-47aa-a3ec-116a479beb1f', 'type': 'tool_call'}, {'name': 'generate_image', 'args': {'prompt': 'Surreal bridge element combining ancient and futuristic - an ornate antique clock (Kronos/time symbol) dissolving into digital pixels and binary code, clock face showing multiple time dimensions, steam punk meets cyberpunk, golden clock gears transforming into cyan holographic data streams, dark moody background, magical fusion of past and future, time concept visualization, purple and gold ambient lighting, highly detailed, 4K artistic composition', 'size': '1024x1024'}, 'id': 'b920af3f-dd2b-4267-b768-cc23e438595a', 'type': 'tool_call'}, {'name': 'generate_image', 'args': {'prompt': 'Abstract technology visualization for coding brand - flowing lines of binary code and programming syntax floating in dark space, neon cyan and electric magenta light trails, digital rain effect, matrix-style but modern and sleek, holographic code fragments, dark background with vibrant accent lights, sense of data flowing and processing, cyber aesthetic, minimalist but impactful, 4K quality, perfect for tech brand', 'size': '1024x1024'}, 'id': '0dc6c8b2-8fa3-4c4b-94ad-a732c3e4a5dd', 'type': 'tool_call'}, {'name': 'generate_image', 'args': {'size': '1024x1024', 'prompt': 'Luxurious interior of private chamber for "KRONOSCHAMBER" - exclusive VIP room with dramatic lighting, dark elegant atmosphere with amber and gold accent lights, plush velvet seating, antique timepieces on walls, mysterious and intimate ambiance, premium materials, chiaroscuro lighting technique, black and gold color palette, sense of secrecy and exclusivity, high-end private club aesthetic, cinematic composition, 4K quality, architectural photography style'}, 'id': '7425b883-5180-4e89-87a1-f6e7b923a069', 'type': 'tool_call'}]
+INFO:     127.0.0.1:51815 - "POST /api/chat HTTP/1.1" 200 OK
+👇 chat_service got tool_list []
+🔧 修复消息历史：移除了 5 个不完整的工具调用: ['5cac20a4-087d-436f-ad5b-62ae855ee71c', '86a92af2-2cd3-47aa-a3ec-116a479beb1f', 'b920af3f-dd2b-4267-b768-cc23e438595a', '0dc6c8b2-8fa3-4c4b-94ad-a732c3e4a5dd', '7425b883-5180-4e89-87a1-f6e7b923a069']
+📸 图像工具: []
+🎬 视频工具: []
+👇agent_names ['planner', 'image_video_creator']
+👇last_agent image_video_creator
+INFO:     127.0.0.1:52090 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52308 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52333 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52349 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+🦄upload_image file 37732a500ab1a294521384fce85e6766e67fbc73
+🦄upload_image file_path /Users/albsheralsadi/kronosfinal/kronoscoder/third_party/upstream/jaaz/server/user_data/files/im_OZNeXnZA.jpg
+INFO:     127.0.0.1:52353 - "POST /api/upload_image HTTP/1.1" 200 OK
+🦄get_file file_path /Users/albsheralsadi/kronosfinal/kronoscoder/third_party/upstream/jaaz/server/user_data/files/im_OZNeXnZA.jpg
+INFO:     127.0.0.1:52356 - "GET /api/file/im_OZNeXnZA.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52359 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+🦄get_file file_path /Users/albsheralsadi/kronosfinal/kronoscoder/third_party/upstream/jaaz/server/user_data/files/im_OZNeXnZA.jpg
+INFO:     127.0.0.1:52398 - "GET /api/file/im_OZNeXnZA.jpg HTTP/1.1" 200 OK
+👇 chat_service got tool_list []
+📸 图像工具: []
+🎬 视频工具: []
+👇agent_names ['planner', 'image_video_creator']
+👇last_agent image_video_creator
+INFO:     127.0.0.1:52451 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52478 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+😘tool_call event [{'name': 'generate_image', 'args': {'quality': 'high', 'prompt': 'Cute white cat head character on pure black background, minimalist cartoon style, the cat has an eyepatch over one eye and a small scar mark, simple dot eyes, small curved smile, clean vector-like illustration, centered composition, high contrast black and white, kawaii aesthetic', 'size': '1024x1024'}, 'id': '0deba4e1-7238-4f82-8de9-79fdca3c25f4', 'type': 'tool_call'}, {'name': 'generate_image', 'args': {'prompt': 'Cute white cat head character on pure black background, minimalist cartoon style, the cat is wearing round black sunglasses covering eyes, simple small curved smile, clean vector-like illustration, centered composition, high contrast black and white, kawaii aesthetic', 'size': '1024x1024', 'quality': 'high'}, 'id': 'cd825397-3cfd-4833-bc56-4f246bc0ba23', 'type': 'tool_call'}, {'name': 'generate_image', 'args': {'quality': 'high', 'prompt': 'Cute white cat head character on pure black background, minimalist cartoon style, the cat is wearing round black sunglasses covering eyes, simple dot eyes visible through glasses, small curved smile, clean vector-like illustration, centered composition, high contrast black and white, kawaii aesthetic', 'size': '1024x1024'}, 'id': 'f5768a7c-71ad-4d1a-8ffe-ed6a482af683', 'type': 'tool_call'}, {'name': 'generate_image', 'args': {'prompt': 'Cute white cat head character on pure black background, minimalist cartoon style, simple plain cat face with two dot eyes and small curved smile, no accessories, clean vector-like illustration, centered composition, high contrast black and white, kawaii aesthetic, basic cute cat face', 'size': '1024x1024', 'quality': 'high'}, 'id': '2151db44-b3f4-4a32-8e6d-00a3648b05d5', 'type': 'tool_call'}, {'name': 'generate_image', 'args': {'prompt': 'Cute white cat head character on pure black background, minimalist cartoon style, the cat is wearing a tall white chef hat with puffy top, simple dot eyes, small curved smile, clean vector-like illustration, centered composition, high contrast black and white, kawaii aesthetic', 'size': '1024x1024', 'quality': 'high'}, 'id': '91e24759-6268-4a76-a204-f36cad1cc916', 'type': 'tool_call'}, {'name': 'generate_image', 'args': {'size': '1024x1024', 'quality': 'high', 'prompt': 'Cute white cat head character on pure black background, minimalist cartoon style, the cat is wearing a bandana or neckerchief tied around neck, simple dot eyes, small curved smile, clean vector-like illustration, centered composition, high contrast black and white, kawaii aesthetic'}, 'id': 'ede0afa9-1d5a-4edd-9ba1-a87a17cbd4ac', 'type': 'tool_call'}, {'name': 'generate_image', 'args': {'prompt': 'Cute white cat head character on pure black background, minimalist cartoon style, the cat is wearing a bowtie and winking with one eye closed, simple dot eye and winking eye, small curved smile, clean vector-like illustration, centered composition, high contrast black and white, kawaii aesthetic', 'size': '1024x1024', 'quality': 'high'}, 'id': '075b9f31-5e68-4de1-a626-fbebd4ad7225', 'type': 'tool_call'}, {'name': 'generate_image', 'args': {'prompt': 'Cute white cat head character on pure black background, minimalist cartoon style, the cat is wearing a pirate hat with skull and crossbones symbol and a bowtie, simple dot eyes, small curved smile, clean vector-like illustration, centered composition, high contrast black and white, kawaii aesthetic', 'size': '1024x1024', 'quality': 'high'}, 'id': '8d7d0314-481d-4902-b5d2-85bc11f8f73b', 'type': 'tool_call'}, {'name': 'generate_image', 'args': {'quality': 'high', 'prompt': 'Cute white cat head character on pure black background, minimalist cartoon style, the cat is wearing a pirate hat with skull and crossbones symbol and a patterned bandana with small skull prints around neck, simple dot eyes, small curved smile, clean vector-like illustration, centered composition, high contrast black and white, kawaii aesthetic', 'size': '1024x1024'}, 'id': 'cff93160-23a6-42d9-9c86-71f874259609', 'type': 'tool_call'}]
+INFO:     127.0.0.1:52400 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52580 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52613 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52631 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52787 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53846 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53861 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:0 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:0 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:55598 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55614 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     connection closed
+INFO:     127.0.0.1:52551 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection closed
+INFO:     127.0.0.1:52553 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+Client UBeKSXHAVWgf24n1AAAC disconnected
+Connection removed: UBeKSXHAVWgf24n1AAAC, total connections: 0
+INFO:     127.0.0.1:52554 - "GET /api/list_models HTTP/1.1" 200 OK
+INFO:     connection open
+INFO:     127.0.0.1:52563 - "GET /api/list_tools HTTP/1.1" 200 OK
+Client Eed9duHVqVIFXUPmAAAF connected
+New connection added: Eed9duHVqVIFXUPmAAAF, total connections: 1
+INFO:     127.0.0.1:52560 - "GET /api/chat_session/oBNnPhM99emBcSUEWmYNm HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52561 - "GET /api/canvas/ADXiKoNDe1AYmDgbEFS5- HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52565 - "GET /api/chat_session/oBNnPhM99emBcSUEWmYNm HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52567 - "GET /api/canvas/ADXiKoNDe1AYmDgbEFS5- HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52585 - "POST /api/canvas/ADXiKoNDe1AYmDgbEFS5-/save HTTP/1.1" 200 OK
+INFO:     connection closed
+INFO:     127.0.0.1:52790 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:52895 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:53203 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:53555 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:53907 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:54260 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:54613 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:54962 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:55306 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:55618 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:55936 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:63050 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection closed
+INFO:     127.0.0.1:63052 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+Client Eed9duHVqVIFXUPmAAAF disconnected
+Connection removed: Eed9duHVqVIFXUPmAAAF, total connections: 0
+Client VmxIwRHJHeW0PcLdAAAH connected
+New connection added: VmxIwRHJHeW0PcLdAAAH, total connections: 1
+Client VmxIwRHJHeW0PcLdAAAH disconnected
+Connection removed: VmxIwRHJHeW0PcLdAAAH, total connections: 0
+Client dsTs8zWRV1XpFPGgAAAJ connected
+New connection added: dsTs8zWRV1XpFPGgAAAJ, total connections: 1
+Client dsTs8zWRV1XpFPGgAAAJ disconnected
+Connection removed: dsTs8zWRV1XpFPGgAAAJ, total connections: 0
+Client rjpzG9mAMRZi_OzrAAAL connected
+New connection added: rjpzG9mAMRZi_OzrAAAL, total connections: 1
+Client rjpzG9mAMRZi_OzrAAAL disconnected
+Connection removed: rjpzG9mAMRZi_OzrAAAL, total connections: 0
+Client PJZLNcNiD4K8E7lgAAAN connected
+New connection added: PJZLNcNiD4K8E7lgAAAN, total connections: 1
+Client PJZLNcNiD4K8E7lgAAAN disconnected
+Connection removed: PJZLNcNiD4K8E7lgAAAN, total connections: 0
+Client WY0wb_zMbBEYHqCOAAAP connected
+New connection added: WY0wb_zMbBEYHqCOAAAP, total connections: 1
+Client WY0wb_zMbBEYHqCOAAAP disconnected
+Connection removed: WY0wb_zMbBEYHqCOAAAP, total connections: 0
+Client TMaL2JlyfPS4hALrAAAR connected
+New connection added: TMaL2JlyfPS4hALrAAAR, total connections: 1
+Client TMaL2JlyfPS4hALrAAAR disconnected
+Connection removed: TMaL2JlyfPS4hALrAAAR, total connections: 0
+Client tYK8PYuz6qSJWgCMAAAT connected
+New connection added: tYK8PYuz6qSJWgCMAAAT, total connections: 1
+Client tYK8PYuz6qSJWgCMAAAT disconnected
+Connection removed: tYK8PYuz6qSJWgCMAAAT, total connections: 0
+Client OOwqyO7SjZKORcDZAAAV connected
+New connection added: OOwqyO7SjZKORcDZAAAV, total connections: 1
+Client OOwqyO7SjZKORcDZAAAV disconnected
+Connection removed: OOwqyO7SjZKORcDZAAAV, total connections: 0
+Client Yz7XqINkUhVnJ3o7AAAX connected
+New connection added: Yz7XqINkUhVnJ3o7AAAX, total connections: 1
+Client Yz7XqINkUhVnJ3o7AAAX disconnected
+Connection removed: Yz7XqINkUhVnJ3o7AAAX, total connections: 0
+Client VXYrquTfWn4PGLe3AAAZ connected
+New connection added: VXYrquTfWn4PGLe3AAAZ, total connections: 1
+Client VXYrquTfWn4PGLe3AAAZ disconnected
+Connection removed: VXYrquTfWn4PGLe3AAAZ, total connections: 0
+Client fndORsUthRNbC5_wAAAb connected
+New connection added: fndORsUthRNbC5_wAAAb, total connections: 1
+INFO:     127.0.0.1:63053 - "GET /api/list_models HTTP/1.1" 200 OK
+Client zeqiEpDpa_Ep4wSsAAAe connected
+New connection added: zeqiEpDpa_Ep4wSsAAAe, total connections: 2
+INFO:     127.0.0.1:63056 - "GET /api/list_tools HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63058 - "GET /api/canvas/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:0 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60084 - "GET /api/list_models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60089 - "GET /api/list_tools HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60085 - "GET /api/canvas/list HTTP/1.1" 200 OK
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:52732 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52738 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:52963 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52974 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:53062 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53067 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:53378 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53382 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:53582 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53584 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:53937 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53940 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:54292 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54295 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:54649 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54651 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:54759 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54761 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:54848 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54852 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:55178 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55188 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:64349 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:64597 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:64954 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:65323 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:52901 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:52950 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:53043 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:53398 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:53801 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:54153 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:54506 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:54605 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:55004 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:55405 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:55809 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:56210 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:56536 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+Client zeqiEpDpa_Ep4wSsAAAe disconnected
+Connection removed: zeqiEpDpa_Ep4wSsAAAe, total connections: 1
+Client fndORsUthRNbC5_wAAAb disconnected
+Connection removed: fndORsUthRNbC5_wAAAb, total connections: 0
+Client ArWw0HFCdOngvbI_AAAg connected
+New connection added: ArWw0HFCdOngvbI_AAAg, total connections: 1
+Client trCmpqW5gTbeIr31AAAi connected
+New connection added: trCmpqW5gTbeIr31AAAi, total connections: 2
+Client trCmpqW5gTbeIr31AAAi disconnected
+Connection removed: trCmpqW5gTbeIr31AAAi, total connections: 1
+Client ArWw0HFCdOngvbI_AAAg disconnected
+Connection removed: ArWw0HFCdOngvbI_AAAg, total connections: 0
+Client Dok34L-Wx_Wcf5igAAAk connected
+New connection added: Dok34L-Wx_Wcf5igAAAk, total connections: 1
+Client SZBmtDzx6ApviRN2AAAm connected
+New connection added: SZBmtDzx6ApviRN2AAAm, total connections: 2
+Client Dok34L-Wx_Wcf5igAAAk disconnected
+Connection removed: Dok34L-Wx_Wcf5igAAAk, total connections: 1
+Client SZBmtDzx6ApviRN2AAAm disconnected
+Connection removed: SZBmtDzx6ApviRN2AAAm, total connections: 0
+Client K7rBM3ojp9j6J3uLAAAo connected
+New connection added: K7rBM3ojp9j6J3uLAAAo, total connections: 1
+Client uGeJIU-IYWWH14Z1AAAq connected
+New connection added: uGeJIU-IYWWH14Z1AAAq, total connections: 2
+Client K7rBM3ojp9j6J3uLAAAo disconnected
+Connection removed: K7rBM3ojp9j6J3uLAAAo, total connections: 1
+Client uGeJIU-IYWWH14Z1AAAq disconnected
+Connection removed: uGeJIU-IYWWH14Z1AAAq, total connections: 0
+Client zXyWel1g-ybvbR_1AAAs connected
+New connection added: zXyWel1g-ybvbR_1AAAs, total connections: 1
+Client _DWRy-7GizVBx2vhAAAu connected
+New connection added: _DWRy-7GizVBx2vhAAAu, total connections: 2
+Client zXyWel1g-ybvbR_1AAAs disconnected
+Connection removed: zXyWel1g-ybvbR_1AAAs, total connections: 1
+Client _DWRy-7GizVBx2vhAAAu disconnected
+Connection removed: _DWRy-7GizVBx2vhAAAu, total connections: 0
+Client F2ecghWetb6SfqkCAAAw connected
+New connection added: F2ecghWetb6SfqkCAAAw, total connections: 1
+Client 51HCuZmEa5FJ-jjdAAAy connected
+New connection added: 51HCuZmEa5FJ-jjdAAAy, total connections: 2
+Client 51HCuZmEa5FJ-jjdAAAy disconnected
+Connection removed: 51HCuZmEa5FJ-jjdAAAy, total connections: 1
+Client F2ecghWetb6SfqkCAAAw disconnected
+Connection removed: F2ecghWetb6SfqkCAAAw, total connections: 0
+Client bM_whI-MF7Vf9x13AAA0 connected
+New connection added: bM_whI-MF7Vf9x13AAA0, total connections: 1
+Client 6kD7Q_swSOuIVZpuAAA2 connected
+New connection added: 6kD7Q_swSOuIVZpuAAA2, total connections: 2
+Client 6kD7Q_swSOuIVZpuAAA2 disconnected
+Connection removed: 6kD7Q_swSOuIVZpuAAA2, total connections: 1
+Client bM_whI-MF7Vf9x13AAA0 disconnected
+Connection removed: bM_whI-MF7Vf9x13AAA0, total connections: 0
+Client nJMNPfJ9HQ_cGJPyAAA4 connected
+New connection added: nJMNPfJ9HQ_cGJPyAAA4, total connections: 1
+Client nygtcPw5nO96uW1ZAAA6 connected
+New connection added: nygtcPw5nO96uW1ZAAA6, total connections: 2
+Client nJMNPfJ9HQ_cGJPyAAA4 disconnected
+Connection removed: nJMNPfJ9HQ_cGJPyAAA4, total connections: 1
+Client nygtcPw5nO96uW1ZAAA6 disconnected
+Connection removed: nygtcPw5nO96uW1ZAAA6, total connections: 0
+Client Nbx-zY46CR5m5bNdAAA8 connected
+New connection added: Nbx-zY46CR5m5bNdAAA8, total connections: 1
+Client vxE6o9AcYo4W6HBaAAA- connected
+New connection added: vxE6o9AcYo4W6HBaAAA-, total connections: 2
+Client vxE6o9AcYo4W6HBaAAA- disconnected
+Connection removed: vxE6o9AcYo4W6HBaAAA-, total connections: 1
+Client Nbx-zY46CR5m5bNdAAA8 disconnected
+Connection removed: Nbx-zY46CR5m5bNdAAA8, total connections: 0
+Client AnGWynj1Tt_SYqBkAABA connected
+New connection added: AnGWynj1Tt_SYqBkAABA, total connections: 1
+Client CLEtunfnSVVv9W3oAABC connected
+New connection added: CLEtunfnSVVv9W3oAABC, total connections: 2
+Client CLEtunfnSVVv9W3oAABC disconnected
+Connection removed: CLEtunfnSVVv9W3oAABC, total connections: 1
+Client AnGWynj1Tt_SYqBkAABA disconnected
+Connection removed: AnGWynj1Tt_SYqBkAABA, total connections: 0
+Client 1wodIMi9COrIj0I8AABE connected
+New connection added: 1wodIMi9COrIj0I8AABE, total connections: 1
+Client 591oAxPtP6ZCnLHEAABG connected
+New connection added: 591oAxPtP6ZCnLHEAABG, total connections: 2
+Client 1wodIMi9COrIj0I8AABE disconnected
+Connection removed: 1wodIMi9COrIj0I8AABE, total connections: 1
+Client 591oAxPtP6ZCnLHEAABG disconnected
+Connection removed: 591oAxPtP6ZCnLHEAABG, total connections: 0
+Client zw8wmbEa5whuVa_9AABI connected
+New connection added: zw8wmbEa5whuVa_9AABI, total connections: 1
+Client GNcQcQYZ4MBuKlxkAABK connected
+New connection added: GNcQcQYZ4MBuKlxkAABK, total connections: 2
+Client GNcQcQYZ4MBuKlxkAABK disconnected
+Connection removed: GNcQcQYZ4MBuKlxkAABK, total connections: 1
+Client zw8wmbEa5whuVa_9AABI disconnected
+Connection removed: zw8wmbEa5whuVa_9AABI, total connections: 0
+Client hNqm_JWgsEvdJSKHAABM connected
+New connection added: hNqm_JWgsEvdJSKHAABM, total connections: 1
+Client hNqm_JWgsEvdJSKHAABM disconnected
+Connection removed: hNqm_JWgsEvdJSKHAABM, total connections: 0
+Client yFB09Ohnd6A0r6XsAABO connected
+New connection added: yFB09Ohnd6A0r6XsAABO, total connections: 1
+Client yFB09Ohnd6A0r6XsAABO disconnected
+Connection removed: yFB09Ohnd6A0r6XsAABO, total connections: 0
+Client eu4rIogkPlcYyaf6AABQ connected
+New connection added: eu4rIogkPlcYyaf6AABQ, total connections: 1
+Client eu4rIogkPlcYyaf6AABQ disconnected
+Connection removed: eu4rIogkPlcYyaf6AABQ, total connections: 0
+Client 4lH8kcy6E8UPSqo0AABS connected
+New connection added: 4lH8kcy6E8UPSqo0AABS, total connections: 1
+Client 4lH8kcy6E8UPSqo0AABS disconnected
+Connection removed: 4lH8kcy6E8UPSqo0AABS, total connections: 0
+Client hPofIFHaJVXxsnaIAABU connected
+New connection added: hPofIFHaJVXxsnaIAABU, total connections: 1
+Client hPofIFHaJVXxsnaIAABU disconnected
+Connection removed: hPofIFHaJVXxsnaIAABU, total connections: 0
+Client Fa8si8BHPhTJa-tVAABW connected
+New connection added: Fa8si8BHPhTJa-tVAABW, total connections: 1
+Client Fa8si8BHPhTJa-tVAABW disconnected
+Connection removed: Fa8si8BHPhTJa-tVAABW, total connections: 0
+Client yIv1lMKdUHVgJggoAABY connected
+New connection added: yIv1lMKdUHVgJggoAABY, total connections: 1
+Client yIv1lMKdUHVgJggoAABY disconnected
+Connection removed: yIv1lMKdUHVgJggoAABY, total connections: 0
+Client IhQSujdVHhGqNQTWAABa connected
+New connection added: IhQSujdVHhGqNQTWAABa, total connections: 1
+Client IhQSujdVHhGqNQTWAABa disconnected
+Connection removed: IhQSujdVHhGqNQTWAABa, total connections: 0
+Client BAt_FxLsMcuLnNplAABc connected
+New connection added: BAt_FxLsMcuLnNplAABc, total connections: 1
+Client BAt_FxLsMcuLnNplAABc disconnected
+Connection removed: BAt_FxLsMcuLnNplAABc, total connections: 0
+Client 2NufRxWeVYTjgzVcAABe connected
+New connection added: 2NufRxWeVYTjgzVcAABe, total connections: 1
+Client 2NufRxWeVYTjgzVcAABe disconnected
+Connection removed: 2NufRxWeVYTjgzVcAABe, total connections: 0
+Client juNBrVuFrc-ifdnPAABg connected
+New connection added: juNBrVuFrc-ifdnPAABg, total connections: 1
+Client juNBrVuFrc-ifdnPAABg disconnected
+Connection removed: juNBrVuFrc-ifdnPAABg, total connections: 0
+Client fyXlcS5My9FdtgCHAABi connected
+New connection added: fyXlcS5My9FdtgCHAABi, total connections: 1
+Client fyXlcS5My9FdtgCHAABi disconnected
+Connection removed: fyXlcS5My9FdtgCHAABi, total connections: 0
+Client jKPOZAaZ0BawrInGAABk connected
+New connection added: jKPOZAaZ0BawrInGAABk, total connections: 1
+Client jKPOZAaZ0BawrInGAABk disconnected
+Connection removed: jKPOZAaZ0BawrInGAABk, total connections: 0
+Client lex7hW3bZL_eUnZcAABm connected
+New connection added: lex7hW3bZL_eUnZcAABm, total connections: 1
+Client lex7hW3bZL_eUnZcAABm disconnected
+Connection removed: lex7hW3bZL_eUnZcAABm, total connections: 0
+Client HQMPficugwnRZ5L_AABo connected
+New connection added: HQMPficugwnRZ5L_AABo, total connections: 1
+Client HQMPficugwnRZ5L_AABo disconnected
+Connection removed: HQMPficugwnRZ5L_AABo, total connections: 0
+Client _c6uIPQ2G_th8cqIAABq connected
+New connection added: _c6uIPQ2G_th8cqIAABq, total connections: 1
+Client _c6uIPQ2G_th8cqIAABq disconnected
+Connection removed: _c6uIPQ2G_th8cqIAABq, total connections: 0
+Client yXz2P8s8z4s8qmD3AABs connected
+New connection added: yXz2P8s8z4s8qmD3AABs, total connections: 1
+Client yXz2P8s8z4s8qmD3AABs disconnectedINFO:     127.0.0.1:56949 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:57364 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:57721 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+
+Connection removed: yXz2P8s8z4s8qmD3AABs, total connections: 0
+Client HjR699w4EYQW0_GGAABu connected
+New connection added: HjR699w4EYQW0_GGAABu, total connections: 1
+Client HjR699w4EYQW0_GGAABu disconnected
+Connection removed: HjR699w4EYQW0_GGAABu, total connections: 0
+Client cTP8pOLdeqiF4oZyAABw connected
+New connection added: cTP8pOLdeqiF4oZyAABw, total connections: 1
+Client cTP8pOLdeqiF4oZyAABw disconnected
+Connection removed: cTP8pOLdeqiF4oZyAABw, total connections: 0
+Client hlDMx66Zp4VhSw9iAABy connected
+New connection added: hlDMx66Zp4VhSw9iAABy, total connections: 1
+INFO:     127.0.0.1:0 - "GET / HTTP/1.1" 307 Temporary Redirect

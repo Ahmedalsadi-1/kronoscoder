@@ -29,8 +29,11 @@ export type RuntimeTask = {
     command?: string | null;
   } | null;
   routedProvider?: string | null;
+  routingStage?: string | null;
   routingReason?: string | null;
   routingOrder?: string[];
+  resolvedBrowserProfile?: string | null;
+  matchedSkill?: string | null;
   runtimeSessionID: string | null;
   liveUrl: string | null;
   artifacts: Array<{

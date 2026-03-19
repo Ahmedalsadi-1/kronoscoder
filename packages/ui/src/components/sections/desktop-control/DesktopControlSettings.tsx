@@ -27,12 +27,18 @@ import { useDirectoryStore } from "@/stores/useDirectoryStore"
 import { useSessionStore } from "@/stores/useSessionStore"
 import { useUIStore } from "@/stores/useUIStore"
 import { updateDesktopSettings } from "@/lib/persistence"
+import { BrowserOSAgentButton } from "@/components/BrowserOSAgentButton"
+import {
+  isDesktopShell,
+  startBrowserosBackgroundAgent,
+  type BrowserAutomationMode,
+} from "@/lib/desktop"
 
 interface DesktopControlSettingsProps {
   className?: string
 }
 
-const MCP_SERVER_ORDER = ["browseros", "computer-use-mcp", "automation-mcp"] as const
+const MCP_SERVER_ORDER = ["browseros", "ghost-os", "computer-use-mcp", "automation-mcp"] as const
 
 const statusTone = (status?: string) => {
   if (status === "connected") return "success"
@@ -168,6 +174,7 @@ const parseIntegrationSettings = (payload: unknown): IntegrationSettings => {
 
 export function DesktopControlSettings({ className }: DesktopControlSettingsProps) {
   const directory = useDirectoryStore((state) => state.currentDirectory)
+  const desktopShell = React.useMemo(() => isDesktopShell(), [])
   const mcpStatus = useMcpStore((state) => state.getStatusForDirectory(directory))
   const refreshMcp = useMcpStore((state) => state.refresh)
   const connect = useMcpStore((state) => state.connect)
@@ -184,6 +191,8 @@ export function DesktopControlSettings({ className }: DesktopControlSettingsProp
   const [openfangBusyAction, setOpenfangBusyAction] = React.useState<"start" | "stop" | "configure" | null>(null)
   const [quickAssistBusy, setQuickAssistBusy] = React.useState(false)
   const [quickActionBusy, setQuickActionBusy] = React.useState<"openfang" | "hover" | null>(null)
+  const [browserAutomationMode, setBrowserAutomationMode] = React.useState<BrowserAutomationMode>("embedded")
+  const [browserAutomationBusy, setBrowserAutomationBusy] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
   const reload = React.useCallback(async () => {
@@ -208,6 +217,9 @@ export function DesktopControlSettings({ className }: DesktopControlSettingsProp
       setKnowledge(nextKnowledge)
       if (settingsResponse) {
         setIntegrationSettings(parseIntegrationSettings(settingsResponse))
+        setBrowserAutomationMode(
+          settingsResponse.browserAutomationMode === "background" ? "background" : "embedded",
+        )
       }
       setOpenfangStatus((openfangStatusResponse && typeof openfangStatusResponse === "object") ? (openfangStatusResponse as OpenfangStatus) : null)
     } catch (err) {
@@ -408,6 +420,28 @@ export function DesktopControlSettings({ className }: DesktopControlSettingsProp
     }
   }, [runOpenfangAction, updateIntegrationToggle])
 
+  const handleBrowserAutomationModeChange = React.useCallback(async (nextMode: BrowserAutomationMode) => {
+    const previousMode = browserAutomationMode
+    setBrowserAutomationBusy(true)
+    setError(null)
+    setBrowserAutomationMode(nextMode)
+    try {
+      await updateDesktopSettings({ browserAutomationMode: nextMode })
+      if (desktopShell && nextMode === "background") {
+        const status = await startBrowserosBackgroundAgent()
+        if (!status?.success) {
+          throw new Error(status?.error || "Failed to auto-start BrowserOS background mode.")
+        }
+      }
+      await reload()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update browser automation mode.")
+      setBrowserAutomationMode(previousMode)
+    } finally {
+      setBrowserAutomationBusy(false)
+    }
+  }, [browserAutomationMode, desktopShell, reload])
+
   return (
     <div className={cn("space-y-6", className)}>
       <div className="flex items-center gap-3">
@@ -416,14 +450,14 @@ export function DesktopControlSettings({ className }: DesktopControlSettingsProp
         </div>
         <div className="min-w-0">
           <h3 className="font-semibold">Desktop Control</h3>
-          <p className="text-sm text-muted-foreground">KronosOS Browser + User Desktop + E2B routing (remote-macos removed)</p>
+          <p className="text-sm text-muted-foreground">KronosOS Browser + Ghost OS + User Desktop + E2B routing (remote-macos removed)</p>
         </div>
       </div>
 
       <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
         <RiInformationLine className="mt-0.5 h-5 w-5 flex-shrink-0 text-muted-foreground" />
         <div className="space-y-2 text-sm text-muted-foreground">
-          <p>Interactive browsing defaults to KronosOS Browser. Desktop tasks support explicit full-control vs background routing.</p>
+          <p>Interactive browsing defaults to KronosOS Browser. Native macOS workflows can route through Ghost OS before generic full-control fallbacks.</p>
           <ul className="list-inside list-disc space-y-1">
             <li><code>user-desktop</code> for full-control task routing</li>
             <li><code>e2b</code> for background worker tasks</li>
@@ -449,6 +483,41 @@ export function DesktopControlSettings({ className }: DesktopControlSettingsProp
           </div>
         </div>
       )}
+
+      <div className="space-y-3 rounded-xl border border-border/60 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h4 className="font-medium">Browser Automation Mode</h4>
+            <p className="text-xs text-muted-foreground">
+              Embedded KronosChamber remains available; this selects routing preference for automation tasks.
+            </p>
+          </div>
+          <Badge variant="secondary" className="text-xs uppercase">
+            {browserAutomationMode}
+          </Badge>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 rounded-md border border-border/60 px-3 py-2">
+          <div className="text-sm">
+            <div className="font-medium">Prefer background BrowserOS mode</div>
+            <div className="text-xs text-muted-foreground">
+              Uses CDP-enabled background profile when routing requires full Chrome-level control.
+            </div>
+          </div>
+          <Switch
+            checked={browserAutomationMode === "background"}
+            disabled={browserAutomationBusy}
+            onCheckedChange={(checked) => {
+              void handleBrowserAutomationModeChange(checked ? "background" : "embedded")
+            }}
+          />
+        </div>
+        {browserAutomationBusy ? (
+          <p className="text-xs text-muted-foreground">Updating browser automation mode…</p>
+        ) : null}
+      </div>
+
+      <BrowserOSAgentButton />
 
       <div className="space-y-3 rounded-xl border border-border/60 p-4">
         <div className="flex items-center justify-between gap-3">

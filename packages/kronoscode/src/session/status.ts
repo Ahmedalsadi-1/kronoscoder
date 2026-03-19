@@ -4,10 +4,20 @@ import { Instance } from "@/project/instance"
 import z from "zod"
 
 export namespace SessionStatus {
+  const RunHealth = z.object({
+    status: z.enum(["healthy", "degraded", "error"]),
+    confidence: z.number().optional(),
+    recoverable: z.boolean().optional(),
+    suggested_next_action: z.string().optional(),
+    source: z.string().optional(),
+    latency_ms: z.number().optional(),
+  })
+
   const RuntimeInfo = z.object({
     activeTool: z.string().optional(),
     workType: z.string().optional(),
     runtimeTarget: z.string().optional(),
+    runHealth: RunHealth.optional(),
   })
 
   export const Info = z

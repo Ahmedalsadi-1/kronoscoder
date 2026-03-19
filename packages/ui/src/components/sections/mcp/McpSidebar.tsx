@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ButtonLarge } from '@/components/ui/button-large';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { RiAddLine, RiDeleteBinLine, RiFileTextLine, RiMore2Line, RiPlugLine, RiServerLine, RiSparklingLine } from '@remixicon/react';
-import { useMcpConfigStore, type McpDraft, type McpScope, type McpServerConfig } from '@/stores/useMcpConfigStore';
+import {
+  useMcpConfigStore,
+  type McpDraft,
+  type McpDraftSourceKind,
+  type McpScope,
+  type McpServerConfig,
+} from '@/stores/useMcpConfigStore';
 import { useMcpStore } from '@/stores/useMcpStore';
 import { useDirectoryStore } from '@/stores/useDirectoryStore';
 import { useUIStore } from '@/stores/useUIStore';
@@ -83,6 +90,7 @@ export const McpSidebar: React.FC<McpSidebarProps> = ({ onItemSelect }) => {
     loadMcpConfigs,
     loadMcpPresets,
     createDraftFromPreset,
+    createDraftFromSource,
     deleteMcp,
   } =
     useMcpConfigStore();
@@ -99,6 +107,10 @@ export const McpSidebar: React.FC<McpSidebarProps> = ({ onItemSelect }) => {
   const [handDialogOpen, setHandDialogOpen] = React.useState(false);
   const [selectedHandTemplateID, setSelectedHandTemplateID] = React.useState<string>('');
   const [handTemplates, setHandTemplates] = React.useState<OpenfangHandTemplate[]>([]);
+  const [installDialogOpen, setInstallDialogOpen] = React.useState(false);
+  const [installScope, setInstallScope] = React.useState<McpScope>('user');
+  const [installSourceType, setInstallSourceType] = React.useState<McpDraftSourceKind>('github');
+  const [installSourceValue, setInstallSourceValue] = React.useState('');
 
   React.useEffect(() => {
     void loadMcpConfigs();
@@ -152,6 +164,27 @@ export const McpSidebar: React.FC<McpSidebarProps> = ({ onItemSelect }) => {
     setPresetDialogOpen(false);
     onItemSelect?.();
   }, [createDraftFromPreset, onItemSelect, presetScope, selectedPresetID, setMcpDraft, setSelectedMcp]);
+
+  const handleCreateFromSource = React.useCallback(() => {
+    const draft = createDraftFromSource(installSourceValue, installSourceType, installScope);
+    if (!draft) {
+      toast.error('Enter a valid package, repo, URL, or command');
+      return;
+    }
+    setMcpDraft(draft);
+    setSelectedMcp(draft.name);
+    setInstallDialogOpen(false);
+    setInstallSourceValue('');
+    onItemSelect?.();
+  }, [
+    createDraftFromSource,
+    installScope,
+    installSourceType,
+    installSourceValue,
+    onItemSelect,
+    setMcpDraft,
+    setSelectedMcp,
+  ]);
 
   const loadHandTemplates = React.useCallback(async () => {
     const response = await fetch('/api/config/hands/templates', {
@@ -265,6 +298,10 @@ export const McpSidebar: React.FC<McpSidebarProps> = ({ onItemSelect }) => {
               <DropdownMenuItem onSelect={() => { void handleOpenPresetDialog(); }}>
                 <RiSparklingLine className="h-4 w-4 mr-px" />
                 Create from preset
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setInstallDialogOpen(true)}>
+                <RiPlugLine className="h-4 w-4 mr-px" />
+                Install from package/repo
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => { void handleOpenHandDialog(); }}>
                 <RiFileTextLine className="h-4 w-4 mr-px" />
@@ -437,6 +474,64 @@ export const McpSidebar: React.FC<McpSidebarProps> = ({ onItemSelect }) => {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={installDialogOpen} onOpenChange={setInstallDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Install MCP From Package or Repo</DialogTitle>
+            <DialogDescription>
+              Create a draft from an npm package, GitHub repo, PyPI package, remote URL, or a raw command. Review the generated command on the details page before saving.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Select value={installSourceType} onValueChange={(value) => setInstallSourceType(value as McpDraftSourceKind)}>
+              <SelectTrigger className="!h-9 w-full">
+                Source: {installSourceType}
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="github">GitHub repo</SelectItem>
+                <SelectItem value="npm">npm package</SelectItem>
+                <SelectItem value="pypi">PyPI package</SelectItem>
+                <SelectItem value="remote">Remote MCP URL</SelectItem>
+                <SelectItem value="command">Raw command</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={installScope} onValueChange={(value) => setInstallScope(value as McpScope)}>
+              <SelectTrigger className="!h-9 w-full">
+                Scope: {installScope}
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user">User</SelectItem>
+                <SelectItem value="project">Project</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="space-y-2">
+              <Input
+                value={installSourceValue}
+                onChange={(event) => setInstallSourceValue(event.target.value)}
+                placeholder={installSourcePlaceholder(installSourceType)}
+              />
+              <p className="typography-micro text-muted-foreground">
+                {installSourceHint(installSourceType)}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              className="text-foreground hover:bg-interactive-hover hover:text-foreground"
+              onClick={() => setInstallDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <ButtonLarge onClick={handleCreateFromSource}>
+              Create draft
+            </ButtonLarge>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={handDialogOpen} onOpenChange={setHandDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -484,3 +579,19 @@ export const McpSidebar: React.FC<McpSidebarProps> = ({ onItemSelect }) => {
 
 // Re-export for easy sidebar icon usage
 export { RiServerLine as McpIcon };
+
+const installSourcePlaceholder = (kind: McpDraftSourceKind): string => {
+  if (kind === 'npm') return '@scope/server-name or server-name';
+  if (kind === 'pypi') return 'mcp2cli or package-name';
+  if (kind === 'remote') return 'https://example.com/mcp';
+  if (kind === 'command') return 'uvx mcp2cli --help';
+  return 'owner/repo or https://github.com/owner/repo';
+};
+
+const installSourceHint = (kind: McpDraftSourceKind): string => {
+  if (kind === 'npm') return 'Creates an stdio command draft with `npx -y <package>`.';
+  if (kind === 'pypi') return 'Creates an stdio command draft with `uvx <package>` for Python-hosted MCP servers such as `mcp2cli`.';
+  if (kind === 'remote') return 'Creates a remote MCP draft and leaves credentials/env for the details page.';
+  if (kind === 'command') return 'Parses a raw shell command into argv so you can start from an exact launcher.';
+  return 'Creates an stdio command draft with `npx -y github:<owner>/<repo>` when possible. Good for repo-first experiments such as `ghostwright/ghost-os` or `HKUDS/CLI-Anything`, then adjust the generated command before saving.';
+};

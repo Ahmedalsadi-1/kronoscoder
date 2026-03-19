@@ -81,6 +81,8 @@ export interface McpDraft {
   enabled: boolean;
 }
 
+export type McpDraftSourceKind = 'npm' | 'github' | 'pypi' | 'remote' | 'command';
+
 // ============== HELPERS ==============
 
 export const envRecordToArray = (env?: Record<string, string>): Array<{ key: string; value: string }> => {
@@ -111,6 +113,7 @@ interface McpConfigStore {
   loadMcpConfigs: () => Promise<boolean>;
   loadMcpPresets: () => Promise<McpPreset[]>;
   createDraftFromPreset: (presetId: string, scope?: McpScope) => McpDraft | null;
+  createDraftFromSource: (source: string, kind: McpDraftSourceKind, scope?: McpScope) => McpDraft | null;
   createMcp: (config: McpDraft) => Promise<boolean>;
   updateMcp: (name: string, config: Partial<McpDraft>) => Promise<boolean>;
   deleteMcp: (name: string) => Promise<boolean>;
@@ -202,6 +205,44 @@ export const useMcpConfigStore = create<McpConfigStore>()(
               : [],
             url: preset.transport === 'remote' ? (preset.url ?? '') : '',
             environment,
+            enabled: true,
+          };
+        },
+
+        createDraftFromSource: (source: string, kind: McpDraftSourceKind, scope: McpScope = 'user') => {
+          const trimmed = source.trim();
+          if (!trimmed) {
+            return null;
+          }
+
+          const existingNames = new Set(get().mcpServers.map((item) => item.name));
+          const baseName = buildDraftNameFromSource(trimmed, kind);
+          let name = baseName;
+          let idx = 1;
+          while (existingNames.has(name)) {
+            name = `${baseName}-${idx}`;
+            idx += 1;
+          }
+
+          if (kind === 'remote') {
+            return {
+              name,
+              scope,
+              type: 'remote',
+              command: [],
+              url: trimmed,
+              environment: [],
+              enabled: true,
+            };
+          }
+
+          return {
+            name,
+            scope,
+            type: 'local',
+            command: buildCommandFromSource(trimmed, kind),
+            url: '',
+            environment: [],
             enabled: true,
           };
         },
@@ -367,4 +408,101 @@ function buildMcpBody(config: Partial<McpDraft>): Record<string, unknown> {
   }
 
   return body;
+}
+
+function buildDraftNameFromSource(source: string, kind: McpDraftSourceKind): string {
+  const normalized = source.trim();
+  const fallback = kind === 'remote' ? 'remote-mcp-server' : 'new-mcp-server';
+
+  if (!normalized) {
+    return fallback;
+  }
+
+  const repoLike = normalized
+    .replace(/^github:/i, '')
+    .replace(/^npm:/i, '')
+    .replace(/^pypi:/i, '')
+    .replace(/\.git$/i, '')
+    .replace(/^https?:\/\/github\.com\//i, '')
+    .replace(/[?#].*$/, '')
+    .split('/')
+    .filter(Boolean)
+    .pop();
+
+  const shellLike = kind === 'command' ? parseShellCommand(normalized)[0] : repoLike;
+  const candidate = (shellLike || repoLike || normalized)
+    .replace(/^@/, '')
+    .replace(/[^a-z0-9_-]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase();
+
+  return candidate || fallback;
+}
+
+function buildCommandFromSource(source: string, kind: McpDraftSourceKind): string[] {
+  if (kind === 'command') {
+    return parseShellCommand(source);
+  }
+  if (kind === 'pypi') {
+    const pkg = source.replace(/^pypi:/i, '').trim();
+    return ['uvx', pkg];
+  }
+  if (kind === 'github') {
+    const repo = normalizeGithubSource(source);
+    return ['npx', '-y', repo];
+  }
+  const pkg = source.replace(/^npm:/i, '').trim();
+  return ['npx', '-y', pkg];
+}
+
+function normalizeGithubSource(source: string): string {
+  const trimmed = source.trim().replace(/\.git$/i, '');
+  if (/^github:/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  const urlMatch = trimmed.match(/^https?:\/\/github\.com\/([^/]+\/[^/#?]+)/i);
+  if (urlMatch?.[1]) {
+    return `github:${urlMatch[1]}`;
+  }
+
+  const repoMatch = trimmed.match(/^[^/\s]+\/[^/\s]+$/);
+  if (repoMatch) {
+    return `github:${trimmed}`;
+  }
+
+  return trimmed;
+}
+
+function parseShellCommand(raw: string): string[] {
+  const args: string[] = [];
+  let current = '';
+  let inSingle = false;
+  let inDouble = false;
+
+  for (let i = 0; i < raw.length; i += 1) {
+    const ch = raw[i];
+    if (ch === "'" && !inDouble) {
+      inSingle = !inSingle;
+      continue;
+    }
+    if (ch === '"' && !inSingle) {
+      inDouble = !inDouble;
+      continue;
+    }
+    if ((ch === ' ' || ch === '\t') && !inSingle && !inDouble) {
+      if (current) {
+        args.push(current);
+        current = '';
+      }
+      continue;
+    }
+    current += ch;
+  }
+
+  if (current) {
+    args.push(current);
+  }
+
+  return args;
 }

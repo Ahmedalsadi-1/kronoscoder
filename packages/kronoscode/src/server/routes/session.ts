@@ -14,10 +14,134 @@ import { Agent } from "../../agent/agent"
 import { Snapshot } from "@/snapshot"
 import { Log } from "../../util/log"
 import { PermissionNext } from "@/permission/next"
+import { WorkflowRun } from "@/workflow/run"
 import { errors } from "../error"
 import { lazy } from "../../util/lazy"
 
 const log = Log.create({ service: "server" })
+
+const ResumeRecentToolSchema = z.object({
+  tool: z.string(),
+  status: z.enum(["pending", "running", "success", "failed"]),
+  confidence: z.number(),
+  recoverable: z.boolean(),
+  suggested_next_action: z.string().optional(),
+  updated_at: z.number().optional(),
+})
+
+const ResumeLastObjectiveSchema = z.object({
+  message_id: z.string().optional(),
+  text: z.string().optional(),
+  updated_at: z.number().optional(),
+})
+
+const ResumeWorkflowSchema = z
+  .object({
+    workflow_run_id: z.string(),
+    playbook_id: z.string(),
+    status: z.string(),
+    workflow_stage: z.string(),
+    workflow_outcome: z.string().optional(),
+  })
+  .nullable()
+
+const ResumeSnapshotSchema = z.object({
+  session_resume_token: z.string(),
+  session: Session.Info,
+  objective: ResumeLastObjectiveSchema,
+  pending_todos: Todo.Info.array(),
+  recent_tool_context: ResumeRecentToolSchema.array(),
+  workflow: ResumeWorkflowSchema,
+})
+
+const extractObjective = (messages: MessageV2.WithParts[]) => {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i]
+    if (message.info.role !== "user") continue
+    const textPart = message.parts.find((part) => part.type === "text" && !part.ignored)
+    if (textPart?.type === "text") {
+      const text = textPart.text.trim()
+      if (text.length > 0) {
+        return {
+          message_id: message.info.id,
+          text,
+          updated_at: message.info.time.created,
+        }
+      }
+    }
+  }
+  return {}
+}
+
+const collectRecentTools = (messages: MessageV2.WithParts[]) => {
+  const collected: Array<z.infer<typeof ResumeRecentToolSchema>> = []
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i]
+    if (message.info.role !== "assistant") continue
+    for (let j = message.parts.length - 1; j >= 0; j -= 1) {
+      const part = message.parts[j]
+      if (part.type !== "tool") continue
+      const metadata = "metadata" in part.state ? (part.state.metadata ?? {}) : {}
+      const reliability =
+        metadata && typeof metadata === "object" && typeof metadata.reliability === "object"
+          ? (metadata.reliability as {
+              status?: string
+              confidence?: number
+              recoverable?: boolean
+              suggested_next_action?: string
+            })
+          : undefined
+      const status =
+        reliability?.status === "success"
+          ? "success"
+          : reliability?.status === "failed"
+            ? "failed"
+            : part.state.status === "completed"
+              ? "success"
+              : part.state.status === "error"
+                ? "failed"
+                : part.state.status
+      const confidence =
+        typeof reliability?.confidence === "number"
+          ? reliability.confidence
+          : status === "success"
+            ? 0.9
+            : status === "failed"
+              ? 0.25
+              : 0.6
+      const recoverable =
+        typeof reliability?.recoverable === "boolean" ? reliability.recoverable : status !== "success"
+      const updated_at =
+        part.state.status === "completed" || part.state.status === "error"
+          ? part.state.time.end
+          : part.state.status === "running"
+            ? part.state.time.start
+            : undefined
+
+      collected.push({
+        tool: part.tool,
+        status,
+        confidence,
+        recoverable,
+        suggested_next_action: reliability?.suggested_next_action,
+        updated_at,
+      })
+      if (collected.length >= 8) {
+        return collected
+      }
+    }
+  }
+  return collected
+}
+
+const buildResumeToken = (input: { sessionID: string; workflowRunID?: string | null }) =>
+  Buffer.from(
+    JSON.stringify({
+      session_id: input.sessionID,
+      workflow_run_id: input.workflowRunID ?? null,
+      issued_at: Date.now(),
+    }),
+  ).toString("base64url")
 
 export const SessionRoutes = lazy(() =>
   new Hono()
@@ -87,6 +211,72 @@ export const SessionRoutes = lazy(() =>
       async (c) => {
         const result = SessionStatus.list()
         return c.json(result)
+      },
+    )
+    .post(
+      "/resume_last_objective",
+      describeRoute({
+        summary: "Resume last objective",
+        description:
+          "Resolve the most recent active root session and return a compact resume snapshot with objective, todos, tool context, and workflow state.",
+        operationId: "session.resumeLastObjective",
+        responses: {
+          200: {
+            description: "Resume snapshot",
+            content: {
+              "application/json": {
+                schema: resolver(ResumeSnapshotSchema),
+              },
+            },
+          },
+          ...errors(400, 404),
+        },
+      }),
+      validator(
+        "json",
+        z
+          .object({
+            directory: z.string().optional(),
+          })
+          .optional(),
+      ),
+      async (c) => {
+        const body = c.req.valid("json") ?? {}
+        const sessions = [...Session.list({ directory: body.directory, roots: true, limit: 200 })]
+          .filter((session) => session.time.archived === undefined)
+          .sort((a, b) => b.time.updated - a.time.updated)
+        const latest = sessions[0]
+        if (!latest) {
+          throw new Error("No resumable session found")
+        }
+
+        const [pendingTodos, messages, latestWorkflow] = await Promise.all([
+          Todo.get(latest.id),
+          Session.messages({ sessionID: latest.id, limit: 80 }),
+          WorkflowRun.latestBySession(latest.id),
+        ])
+
+        const snapshot = {
+          session_resume_token: buildResumeToken({
+            sessionID: latest.id,
+            workflowRunID: latestWorkflow?.workflow_run_id ?? null,
+          }),
+          session: latest,
+          objective: extractObjective(messages),
+          pending_todos: pendingTodos,
+          recent_tool_context: collectRecentTools(messages),
+          workflow: latestWorkflow
+            ? {
+                workflow_run_id: latestWorkflow.workflow_run_id,
+                playbook_id: latestWorkflow.playbook_id,
+                status: latestWorkflow.status,
+                workflow_stage: latestWorkflow.workflow_stage,
+                workflow_outcome: latestWorkflow.workflow_outcome,
+              }
+            : null,
+        }
+
+        return c.json(snapshot)
       },
     )
     .get(

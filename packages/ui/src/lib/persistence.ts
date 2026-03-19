@@ -36,6 +36,9 @@ const persistToLocalStorage = (settings: DesktopSettings) => {
   if (typeof settings.agentMode === 'string') {
     localStorage.setItem('agentMode', settings.agentMode);
   }
+  if (settings.browserAutomationMode === 'embedded' || settings.browserAutomationMode === 'background') {
+    localStorage.setItem('browserAutomationMode', settings.browserAutomationMode);
+  }
   if (settings.agentModeByProject && typeof settings.agentModeByProject === 'object') {
     localStorage.setItem('agentModeByProject', JSON.stringify(settings.agentModeByProject));
   } else {
@@ -473,6 +476,9 @@ const sanitizeWebSettings = (payload: unknown): DesktopSettings | null => {
     )
   ) {
     result.agentMode = candidate.agentMode;
+  }
+  if (candidate.browserAutomationMode === 'embedded' || candidate.browserAutomationMode === 'background') {
+    result.browserAutomationMode = candidate.browserAutomationMode;
   }
   if (candidate.agentModeByProject && typeof candidate.agentModeByProject === 'object') {
     const nextMap: Record<string, 'e2b' | 'openbrowser' | 'desktop-browser' | 'browseros' | 'user-desktop'> = {};

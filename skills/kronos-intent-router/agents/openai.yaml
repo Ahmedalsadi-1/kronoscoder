@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kronos Intent Router"
+  short_description: "Route requests to the right package, checks, and workflow"
+  default_prompt: "Classify the user request and route it to the right Kronos package with minimal validation commands."

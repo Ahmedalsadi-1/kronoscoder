@@ -25,6 +25,7 @@ import { useQuotaAutoRefresh, useQuotaStore } from '@/stores/useQuotaStore';
 import { useDirectoryStore } from '@/stores/useDirectoryStore';
 import { useProjectsStore } from '@/stores/useProjectsStore';
 import { useGitHubAuthStore } from '@/stores/useGitHubAuthStore';
+import { useAgentRuntimeStore } from '@/stores/useAgentRuntimeStore';
 import { useRuntimeAPIs } from '@/hooks/useRuntimeAPIs';
 import { ContextUsageDisplay } from '@/components/ui/ContextUsageDisplay';
 import { useDeviceInfo } from '@/lib/device';
@@ -137,6 +138,19 @@ interface TabConfig {
   showDot?: boolean;
 }
 
+const BrowserExpansionIndicator = ({ active, compact = false }: { active: boolean; compact?: boolean }) => (
+  <span
+    aria-hidden="true"
+    className={cn(
+      'pointer-events-none inline-flex items-center justify-center text-muted-foreground transition-all duration-200',
+      compact ? 'ml-0.5' : 'ml-1',
+      active && 'text-primary animate-pulse',
+    )}
+  >
+    <RiArrowRightSLine className={compact ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
+  </span>
+);
+
 export const Header: React.FC = () => {
   const setSessionSwitcherOpen = useUIStore((state) => state.setSessionSwitcherOpen);
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
@@ -185,6 +199,7 @@ export const Header: React.FC = () => {
   const reorderProjects = useProjectsStore((state) => state.reorderProjects);
   const addProject = useProjectsStore((state) => state.addProject);
   const removeProject = useProjectsStore((state) => state.removeProject);
+  const runtimeTasksByID = useAgentRuntimeStore((state) => state.tasksByID);
 
   const { isMobile } = useDeviceInfo();
   const diffFileCount = useDiffFileCount();
@@ -725,6 +740,17 @@ export const Header: React.FC = () => {
   const [planTabAvailable, setPlanTabAvailable] = React.useState(false);
   const showPlanTab = planTabAvailable;
   const lastPlanSessionKeyRef = React.useRef<string>('');
+  const hasBrowserTaskActivity = React.useMemo(() => {
+    const tasks = Object.values(runtimeTasksByID ?? {});
+    return tasks.some((task) => {
+      if (!task || typeof task !== 'object') return false;
+      const mode = task.mode;
+      const status = task.status;
+      const browserMode = mode === 'browseros' || mode === 'desktop-browser';
+      const activeStatus = status === 'queued' || status === 'running';
+      return browserMode && activeStatus;
+    });
+  }, [runtimeTasksByID]);
 
   const handleGitHubAccountSwitch = React.useCallback(async (accountId: string) => {
     if (!accountId || isSwitchingGitHubAccount) return;
@@ -1156,6 +1182,8 @@ export const Header: React.FC = () => {
     const isDiffTab = tab.icon === 'diff';
     const Icon = isDiffTab ? null : (tab.icon as RemixiconComponentType);
     const isChatTab = tab.id === 'chat';
+    const isBrowserTab = tab.id === 'browser';
+    const browserIndicatorActive = isBrowserTab && (isActive || hasBrowserTaskActivity);
 
     const renderIcon = (iconSize: number) => {
       if (isDiffTab) {
@@ -1181,10 +1209,16 @@ export const Header: React.FC = () => {
         role="tab"
       >
         {isMobile ? (
-          renderIcon(20)
+          <span className="inline-flex items-center">
+            {renderIcon(20)}
+            {isBrowserTab ? <BrowserExpansionIndicator active={browserIndicatorActive} compact /> : null}
+          </span>
         ) : (
           <>
-            {renderIcon(16)}
+            <span className="inline-flex items-center">
+              {renderIcon(16)}
+              {isBrowserTab ? <BrowserExpansionIndicator active={browserIndicatorActive} /> : null}
+            </span>
             <span className="header-tab-label">{tab.label}</span>
           </>
         )}
@@ -1740,7 +1774,13 @@ export const Header: React.FC = () => {
                 onClick={() => setActiveMainTab('browser')}
                 className={cn(headerIconButtonClass, activeMainTab === 'browser' && 'bg-[var(--interactive-hover)] text-foreground')}
               >
-                <RiWindow2Line className="h-5 w-5" />
+                <span className="inline-flex items-center">
+                  <RiWindow2Line className="h-5 w-5" />
+                  <BrowserExpansionIndicator
+                    compact
+                    active={activeMainTab === 'browser' || hasBrowserTaskActivity}
+                  />
+                </span>
               </button>
             </TooltipTrigger>
             <TooltipContent>
@@ -2229,6 +2269,8 @@ export const Header: React.FC = () => {
                 const isActive = activeMainTab === tab.id;
                 const isDiffTab = tab.icon === 'diff';
                 const Icon = isDiffTab ? null : (tab.icon as RemixiconComponentType);
+                const isBrowserTab = tab.id === 'browser';
+                const browserIndicatorActive = isBrowserTab && (isActive || hasBrowserTaskActivity);
                 return (
                   <Tooltip key={tab.id} delayDuration={500}>
                     <TooltipTrigger asChild>
@@ -2252,7 +2294,12 @@ export const Header: React.FC = () => {
                         {isDiffTab ? (
                           <DiffIcon className="h-5 w-5" />
                         ) : Icon ? (
-                          <Icon className="h-5 w-5" />
+                          <span className="inline-flex items-center">
+                            <Icon className="h-5 w-5" />
+                            {isBrowserTab ? (
+                              <BrowserExpansionIndicator active={browserIndicatorActive} compact />
+                            ) : null}
+                          </span>
                         ) : null}
                         {tab.badge !== undefined && tab.badge > 0 && (
                           <span className="absolute -top-1 -right-1 text-[10px] font-semibold text-primary">

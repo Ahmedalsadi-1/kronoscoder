@@ -505,8 +505,9 @@ export interface SettingsPayload {
   homeDirectory?: string;
   kronoscodeBinary?: string;
   aiBrowserEnabled?: boolean;
-  agentMode?: 'off' | 'e2b' | 'openbrowser' | 'desktop-browser' | 'browseros';
-  agentModeByProject?: Record<string, 'e2b' | 'openbrowser' | 'desktop-browser' | 'browseros'>;
+  agentMode?: 'off' | 'e2b' | 'openbrowser' | 'desktop-browser' | 'browseros' | 'user-desktop';
+  agentModeByProject?: Record<string, 'e2b' | 'openbrowser' | 'desktop-browser' | 'browseros' | 'user-desktop'>;
+  browserAutomationMode?: 'embedded' | 'background';
   browserOpenAtStartup?: boolean;
   projects?: ProjectEntry[];
   activeProjectId?: string;

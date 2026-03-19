@@ -17,6 +17,7 @@ export const { use: useSDK, provider: SDKProvider } = createSimpleContext({
     events?: EventSource
   }) => {
     const abort = new AbortController()
+    const fetcher = props.fetch ?? fetch
     const sdk = createOpencodeClient({
       baseUrl: props.url,
       signal: abort.signal,
@@ -96,6 +97,46 @@ export const { use: useSDK, provider: SDKProvider } = createSimpleContext({
       if (timer) clearTimeout(timer)
     })
 
-    return { client: sdk, event: emitter, url: props.url }
+    const request = async (input: {
+      path: string
+      method?: string
+      query?: Record<string, string | number | boolean | null | undefined>
+      body?: unknown
+      headers?: HeadersInit
+    }) => {
+      const url = new URL(input.path, props.url)
+
+      for (const [key, value] of Object.entries(input.query ?? {})) {
+        if (value === undefined || value === null) continue
+        url.searchParams.set(key, String(value))
+      }
+
+      if (props.directory && !url.searchParams.has("directory")) {
+        url.searchParams.set("directory", props.directory)
+      }
+
+      const headers = new Headers((props.headers as HeadersInit | undefined) ?? undefined)
+      const requestHeaders = new Headers(input.headers ?? undefined)
+      for (const [key, value] of requestHeaders.entries()) {
+        headers.set(key, value)
+      }
+
+      let body: BodyInit | undefined
+      if (input.body !== undefined) {
+        body = JSON.stringify(input.body)
+        if (!headers.has("content-type")) {
+          headers.set("content-type", "application/json")
+        }
+      }
+
+      return fetcher(url.toString(), {
+        method: input.method ?? "GET",
+        headers,
+        body,
+        signal: abort.signal,
+      })
+    }
+
+    return { client: sdk, event: emitter, url: props.url, request }
   },
 })

@@ -17,12 +17,30 @@ const BIN_DIR = path.join(BASE_DIR, 'bin');
 const LOG_DIR = path.join(BASE_DIR, 'logs');
 const STATE_DIR = path.join(BASE_DIR, 'state');
 
-const LAUNCHER_PATH = path.join(BIN_DIR, 'browseros-agent-server');
-const PID_PATH = path.join(STATE_DIR, 'browseros-agent.pid');
-const LOG_PATH = path.join(LOG_DIR, 'browseros-agent.log');
-const CDP_PID_PATH = path.join(STATE_DIR, 'browseros-cdp.pid');
-const CDP_LOG_PATH = path.join(LOG_DIR, 'browseros-cdp.log');
-const ENV_FILE_PATH = path.join(AGENT_REPO_DIR, 'apps', 'server', '.env.development');
+const sanitizeProfileName = (value) => {
+  const raw = String(value ?? '').trim().toLowerCase();
+  const normalized = raw.replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+  return normalized || 'default';
+};
+
+const BROWSEROS_PROFILE = sanitizeProfileName(
+  process.env.BROWSEROS_PROFILE || process.env.KRONOSCHAMBER_BROWSEROS_PROFILE || 'default',
+);
+const PROFILE_SUFFIX = BROWSEROS_PROFILE === 'default' ? '' : `-${BROWSEROS_PROFILE}`;
+
+const LAUNCHER_PATH = path.join(BIN_DIR, `browseros-agent-server${PROFILE_SUFFIX}`);
+const PID_PATH = path.join(STATE_DIR, `browseros-agent${PROFILE_SUFFIX}.pid`);
+const SERVER_PORT_PATH = path.join(STATE_DIR, `browseros-agent${PROFILE_SUFFIX}.port`);
+const LOG_PATH = path.join(LOG_DIR, `browseros-agent${PROFILE_SUFFIX}.log`);
+const CDP_PID_PATH = path.join(STATE_DIR, `browseros-cdp${PROFILE_SUFFIX}.pid`);
+const CDP_PORT_PATH = path.join(STATE_DIR, `browseros-cdp${PROFILE_SUFFIX}.port`);
+const CDP_LOG_PATH = path.join(LOG_DIR, `browseros-cdp${PROFILE_SUFFIX}.log`);
+const ENV_FILE_PATH = path.join(
+  AGENT_REPO_DIR,
+  'apps',
+  'server',
+  BROWSEROS_PROFILE === 'default' ? '.env.development' : `.env.development.${BROWSEROS_PROFILE}`,
+);
 const ENV_EXAMPLE_PATH = path.join(AGENT_REPO_DIR, 'apps', 'server', '.env.example');
 
 const DEFAULT_SERVER_PORT = 9239;
@@ -30,9 +48,10 @@ const DEFAULT_CDP_PORT = 9222;
 const DEFAULT_EXTENSION_PORT = 9240;
 const CDP_DISCOVERY_PORTS = [9354, 9222, 9223, 9333];
 
-const toInt = (value, fallback) => {
+const toInt = (value, fallback, options = {}) => {
+  const allowZero = options.allowZero === true;
   const parsed = Number.parseInt(String(value ?? '').trim(), 10);
-  if (Number.isFinite(parsed) && parsed > 0 && parsed <= 65535) {
+  if (Number.isFinite(parsed) && ((allowZero && parsed === 0) || (parsed > 0 && parsed <= 65535))) {
     return parsed;
   }
   return fallback;
@@ -42,7 +61,11 @@ const resolveServerPort = () =>
   toInt(process.env.BROWSEROS_SERVER_PORT || process.env.KRONOSCHAMBER_BROWSEROS_SERVER_PORT, DEFAULT_SERVER_PORT);
 
 const resolveCdpPort = () =>
-  toInt(process.env.BROWSEROS_CDP_PORT || process.env.KRONOSCHAMBER_BROWSEROS_CDP_PORT, DEFAULT_CDP_PORT);
+  toInt(
+    process.env.BROWSEROS_CDP_PORT || process.env.KRONOSCHAMBER_BROWSEROS_CDP_PORT,
+    DEFAULT_CDP_PORT,
+    { allowZero: true },
+  );
 
 const resolveExtensionPort = () =>
   toInt(process.env.BROWSEROS_EXTENSION_PORT || process.env.KRONOSCHAMBER_BROWSEROS_EXTENSION_PORT, DEFAULT_EXTENSION_PORT);
@@ -211,10 +234,35 @@ const cloneOrUpdateRepository = (repoUrl, repoDir) => {
     return;
   }
 
-  run('git', ['-C', repoDir, 'fetch', '--all', '--prune']);
-  const branchResult = run('git', ['-C', repoDir, 'branch', '--show-current']);
-  const branch = String(branchResult.stdout || '').trim() || 'main';
-  run('git', ['-C', repoDir, 'pull', '--ff-only', 'origin', branch]);
+  try {
+    run('git', ['-C', repoDir, 'fetch', '--all', '--prune']);
+    const dirtyCheck = run('git', ['-C', repoDir, 'status', '--porcelain']);
+    const hasLocalChanges = String(dirtyCheck.stdout || '').trim().length > 0;
+    if (hasLocalChanges) {
+      console.warn(
+        `[setup-browseros-agent] Skipping update for ${repoDir} because local changes are present. ` +
+          'Commit or stash changes to receive upstream updates.',
+      );
+      return;
+    }
+
+    const branchResult = run('git', ['-C', repoDir, 'branch', '--show-current']);
+    const currentBranch = String(branchResult.stdout || '').trim();
+    if (!currentBranch) {
+      console.warn(
+        `[setup-browseros-agent] Skipping update for ${repoDir} because HEAD is detached. ` +
+          'Check out a branch to enable automatic fast-forward updates.',
+      );
+      return;
+    }
+
+    const remoteBranch = `origin/${currentBranch}`;
+    run('git', ['-C', repoDir, 'rev-parse', '--verify', '--quiet', remoteBranch]);
+    run('git', ['-C', repoDir, 'merge', '--ff-only', remoteBranch]);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    console.warn(`[setup-browseros-agent] Skipping repository update for ${repoDir}: ${detail}`);
+  }
 };
 
 const ensureLauncher = () => {
@@ -223,7 +271,7 @@ const ensureLauncher = () => {
 set -euo pipefail
 
 ROOT="${AGENT_REPO_DIR}"
-ENV_FILE="$ROOT/apps/server/.env.development"
+ENV_FILE="${ENV_FILE_PATH}"
 BUN_BIN="${resolveBun()}"
 
 if [ ! -f "$ROOT/package.json" ]; then
@@ -256,7 +304,17 @@ const installBrowserosAgent = () => {
   cloneOrUpdateRepository(BROWSEROS_REPO_URL, BROWSEROS_REPO_DIR);
   cloneOrUpdateRepository(BROWSEROS_AGENT_REPO_URL, AGENT_REPO_DIR);
 
-  run(resolveBun(), ['install'], { cwd: AGENT_REPO_DIR });
+  const bunBinary = resolveBun();
+  try {
+    run(bunBinary, ['install'], { cwd: AGENT_REPO_DIR });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    console.warn(
+      `[setup-browseros-agent] bun install failed in ${AGENT_REPO_DIR}; retrying with --ignore-scripts and explicit SDK build. ${detail}`,
+    );
+    run(bunBinary, ['install', '--ignore-scripts'], { cwd: AGENT_REPO_DIR });
+    run(bunBinary, ['run', 'build:agent-sdk'], { cwd: AGENT_REPO_DIR });
+  }
 
   const envMap = readManagedEnv();
   const envContents = stringifyEnvMap(envMap);
@@ -284,6 +342,27 @@ const removePid = () => {
   }
 };
 
+const readServerPort = () => {
+  if (!fs.existsSync(SERVER_PORT_PATH)) return null;
+  const value = Number.parseInt(String(fs.readFileSync(SERVER_PORT_PATH, 'utf8')).trim(), 10);
+  if (!Number.isFinite(value) || value <= 0 || value > 65535) return null;
+  return value;
+};
+
+const writeServerPort = (port) => {
+  if (!Number.isFinite(port) || port <= 0 || port > 65535) {
+    return;
+  }
+  ensureDirectory(path.dirname(SERVER_PORT_PATH));
+  fs.writeFileSync(SERVER_PORT_PATH, String(port), 'utf8');
+};
+
+const removeServerPort = () => {
+  if (fs.existsSync(SERVER_PORT_PATH)) {
+    fs.unlinkSync(SERVER_PORT_PATH);
+  }
+};
+
 const stopExisting = () => {
   const pid = readPid();
   if (pid && isProcessAlive(pid)) {
@@ -299,6 +378,7 @@ const stopExisting = () => {
     // ignore uncommon failure states and continue
   }
   removePid();
+  removeServerPort();
 };
 
 const readCdpPid = () => {
@@ -319,6 +399,27 @@ const removeCdpPid = () => {
   }
 };
 
+const readCdpPort = () => {
+  if (!fs.existsSync(CDP_PORT_PATH)) return null;
+  const value = Number.parseInt(String(fs.readFileSync(CDP_PORT_PATH, 'utf8')).trim(), 10);
+  if (!Number.isFinite(value) || value < 0 || value > 65535) return null;
+  return value;
+};
+
+const writeCdpPort = (port) => {
+  if (!Number.isFinite(port) || port < 0 || port > 65535) {
+    return;
+  }
+  ensureDirectory(path.dirname(CDP_PORT_PATH));
+  fs.writeFileSync(CDP_PORT_PATH, String(port), 'utf8');
+};
+
+const removeCdpPort = () => {
+  if (fs.existsSync(CDP_PORT_PATH)) {
+    fs.unlinkSync(CDP_PORT_PATH);
+  }
+};
+
 const stopManagedCdp = () => {
   const pid = readCdpPid();
   if (pid && isProcessAlive(pid)) {
@@ -329,6 +430,7 @@ const stopManagedCdp = () => {
     }
   }
   removeCdpPid();
+  removeCdpPort();
 };
 
 const resolveCdpBrowserBinary = () => {
@@ -363,7 +465,9 @@ const resolveCdpBrowserBinary = () => {
 };
 
 const detectRunningCdpPort = async (preferredPort) => {
-  const candidates = [preferredPort, ...CDP_DISCOVERY_PORTS].filter((value, index, array) => array.indexOf(value) === index);
+  const candidates = [preferredPort, ...CDP_DISCOVERY_PORTS]
+    .filter((value, index, array) => array.indexOf(value) === index)
+    .filter((value) => Number.isFinite(value) && value > 0);
   for (const candidate of candidates) {
     // eslint-disable-next-line no-await-in-loop
     const ready = await waitForCdp(candidate, 1200);
@@ -375,23 +479,59 @@ const detectRunningCdpPort = async (preferredPort) => {
 };
 
 const ensureCdpBrowser = async (requestedPort) => {
-  const cdpPort = toInt(requestedPort, resolveCdpPort());
-  const discovered = await detectRunningCdpPort(cdpPort);
-  if (discovered) {
-    return { cdpPort: discovered, cdpReady: true, cdpManaged: false, cdpBrowserBinary: null };
+  const cdpPort = toInt(requestedPort, resolveCdpPort(), { allowZero: true });
+  if (cdpPort === 0) {
+    stopManagedCdp();
+    removeCdpPort();
+    return {
+      cdpPort: 0,
+      cdpReady: false,
+      cdpManaged: false,
+      cdpBrowserBinary: null,
+      cdpDisabled: true,
+    };
   }
 
-  if (hasExplicitCdpPort() && cdpPort !== DEFAULT_CDP_PORT) {
-    return { cdpPort, cdpReady: false, cdpManaged: false, cdpBrowserBinary: null };
+  const discovered = await detectRunningCdpPort(cdpPort);
+  if (discovered) {
+    return {
+      cdpPort: discovered,
+      cdpReady: true,
+      cdpManaged: false,
+      cdpBrowserBinary: null,
+      cdpDisabled: false,
+    };
+  }
+
+  if (hasExplicitCdpPort() && cdpPort !== DEFAULT_CDP_PORT && !resolveAutoStartCdp()) {
+    return {
+      cdpPort,
+      cdpReady: false,
+      cdpManaged: false,
+      cdpBrowserBinary: null,
+      cdpDisabled: false,
+    };
   }
 
   const alreadyReady = await waitForCdp(cdpPort, 1500);
   if (alreadyReady) {
-    return { cdpPort, cdpReady: true, cdpManaged: false, cdpBrowserBinary: null };
+    return {
+      cdpPort,
+      cdpReady: true,
+      cdpManaged: false,
+      cdpBrowserBinary: null,
+      cdpDisabled: false,
+    };
   }
 
   if (!resolveAutoStartCdp()) {
-    return { cdpPort, cdpReady: false, cdpManaged: false, cdpBrowserBinary: null };
+    return {
+      cdpPort,
+      cdpReady: false,
+      cdpManaged: false,
+      cdpBrowserBinary: null,
+      cdpDisabled: false,
+    };
   }
 
   stopManagedCdp();
@@ -403,13 +543,15 @@ const ensureCdpBrowser = async (requestedPort) => {
     );
   }
 
-  const profileDir = path.join(STATE_DIR, 'browseros-cdp-profile');
+  const profileDir = path.join(STATE_DIR, `browseros-cdp-profile${PROFILE_SUFFIX}`);
   ensureDirectory(profileDir);
   const logFd = fs.openSync(CDP_LOG_PATH, 'a');
   const args = [
     `--remote-debugging-port=${cdpPort}`,
     '--remote-debugging-address=127.0.0.1',
     `--user-data-dir=${profileDir}`,
+    '--headless=new',
+    '--disable-gpu',
     '--no-first-run',
     '--no-default-browser-check',
     '--disable-background-networking',
@@ -435,16 +577,25 @@ const ensureCdpBrowser = async (requestedPort) => {
     );
   }
 
-  return { cdpPort, cdpReady: true, cdpManaged: true, cdpBrowserBinary: browserBinary };
+  return {
+    cdpPort,
+    cdpReady: true,
+    cdpManaged: true,
+    cdpBrowserBinary: browserBinary,
+    cdpDisabled: false,
+  };
 };
 
 const startBrowserosAgent = async () => {
   installBrowserosAgent();
   stopExisting();
   const cdp = await ensureCdpBrowser(resolveCdpPort());
-  const effectiveCdpPort = toInt(cdp?.cdpPort, resolveCdpPort());
+  const effectiveServerPort = resolveServerPort();
+  writeServerPort(effectiveServerPort);
+  const effectiveCdpPort = toInt(cdp?.cdpPort, resolveCdpPort(), { allowZero: true });
+  writeCdpPort(effectiveCdpPort);
 
-  if (!cdp?.cdpReady) {
+  if (!cdp?.cdpDisabled && !cdp?.cdpReady) {
     throw new Error(
       `BrowserOS CDP bootstrap failed on port ${effectiveCdpPort}. Configure BROWSEROS_CDP_PORT to a reachable CDP endpoint or enable local bootstrap.`,
     );
@@ -455,8 +606,10 @@ const startBrowserosAgent = async () => {
     cwd: AGENT_REPO_DIR,
     env: {
       ...process.env,
+      BROWSEROS_PROFILE,
+      KRONOSCHAMBER_BROWSEROS_PROFILE: BROWSEROS_PROFILE,
       BROWSEROS_CDP_PORT: String(effectiveCdpPort),
-      BROWSEROS_SERVER_PORT: String(resolveServerPort()),
+      BROWSEROS_SERVER_PORT: String(effectiveServerPort),
       BROWSEROS_EXTENSION_PORT: String(resolveExtensionPort()),
     },
     detached: true,
@@ -485,17 +638,25 @@ const startBrowserosAgent = async () => {
 const stopBrowserosAgent = () => {
   stopExisting();
   stopManagedCdp();
+  removeServerPort();
   return { stopped: true };
 };
 
 const statusPayload = async () => {
-  const serverPort = resolveServerPort();
+  const persistedServerPort = readServerPort();
+  const serverPort = toInt(persistedServerPort ?? resolveServerPort(), DEFAULT_SERVER_PORT);
   const mcpUrl = `http://127.0.0.1:${serverPort}/mcp`;
   const healthUrl = `http://127.0.0.1:${serverPort}/health`;
-  const cdpPort = resolveCdpPort();
-  const discoveredCdpPort = await detectRunningCdpPort(cdpPort);
+  const persistedCdpPort = readCdpPort();
+  const cdpPort = toInt(
+    persistedCdpPort ?? resolveCdpPort(),
+    DEFAULT_CDP_PORT,
+    { allowZero: true },
+  );
+  const cdpDisabled = cdpPort === 0;
+  const discoveredCdpPort = cdpDisabled ? null : await detectRunningCdpPort(cdpPort);
   const effectiveCdpPort = discoveredCdpPort ?? cdpPort;
-  const cdpUrl = `http://127.0.0.1:${effectiveCdpPort}/json/version`;
+  const cdpUrl = effectiveCdpPort > 0 ? `http://127.0.0.1:${effectiveCdpPort}/json/version` : null;
   const installed =
     fs.existsSync(path.join(BROWSEROS_REPO_DIR, '.git')) &&
     fs.existsSync(path.join(AGENT_REPO_DIR, '.git')) &&
@@ -504,11 +665,12 @@ const statusPayload = async () => {
   const pid = readPid();
   const alive = pid ? isProcessAlive(pid) : false;
   const healthy = await httpCheck(healthUrl, 2000);
-  const cdpReady = await httpCheck(cdpUrl, 2000);
+  const cdpReady = cdpUrl ? await httpCheck(cdpUrl, 2000) : false;
   const cdpPid = readCdpPid();
   const cdpManaged = Boolean(cdpPid && isProcessAlive(cdpPid));
 
   return {
+    profile: BROWSEROS_PROFILE,
     installed,
     running: alive || healthy,
     healthy,
@@ -520,6 +682,7 @@ const statusPayload = async () => {
     logPath: LOG_PATH,
     serverPort,
     cdpPort: effectiveCdpPort,
+    cdpDisabled,
     cdpReady,
     cdpManaged,
     cdpPid: cdpManaged ? cdpPid : null,

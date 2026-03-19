@@ -30,6 +30,13 @@ export namespace SessionProcessor {
     activeTool?: string
     workType?: string
     runtimeTarget?: string
+    runHealth?: {
+      status: "healthy" | "degraded" | "error"
+      confidence?: number
+      recoverable?: boolean
+      suggested_next_action?: string
+      source?: string
+    }
   } => {
     if (!toolName) return {}
     if (toolName.startsWith("screenpipe_")) {
@@ -37,6 +44,12 @@ export namespace SessionProcessor {
         activeTool: toolName,
         workType: "research",
         runtimeTarget: SCREENPIPE_RUNTIME_TARGET,
+        runHealth: {
+          status: "healthy",
+          confidence: 0.8,
+          recoverable: true,
+          source: toolName,
+        },
       }
     }
     if (toolName === "mcp_preset_apply") {
@@ -44,6 +57,12 @@ export namespace SessionProcessor {
         activeTool: toolName,
         workType: "validation",
         runtimeTarget: "mcp-preset",
+        runHealth: {
+          status: "healthy",
+          confidence: 0.82,
+          recoverable: true,
+          source: toolName,
+        },
       }
     }
     if (toolName === "openfang_hand_import") {
@@ -51,6 +70,12 @@ export namespace SessionProcessor {
         activeTool: toolName,
         workType: "coding",
         runtimeTarget: "openfang-hand-import",
+        runHealth: {
+          status: "healthy",
+          confidence: 0.78,
+          recoverable: true,
+          source: toolName,
+        },
       }
     }
     if (
@@ -62,10 +87,22 @@ export namespace SessionProcessor {
         activeTool: toolName,
         workType: "validation",
         runtimeTarget: "openfang",
+        runHealth: {
+          status: "healthy",
+          confidence: 0.78,
+          recoverable: true,
+          source: toolName,
+        },
       }
     }
     return {
       activeTool: toolName,
+      runHealth: {
+        status: "healthy",
+        confidence: 0.75,
+        recoverable: true,
+        source: toolName,
+      },
     }
   }
 
@@ -233,19 +270,44 @@ export namespace SessionProcessor {
                 case "tool-result": {
                   const match = toolcalls[value.toolCallId]
                   if (match && match.state.status === "running") {
+                    const reliability = {
+                      status: "success" as const,
+                      confidence: 0.92,
+                      recoverable: true,
+                      suggested_next_action: "Continue to the next workflow step.",
+                    }
+                    const metadata = {
+                      ...(value.output.metadata ?? {}),
+                      reliability,
+                      status: reliability.status,
+                      confidence: reliability.confidence,
+                      recoverable: reliability.recoverable,
+                      suggested_next_action: reliability.suggested_next_action,
+                    }
                     await Session.updatePart({
                       ...match,
                       state: {
                         status: "completed",
                         input: value.input ?? match.state.input,
                         output: value.output.output,
-                        metadata: value.output.metadata,
+                        metadata,
                         title: value.output.title,
                         time: {
                           start: match.state.time.start,
                           end: Date.now(),
                         },
                         attachments: value.output.attachments,
+                      },
+                    })
+                    SessionStatus.set(input.sessionID, {
+                      type: "busy",
+                      ...integrationStatusMetadata(match.tool),
+                      runHealth: {
+                        status: "healthy",
+                        confidence: reliability.confidence,
+                        recoverable: reliability.recoverable,
+                        suggested_next_action: reliability.suggested_next_action,
+                        source: match.tool,
                       },
                     })
 
@@ -257,16 +319,45 @@ export namespace SessionProcessor {
                 case "tool-error": {
                   const match = toolcalls[value.toolCallId]
                   if (match && match.state.status === "running") {
+                    const recoverable = !(
+                      value.error instanceof PermissionNext.RejectedError || value.error instanceof Question.RejectedError
+                    )
+                    const reliability = {
+                      status: "failed" as const,
+                      confidence: 0.2,
+                      recoverable,
+                      suggested_next_action: recoverable
+                        ? "Retry with corrected tool input."
+                        : "Resolve the pending question/permission and retry.",
+                    }
                     await Session.updatePart({
                       ...match,
                       state: {
                         status: "error",
                         input: value.input ?? match.state.input,
                         error: (value.error as any).toString(),
+                        metadata: {
+                          reliability,
+                          status: reliability.status,
+                          confidence: reliability.confidence,
+                          recoverable: reliability.recoverable,
+                          suggested_next_action: reliability.suggested_next_action,
+                        },
                         time: {
                           start: match.state.time.start,
                           end: Date.now(),
                         },
+                      },
+                    })
+                    SessionStatus.set(input.sessionID, {
+                      type: "busy",
+                      ...integrationStatusMetadata(match.tool),
+                      runHealth: {
+                        status: recoverable ? "degraded" : "error",
+                        confidence: reliability.confidence,
+                        recoverable,
+                        suggested_next_action: reliability.suggested_next_action,
+                        source: match.tool,
                       },
                     })
 
@@ -418,6 +509,13 @@ export namespace SessionProcessor {
                 attempt,
                 message: retry,
                 next: Date.now() + delay,
+                runHealth: {
+                  status: "degraded",
+                  confidence: 0.4,
+                  recoverable: true,
+                  suggested_next_action: retry,
+                  source: "retry",
+                },
               })
               await SessionRetry.sleep(delay, input.abort).catch(() => {})
               continue
